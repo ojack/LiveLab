@@ -68,7 +68,7 @@
         showVolume(document.getElementById('localVolume'), volume);
     });
 
-      var button = $('#screenShareButton'),
+    /*  var button = $('#screenShareButton'),
         setButton = function (bool) {
             button.text(bool ? 'share screen' : 'stop sharing');
         };
@@ -92,13 +92,8 @@
             });
             
         }
-    });
-    // window.addEventListener("keypress", function(e){
-    //     console.log(e);
-    //     var id = webrtc.getDomId();
-    //     console.log(id);
-    //     webrtc.sendDirectlyToAll("simplewebrtc", "hi", "chat") ;
-    // })
+    });*/
+   
    
 
     if (room) {
@@ -139,7 +134,7 @@ function showVolume(el, volume) {
 function setRoom(name) {
     $('form').remove();
     $('h1').text(name);
-    $('#subTitle').text('Link to join: ' + location.href);
+   // $('#subTitle').text(name + " || link: "+ location.href);
     $('body').addClass('active');
 }
 
