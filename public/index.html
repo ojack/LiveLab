@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SimpleWebRTC Demo</title>
+    </head>
+    <body>
+        <h1 id="title">Start a room</h1>
+        <style>
+            .videoContainer {
+                position: relative;
+                display: inline-block;
+                width: 400px;
+                height: 300px;
+            }
+            .videoContainer video {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+            }
+            .volume_bar {
+                position: absolute;
+                width: 5px;
+                height: 0px;
+                right: 0px;
+                bottom: 0px;
+                background-color: #12acef;
+            }
+            #chat-window{
+                position: fixed;
+                right: 0px;
+                top: 0px;
+                height: 80%;
+                width: 200px;
+                padding: 10px;
+            }
+            html, body {
+                background-color: #000;
+                color: #fff;
+                font-family: "Lucida Console", Monaco, monospace;
+            }
+        </style>
+        <p id="subTitle"></p>
+        <form id="createRoom">
+            <input id="sessionInput"/>
+            <button type="submit">Create it!</button>
+        </form>
+       
+        <div id="remotes">
+             <div class="videoContainer">
+                <video id="localVideo" style="height: 300px;" oncontextmenu="return false;"></video>
+                <div id="localVolume" class="volume_bar"></div>
+            </div>
+        </div>
+        <div id="chat-window">
+            <div id="chatlog"></div>
+            <input type="text" id="chat">
+            <input type="button" value="Send" onclick="sendmessage()">
+        </div>
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+        <script src="simplewebrtc.bundle.js"></script>
+        <script src="main.js"></script>
+            
+           
+        </script>
+    </body>
+</html>

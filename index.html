@@ -8,8 +8,14 @@
         <style>
             .videoContainer {
                 position: relative;
+<<<<<<< HEAD
                 width: 200px;
                 height: 150px;
+=======
+                display: inline-block;
+                width: 400px;
+                height: 300px;
+>>>>>>> master
             }
             .videoContainer video {
                 position: absolute;
@@ -24,13 +30,31 @@
                 bottom: 0px;
                 background-color: #12acef;
             }
+<<<<<<< HEAD
         </style>
         <button id="screenShareButton"></button>
+=======
+            #chat-window{
+                position: fixed;
+                right: 0px;
+                top: 0px;
+                height: 80%;
+                width: 200px;
+                padding: 10px;
+            }
+            html, body {
+                background-color: #000;
+                color: #fff;
+                font-family: "Lucida Console", Monaco, monospace;
+            }
+        </style>
+>>>>>>> master
         <p id="subTitle"></p>
         <form id="createRoom">
             <input id="sessionInput"/>
             <button type="submit">Create it!</button>
         </form>
+<<<<<<< HEAD
         <div class="videoContainer">
             <video id="localVideo" style="height: 150px;" oncontextmenu="return false;"></video>
             <div id="localVolume" class="volume_bar"></div>
@@ -161,6 +185,26 @@
                     
                 }
             });
+=======
+       
+        <div id="remotes">
+             <div class="videoContainer">
+                <video id="localVideo" style="height: 300px;" oncontextmenu="return false;"></video>
+                <div id="localVolume" class="volume_bar"></div>
+            </div>
+        </div>
+        <div id="chat-window">
+            <div id="chatlog"></div>
+            <input type="text" id="chat">
+            <input type="button" value="Send" onclick="sendmessage()">
+        </div>
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+        <script src="simplewebrtc.bundle.js"></script>
+        <script src="main.js"></script>
+            
+           
+>>>>>>> master
         </script>
     </body>
 </html>
