@@ -1,10 +1,9 @@
- // grab the room from the URL
- //alert("hi");
+
  var webrtc, chatlog;
  window.onload = function(){
+     // grab the room from the URL
     var room = location.search && location.search.split('?')[1];
     chatlog = document.getElementById("chatlog");
-    console.log(chatlog);
 
      // create our webrtc connection
     webrtc = new SimpleWebRTC({
@@ -19,6 +18,21 @@
         autoAdjustMic: false
      });
 
+
+    //connect to server via websockets
+    var port = new osc.WebSocketPort({
+                url: "ws://localhost:8081"
+            });
+
+            port.on("message", function (oscMessage) {
+                $("#osc").text(JSON.stringify(oscMessage, undefined, 2));
+                webrtc.sendDirectlyToAll("osc", "osc", oscMessage) ; //name of data channel, type, information
+               // console.log("message", oscMessage);
+            });
+
+            port.open();
+
+       
         // when it's ready, join if we got a room from the URL
     webrtc.on('readyToCall', function () {
         // you can name it anything
@@ -29,8 +43,16 @@
         if (data.type == 'volume') {
             showVolume(document.getElementById('volume_' + peer.id), data.volume);
         } else if(data.type=="chat"){
-            chatlog.innerHTML += "</br>xx: "+ data.payload; 
+            chatlog.innerHTML += "</br>"+peer.id + ": " + data.payload; 
             console.log(data);
+        }  else if(data.type=="osc"){
+                $("#osc-remote").text(JSON.stringify(data.payload, undefined, 2));
+                //TO DO: broadcast to local port
+                /*port.send({
+                    address: "/data",
+                    args: data.payload
+                });*/
+               // webrtc.sendDirectlyToAll("osc", "osc", data.payload) ; //name of data channel, type, information
         }
     });
 
@@ -67,35 +89,7 @@
         //console.log('own volume', volume);
         showVolume(document.getElementById('localVolume'), volume);
     });
-
-    /*  var button = $('#screenShareButton'),
-        setButton = function (bool) {
-            button.text(bool ? 'share screen' : 'stop sharing');
-        };
-    webrtc.on('localScreenStopped', function () {
-        setButton(true);
-    });
-
-    setButton(true);
-
-    button.click(function () {
-        if (webrtc.getLocalScreen()) {
-            webrtc.stopScreenShare();
-            setButton(true);
-        } else {
-            webrtc.shareScreen(function (err) {
-                if (err) {
-                    setButton(true);
-                } else {
-                    setButton(false);
-                }
-            });
-            
-        }
-    });*/
-   
-   
-
+     
     if (room) {
         setRoom(room);
     } else {
@@ -117,7 +111,6 @@
     }
  }
  
-           
 function showVolume(el, volume) {
     if (!el) return;
     if (volume < -45) { // vary between -45 and -20
@@ -138,6 +131,11 @@ function setRoom(name) {
     $('body').addClass('active');
 }
 
+          
+/*- sendDirectlyToAll() broadcasts a message to all peers in the room via a dataChannel
+string channelLabel - the label for the dataChannel to send on
+string messageType - the key for the type of message being sent
+object payload - an arbitrary value or object to send to peers */
 function sendmessage(){
     var msg = document.getElementById("chat").value;
     chatlog.innerHTML += "</br> me: " + msg; 
@@ -145,9 +143,4 @@ function sendmessage(){
 }
 
           
-           
-
-/*- broadcasts a message to all peers in the room via a dataChannel
-string channelLabel - the label for the dataChannel to send on
-string messageType - the key for the type of message being sent
-object payload - an arbitrary value or object to send to peers */
+ 

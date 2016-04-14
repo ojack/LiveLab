@@ -1,16 +1,59 @@
-var express = require('express');
+//--------------------------------------------------
+//  Bi-Directional OSC messaging Websocket <-> UDP
+// example from: 
+//--------------------------------------------------
+var osc = require("osc"),
+    WebSocket = require("ws");
 
-var app = express();
+var getIPAddresses = function () {
+    var os = require("os"),
+    interfaces = os.networkInterfaces(),
+    ipAddresses = [];
 
-app.set('port', process.env.PORT || 2013);
-app.use(express.static(__dirname + '/public'));
+    for (var deviceName in interfaces){
+        var addresses = interfaces[deviceName];
 
-app.get('/', function(req, res) {
-		res.render('index');
+        for (var i = 0; i < addresses.length; i++) {
+            var addressInfo = addresses[i];
+
+            if (addressInfo.family === "IPv4" && !addressInfo.internal) {
+                ipAddresses.push(addressInfo.address);
+            }
+        }
+    }
+
+    return ipAddresses;
+};
+
+var udp = new osc.UDPPort({
+    localAddress: "0.0.0.0",
+    localPort: 7400,
+    remoteAddress: "127.0.0.1",
+    remotePort: 7500
 });
 
-var server = require('http').createServer(app);
-server.listen(app.get('port'), function() {
-  console.log('Express server listening on port ' + app.get('port'));
+udp.on("ready", function () {
+    var ipAddresses = getIPAddresses();
+    console.log("Listening for OSC over UDP.");
+    ipAddresses.forEach(function (address) {
+        console.log(" Host:", address + ", Port:", udp.options.localPort);
+    });
+    console.log("Broadcasting OSC over UDP to", udp.options.remoteAddress + ", Port:", udp.options.remotePort);
 });
 
+udp.open();
+
+var wss = new WebSocket.Server({
+    port: 8081
+});
+
+wss.on("connection", function (socket) {
+    console.log("A Web Socket connection has been established!");
+    var socketPort = new osc.WebSocketPort({
+        socket: socket
+    });
+
+    var relay = new osc.Relay(udp, socketPort, {
+        raw: true
+    });
+});
