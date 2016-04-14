@@ -1,6 +1,8 @@
-#Prototype for LiveLab, sending OSC messages over RTCdatachannels.
+##Prototype for LiveLab, sending OSC messages over RTCdatachannels
 
-##To run:
+Uses SimpleWebRTC as a sandbox signalling server, and osc.js for OSC parsing
+
+###To run:
 1. Clone git repository
 2. cd into folder and run <code>npm install</code>
 3. Make a note of port and IPs listed in command line
