@@ -4,6 +4,25 @@
 //--------------------------------------------------
 var osc = require("osc"),
     WebSocket = require("ws");
+var https = require('https');
+var fs = require('fs');
+var static = require('node-static');
+
+var options = {
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem')
+};
+
+var file = new static.Server('./public');
+
+var httpsServer = https.createServer(options, function (request, response) {
+  request.addListener('end', function () {
+        //
+        // Serve files!
+        //
+        file.serve(request, response);
+    }).resume();
+}).listen(8000);
 
 var getIPAddresses = function () {
     var os = require("os"),
@@ -44,7 +63,8 @@ udp.on("ready", function () {
 udp.open();
 
 var wss = new WebSocket.Server({
-    port: 8081
+    //port: 8081
+    server: httpsServer
 });
 
 wss.on("connection", function (socket) {
