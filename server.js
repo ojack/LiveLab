@@ -82,10 +82,43 @@ wss.on("connection", function (ws) {
         console.log(JSON.parse(data));
         var message = JSON.parse(data);
         if(message.type=="broadcastStream"){
-            console.log("add broadcast stream");
+            console.log("add local stream");
+            addUDPServer(data.port, function(data, error){
+
+            });
         }
   // flags.binary will be set if a binary data is received. 
   // flags.masked will be set if the data was masked. 
     });
 });
 
+function addUDPServer(port, wsS){
+    var udp = new osc.UDPPort({
+        localAddress: "0.0.0.0",
+        localPort: port
+       // remoteAddress: "127.0.0.1",
+       // remotePort: 7500
+    });
+
+
+    udp.on("raw", function(data, info){
+        console.log("received raw on port "+ port);
+        console.log(data);
+    });
+
+    udp.on("ready", function () {
+        var ipAddresses = getIPAddresses();
+        console.log("Listening for OSC over UDP.");
+        ipAddresses.forEach(function (address) {
+            console.log(" Host:", address + ", Port:", udp.options.localPort);
+        });
+    
+       // console.log("Broadcasting OSC over UDP to", udp.options.remoteAddress + ", Port:", udp.options.remotePort);
+    });
+
+
+    udp.on("error", function(error){
+        console.log(error);
+    });
+    udp.open();
+}
