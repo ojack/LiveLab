@@ -1,7 +1,8 @@
 var SimpleWebRTC = require('./webrtc/simplewebrtc');
+var LiveLabOsc = require('./LiveLabOsc')
 
-
- var webrtc, chatlog;
+var PORT_LOC = "wss://localhost:8000";
+ var webrtc, chatlog, osc;
  window.onload = function(){
      // grab the room from the URL
     var room = location.search && location.search.split('?')[1];
@@ -20,10 +21,10 @@ var SimpleWebRTC = require('./webrtc/simplewebrtc');
         autoAdjustMic: false
      });
 
-
+    osc = new LiveLabOsc(PORT_LOC, webrtc, document.body);
     //connect to server via websockets
-    var port = new osc.WebSocketPort({
-                url: "wss://localhost:8000"
+   /* var port = new osc.WebSocketPort({
+                url: portloc
             });
 
             port.on("message", function (oscMessage) {
@@ -32,7 +33,7 @@ var SimpleWebRTC = require('./webrtc/simplewebrtc');
                // console.log("message", oscMessage);
             });
 
-            port.open();
+            port.open();*/
 
        
         // when it's ready, join if we got a room from the URL

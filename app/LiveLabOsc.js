@@ -3,21 +3,25 @@
 function LiveLabOsc(port_loc, webrtc, container) {
      //connect to server via websockets
     this.ws = new WebSocket(port_loc);
-     var port = new osc.WebSocketPort({
+    /*var port = new osc.WebSocketPort({
         url: port_loc
-    });
+    });*/
 
   /*  port.on("message", function (oscMessage) {
         $("#osc").text(JSON.stringify(oscMessage, undefined, 2));
          webrtc.sendDirectlyToAll("osc", "osc", oscMessage) ; //name of data channel, type, information
                // console.log("message", oscMessage);
     });
-*/
+
     port.open();
 
-    this.port = port;
+    this.port = port;*/
     this.container = container;
     this.initBroadcastUI();
+
+}
+
+LiveLabOsc.prototype.addNewPort = function (port) {
 
 }
 
@@ -49,13 +53,18 @@ LiveLabOsc.prototype.initBroadcastUI = function () {
     }.bind(this);  
 };
 
-LiveLabOsc.prototype.addBroadcastStream = function(name, port){
+LiveLabOsc.prototype.addBroadcastStream = function(name, portNum){
    console.log(name);
-   console.log(this.port);
-   this.port.send({
+   console.log(portNum);
+   this.ws.send(JSON.stringify({
+    type: "broadcastStream",
+    name: name,
+    port: portNum
+}));
+ /*  this.port.send({
     address: "/newStream",
     args: [name, port]
-});
+});*/
 
 }
 

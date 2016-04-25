@@ -44,7 +44,7 @@ var getIPAddresses = function () {
     return ipAddresses;
 };
 
-var udp = new osc.UDPPort({
+/*var udp = new osc.UDPPort({
     localAddress: "0.0.0.0",
     localPort: 7400,
     remoteAddress: "127.0.0.1",
@@ -60,20 +60,32 @@ udp.on("ready", function () {
     console.log("Broadcasting OSC over UDP to", udp.options.remoteAddress + ", Port:", udp.options.remotePort);
 });
 
-udp.open();
+udp.open();*/
 
 var wss = new WebSocket.Server({
     //port: 8081
     server: httpsServer
 });
 
-wss.on("connection", function (socket) {
+wss.on("connection", function (ws) {
     console.log("A Web Socket connection has been established!");
-    var socketPort = new osc.WebSocketPort({
+
+   /* var socketPort = new osc.WebSocketPort({
         socket: socket
     });
 
     var relay = new osc.Relay(udp, socketPort, {
         raw: true
+    });*/
+    ws.on('message', function(data, flags) {
+        console.log("received data");
+        console.log(JSON.parse(data));
+        var message = JSON.parse(data);
+        if(message.type=="broadcastStream"){
+            console.log("add broadcast stream");
+        }
+  // flags.binary will be set if a binary data is received. 
+  // flags.masked will be set if the data was masked. 
     });
 });
+
