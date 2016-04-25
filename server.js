@@ -44,7 +44,7 @@ var getIPAddresses = function () {
     return ipAddresses;
 };
 
-var udp = new osc.UDPPort({
+/*var udp = new osc.UDPPort({
     localAddress: "0.0.0.0",
     localPort: 7400,
     remoteAddress: "127.0.0.1",
@@ -60,7 +60,7 @@ udp.on("ready", function () {
     console.log("Broadcasting OSC over UDP to", udp.options.remoteAddress + ", Port:", udp.options.remotePort);
 });
 
-udp.open();
+udp.open();*/
 
 var wss = new WebSocket.Server({
     //port: 8081
@@ -73,7 +73,16 @@ wss.on("connection", function (socket) {
         socket: socket
     });
 
-    var relay = new osc.Relay(udp, socketPort, {
-        raw: true
+    socketPort.on("message", function (oscMsg) {
+        console.log("An OSC Message was received!", oscMsg);
+        if(oscMsg.address == "/newStream"){
+            console.log("create stream");
+        }
     });
+
+   /* var relay = new osc.Relay(udp, socketPort, {
+        raw: true
+    });*/
 });
+
+

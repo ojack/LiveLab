@@ -1,7 +1,9 @@
-var SimpleWebRTC = require('./webrtc/simplewebrtc');
+var LOCAL_SOCKET = "wss://localhost:8000";
 
+var SimpleWebRTC = require('./libs/simplewebrtc');
+var LiveLabOsc = require('./LiveLabOsc');
 
- var webrtc, chatlog;
+ var webrtc, chatlog, oscChannel;
  window.onload = function(){
      // grab the room from the URL
     var room = location.search && location.search.split('?')[1];
@@ -20,20 +22,12 @@ var SimpleWebRTC = require('./webrtc/simplewebrtc');
         autoAdjustMic: false
      });
 
-
-    //connect to server via websockets
-    var port = new osc.WebSocketPort({
-                url: "wss://localhost:8000"
-            });
-
-            port.on("message", function (oscMessage) {
-                $("#osc").text(JSON.stringify(oscMessage, undefined, 2));
-                webrtc.sendDirectlyToAll("osc", "osc", oscMessage) ; //name of data channel, type, information
-               // console.log("message", oscMessage);
-            });
-
-            port.open();
-
+    // TO DO: ERROR CHECKING FOR WHETHER WEBSOCKETS ARE AVAILABLE
+    //Create html element for OSC ui
+    var streamContainer = document.createElement('div');
+    document.body.appendChild(streamContainer);   
+    oscChannel = new LiveLabOsc(LOCAL_SOCKET, webrtc, streamContainer);
+   
        
         // when it's ready, join if we got a room from the URL
     webrtc.on('readyToCall', function () {
@@ -126,7 +120,6 @@ function showVolume(el, volume) {
 }
 
 
-// Since we use this twice we put it here
 function setRoom(name) {
     $('#createRoom').remove();
     $('h1').text(name);
@@ -134,15 +127,5 @@ function setRoom(name) {
     $('body').addClass('active');
 }
 
-          
-/*- sendDirectlyToAll() broadcasts a message to all peers in the room via a dataChannel
-string channelLabel - the label for the dataChannel to send on
-string messageType - the key for the type of message being sent
-object payload - an arbitrary value or object to send to peers 
-function sendmessage(){
-    var msg = document.getElementById("chat").value;
-    chatlog.innerHTML += "</br> me: " + msg; 
-    webrtc.sendDirectlyToAll("simplewebrtc", "chat", msg) ;
-*/
 
           
