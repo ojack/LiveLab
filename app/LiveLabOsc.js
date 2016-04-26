@@ -1,28 +1,40 @@
+var streams = {};
 
-
-function LiveLabOsc(port_loc, webrtc, container) {
+function LiveLabOsc(port_loc, webrtc, container, base_url){
      //connect to server via websockets
-    this.ws = new WebSocket(port_loc);
-    /*var port = new osc.WebSocketPort({
-        url: port_loc
-    });*/
-
-  /*  port.on("message", function (oscMessage) {
-        $("#osc").text(JSON.stringify(oscMessage, undefined, 2));
-         webrtc.sendDirectlyToAll("osc", "osc", oscMessage) ; //name of data channel, type, information
-               // console.log("message", oscMessage);
-    });
-
-    port.open();
-
-    this.port = port;*/
+     var url = base_url + ":" + port_loc;
+    this.ws = new WebSocket(url);
+    this.ws.onmessage =  function(event){
+        console.log(event.data);
+        var info = JSON.parse(event.data);
+        if(info.type == "new channel"){
+            this.createChannel(parseInt(info.port), parseInt(info.udpPort));
+        }
+    }.bind(this);
     this.container = container;
+    this.base_url = base_url;
     this.initBroadcastUI();
 
 }
 
-LiveLabOsc.prototype.addNewPort = function (port) {
+//open new socket connection to receive  UDP stream
+LiveLabOsc.prototype.createChannel = function (socketPort, udpPort) {
+    console.log(" create a channel");
 
+   // console´
+    streams[udpPort].div.innerHTML = streams[udpPort].name + " listening on port " + udpPort;
+    var url = this.base_url + ":" + socketPort;
+       console.log(url);
+    var oscChannel = new osc.WebSocketPort({
+        url: url
+    });
+
+    oscChannel.on("message", function(oscMessage){
+        console.log(oscMessage);
+        streams[udpPort].div.innerHTML = streams[udpPort].name + "-" + udpPort + ": "+ JSON.stringify(oscMessage);
+        webrtc.sendDirectlyToAll("osc", "osc", oscMessage) ; //name of data channel, type, information
+    });
+    oscChannel.open();
 }
 
 LiveLabOsc.prototype.initBroadcastUI = function () {
@@ -48,7 +60,10 @@ LiveLabOsc.prototype.initBroadcastUI = function () {
         sendBtn.onclick = function(e){
             e.preventDefault();
             this.addBroadcastStream(stream_name.value, port.value);
-           // return null;
+            div.innerHTML = "Creating OSC server at port "+ parseInt(port.value);
+            streams[port.value] = {name: stream_name.value, div: div};
+            this.initBroadcastUI();
+                       // return null;
         }.bind(this);
     }.bind(this);  
 };

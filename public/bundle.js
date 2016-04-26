@@ -1,29 +1,41 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var streams = {};
 
-
-function LiveLabOsc(port_loc, webrtc, container) {
+function LiveLabOsc(port_loc, webrtc, container, base_url){
      //connect to server via websockets
-    this.ws = new WebSocket(port_loc);
-    /*var port = new osc.WebSocketPort({
-        url: port_loc
-    });*/
-
-  /*  port.on("message", function (oscMessage) {
-        $("#osc").text(JSON.stringify(oscMessage, undefined, 2));
-         webrtc.sendDirectlyToAll("osc", "osc", oscMessage) ; //name of data channel, type, information
-               // console.log("message", oscMessage);
-    });
-
-    port.open();
-
-    this.port = port;*/
+     var url = base_url + ":" + port_loc;
+    this.ws = new WebSocket(url);
+    this.ws.onmessage =  function(event){
+        console.log(event.data);
+        var info = JSON.parse(event.data);
+        if(info.type == "new channel"){
+            this.createChannel(parseInt(info.port), parseInt(info.udpPort));
+        }
+    }.bind(this);
     this.container = container;
+    this.base_url = base_url;
     this.initBroadcastUI();
 
 }
 
-LiveLabOsc.prototype.addNewPort = function (port) {
+//open new socket connection to receive  UDP stream
+LiveLabOsc.prototype.createChannel = function (socketPort, udpPort) {
+    console.log(" create a channel");
 
+   // console´
+    streams[udpPort].div.innerHTML = streams[udpPort].name + " listening on port " + udpPort;
+    var url = this.base_url + ":" + socketPort;
+       console.log(url);
+    var oscChannel = new osc.WebSocketPort({
+        url: url
+    });
+
+    oscChannel.on("message", function(oscMessage){
+        console.log(oscMessage);
+        streams[udpPort].div.innerHTML = streams[udpPort].name + "-" + udpPort + ": "+ JSON.stringify(oscMessage);
+        webrtc.sendDirectlyToAll("osc", "osc", oscMessage) ; //name of data channel, type, information
+    });
+    oscChannel.open();
 }
 
 LiveLabOsc.prototype.initBroadcastUI = function () {
@@ -49,7 +61,10 @@ LiveLabOsc.prototype.initBroadcastUI = function () {
         sendBtn.onclick = function(e){
             e.preventDefault();
             this.addBroadcastStream(stream_name.value, port.value);
-           // return null;
+            div.innerHTML = "Creating OSC server at port "+ parseInt(port.value);
+            streams[port.value] = {name: stream_name.value, div: div};
+            this.initBroadcastUI();
+                       // return null;
         }.bind(this);
     }.bind(this);  
 };
@@ -88,7 +103,9 @@ module.exports = LiveLabOsc;
 var SimpleWebRTC = require('./webrtc/simplewebrtc');
 var LiveLabOsc = require('./LiveLabOsc')
 
-var PORT_LOC = "wss://localhost:8000";
+var BASE_SOCKET_URL = "wss://localhost";
+var BASE_SOCKET_PORT = 8000;
+
  var webrtc, chatlog, osc;
  window.onload = function(){
      // grab the room from the URL
@@ -108,7 +125,7 @@ var PORT_LOC = "wss://localhost:8000";
         autoAdjustMic: false
      });
 
-    osc = new LiveLabOsc(PORT_LOC, webrtc, document.body);
+    osc = new LiveLabOsc(BASE_SOCKET_PORT, webrtc, document.body, BASE_SOCKET_URL);
     //connect to server via websockets
    /* var port = new osc.WebSocketPort({
                 url: portloc
