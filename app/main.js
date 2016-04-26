@@ -23,19 +23,12 @@ var BASE_SOCKET_PORT = 8000;
         autoAdjustMic: false
      });
 
-    osc = new LiveLabOsc(BASE_SOCKET_PORT, webrtc, document.body, BASE_SOCKET_URL);
+    //create div element for local osc streams
+    var streamDiv = document.createElement('div');
+    streamDiv.className = "stream-holder";
+    document.getElementById("localContainer").appendChild(streamDiv);
+    osc = new LiveLabOsc(BASE_SOCKET_PORT, webrtc, streamDiv, BASE_SOCKET_URL);
     //connect to server via websockets
-   /* var port = new osc.WebSocketPort({
-                url: portloc
-            });
-
-            port.on("message", function (oscMessage) {
-                $("#osc").text(JSON.stringify(oscMessage, undefined, 2));
-                webrtc.sendDirectlyToAll("osc", "osc", oscMessage) ; //name of data channel, type, information
-               // console.log("message", oscMessage);
-            });
-
-            port.open();*/
 
        
         // when it's ready, join if we got a room from the URL
