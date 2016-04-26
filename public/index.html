@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>SimpleWebRTC Demo</title>
+        <title>LiveLab</title>
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/skeleton.css">
     </head>
     <body>
         <h1 id="title">Start a room</h1>
@@ -32,6 +34,27 @@
                 height: 80%;
                 width: 200px;
                 padding: 10px;
+            }
+            .list-item{
+                margin: 5px;
+                padding: 5px;
+            }
+
+            .stream-holder{
+                position: absolute;
+                top: 350px;
+                left: 0px;
+                display: block;
+                color: #fff;
+                z-index: 100;
+            }
+
+            .list-item.active{
+                background-color: #333;
+            }
+
+            input[type="text"]{
+                color: #000;
             }
             html, body {
                 background-color: #000;

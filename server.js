@@ -113,8 +113,6 @@ function addSocketUDPConnection(socketPort, udpPort, name){
         ipAddresses.forEach(function (address) {
             console.log(" Host:", address + ", Port:", udpChannel.options.localPort);
         });
-    
-      // ws.send("Receiving data OSC over UDP to" + udp.options.remoteAddress + ", Port:" + udp.options.remotePort);
     });
 
     udpChannel.on("osc", function(packet, info){
@@ -127,7 +125,7 @@ function addSocketUDPConnection(socketPort, udpPort, name){
         var socketOscPort = new osc.WebSocketPort({
             socket: ws
         });
-       // ws.send("establishing handshake");
+    
          var relay = new osc.Relay(udpChannel, socketOscPort, {
             raw: true
         });

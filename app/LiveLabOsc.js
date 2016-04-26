@@ -1,4 +1,5 @@
-var streams = {};
+var streams = {}; //local streams being broadcast
+var peers = {};
 
 function LiveLabOsc(port_loc, webrtc, container, base_url){
      //connect to server via websockets
@@ -14,7 +15,7 @@ function LiveLabOsc(port_loc, webrtc, container, base_url){
     this.container = container;
     this.base_url = base_url;
     this.initBroadcastUI();
-
+    this.webrtc = webrtc;
 }
 
 //open new socket connection to receive  UDP stream
@@ -23,6 +24,7 @@ LiveLabOsc.prototype.createChannel = function (socketPort, udpPort) {
 
    // console´
     streams[udpPort].div.innerHTML = streams[udpPort].name + " listening on port " + udpPort;
+    streams[udpPort].div.className = "list-item";
     var url = this.base_url + ":" + socketPort;
        console.log(url);
     var oscChannel = new osc.WebSocketPort({
@@ -31,14 +33,15 @@ LiveLabOsc.prototype.createChannel = function (socketPort, udpPort) {
 
     oscChannel.on("message", function(oscMessage){
         console.log(oscMessage);
-        streams[udpPort].div.innerHTML = streams[udpPort].name + "-" + udpPort + ": "+ JSON.stringify(oscMessage);
-        webrtc.sendDirectlyToAll("osc", "osc", oscMessage) ; //name of data channel, type, information
-    });
+        streams[udpPort].div.innerHTML = streams[udpPort].name + "::" + udpPort + ": "+ JSON.stringify(oscMessage);
+        this.webrtc.sendDirectlyToAll( streams[udpPort].name, "osc", oscMessage) ; //name of data channel, type, information
+    }.bind(this));
     oscChannel.open();
 }
 
 LiveLabOsc.prototype.initBroadcastUI = function () {
     var div = document.createElement("div");
+    div.className = "list-item";
     var btn = document.createElement("BUTTON");
     var t = document.createTextNode("+ add OSC stream");       // Create a text node
     btn.appendChild(t);                                // Append the text to <button>
@@ -48,6 +51,7 @@ LiveLabOsc.prototype.initBroadcastUI = function () {
     btn.onclick = function(){
       //  console.log("button clicked");
         btn.style.display = "none";
+         div.className = "list-item active";
        var f = document.createElement("form");
         var stream_name = addInputField("stream_name", f);
         var port = addInputField("port", f);
@@ -63,6 +67,7 @@ LiveLabOsc.prototype.initBroadcastUI = function () {
             div.innerHTML = "Creating OSC server at port "+ parseInt(port.value);
             streams[port.value] = {name: stream_name.value, div: div};
             this.initBroadcastUI();
+             div.className = "list-item";
                        // return null;
         }.bind(this);
     }.bind(this);  
@@ -95,5 +100,35 @@ function addInputField(label, div){
      div.appendChild(i);
      return i;
 }
+
+LiveLabOsc.prototype.addPeer = function(peer_id, div){
+    peers[peer_id] = {div: div, streams: {}};
+}
+
+LiveLabOsc.prototype.receivedRemoteStream = function(data, peer_id, label){
+    /*console.log(data);
+    console.log(label);
+    console.log(peer_id);
+    console.log(peers);*/
+   // var peerDiv = 
+    console.log(peers);
+    if(peers[peer_id].streams.hasOwnProperty(label)){
+        console.log("add data");
+         peers[peer_id].streams[label].innerHTML = JSON.stringify(data.payload);
+    } else {
+        var newStream = document.createElement('div');
+        var newSpan = document.createElement('span');
+        newSpan.innerHTML = label + ":";
+        var streamInput = document.createElement('span');
+        streamInput.innerHTML = JSON.stringify(data.payload);
+        newStream.appendChild(newSpan);
+        newStream.appendChild(streamInput);
+        peers[peer_id].div.appendChild(newStream);
+        peers[peer_id].streams[label] = streamInput;
+    }
+    //peers[peer_id].div.innerHTML = JSON.stringify(data.payload);
+
+    // $("#osc-remote").text(JSON.stringify(data.payload, undefined, 2));
+}; 
 
 module.exports = LiveLabOsc;

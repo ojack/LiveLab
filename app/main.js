@@ -51,7 +51,8 @@ var BASE_SOCKET_PORT = 8000;
             chatlog.innerHTML += "</br>"+peer.id + ": " + data.payload; 
             console.log(data);
         }  else if(data.type=="osc"){
-                $("#osc-remote").text(JSON.stringify(data.payload, undefined, 2));
+                osc.receivedRemoteStream(data, peer.id, label);
+               
         }
     });
 
@@ -71,6 +72,10 @@ var BASE_SOCKET_PORT = 8000;
                 video.style.height = video.videoHeight + 'px';
             };
             d.appendChild(vol);
+            var streamDiv = document.createElement('div');
+            streamDiv.className = "stream-holder";
+            osc.addPeer(peer.id, streamDiv);
+            d.appendChild(streamDiv);
             remotes.appendChild(d);
         }
     });
