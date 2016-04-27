@@ -574,7 +574,7 @@ Peer.prototype.sendFile = function (file) {
 
 module.exports = Peer;
 
-},{"filetransfer":13,"rtcpeerconnection":66,"util":12,"webrtcsupport":114,"wildemitter":115}],4:[function(require,module,exports){
+},{"filetransfer":9,"rtcpeerconnection":64,"util":118,"webrtcsupport":112,"wildemitter":113}],4:[function(require,module,exports){
 var WebRTC = require('./webrtc');
 var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
@@ -1040,7 +1040,7 @@ SimpleWebRTC.prototype.sendFile = function () {
 
 module.exports = SimpleWebRTC;
 
-},{"./socketioconnection":5,"./webrtc":6,"attachmediastream":7,"mockconsole":28,"webrtcsupport":114,"wildemitter":115}],5:[function(require,module,exports){
+},{"./socketioconnection":5,"./webrtc":6,"attachmediastream":7,"mockconsole":25,"webrtcsupport":112,"wildemitter":113}],5:[function(require,module,exports){
 var io = require('socket.io-client');
 
 function SocketIoConnection(config) {
@@ -1065,7 +1065,7 @@ SocketIoConnection.prototype.disconnect = function () {
 
 module.exports = SocketIoConnection;
 
-},{"socket.io-client":67}],6:[function(require,module,exports){
+},{"socket.io-client":65}],6:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var WildEmitter = require('wildemitter');
@@ -1226,7 +1226,7 @@ WebRTC.prototype.sendDirectlyToAll = function (channel, message, payload) {
 
 module.exports = WebRTC;
 
-},{"./peer":3,"localmedia":14,"mockconsole":28,"util":12,"webrtcsupport":114,"wildemitter":115}],7:[function(require,module,exports){
+},{"./peer":3,"localmedia":10,"mockconsole":25,"util":118,"webrtcsupport":112,"wildemitter":113}],7:[function(require,module,exports){
 var adapter = require('webrtc-adapter-test');
 module.exports = function (stream, el, options) {
     var item;
@@ -3049,721 +3049,6 @@ if (typeof module !== 'undefined') {
 }
 
 },{}],9:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],10:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = setTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    clearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        setTimeout(drainQueue, 0);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],11:[function(require,module,exports){
-module.exports = function isBuffer(arg) {
-  return arg && typeof arg === 'object'
-    && typeof arg.copy === 'function'
-    && typeof arg.fill === 'function'
-    && typeof arg.readUInt8 === 'function';
-}
-},{}],12:[function(require,module,exports){
-(function (process,global){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-var formatRegExp = /%[sdj%]/g;
-exports.format = function(f) {
-  if (!isString(f)) {
-    var objects = [];
-    for (var i = 0; i < arguments.length; i++) {
-      objects.push(inspect(arguments[i]));
-    }
-    return objects.join(' ');
-  }
-
-  var i = 1;
-  var args = arguments;
-  var len = args.length;
-  var str = String(f).replace(formatRegExp, function(x) {
-    if (x === '%%') return '%';
-    if (i >= len) return x;
-    switch (x) {
-      case '%s': return String(args[i++]);
-      case '%d': return Number(args[i++]);
-      case '%j':
-        try {
-          return JSON.stringify(args[i++]);
-        } catch (_) {
-          return '[Circular]';
-        }
-      default:
-        return x;
-    }
-  });
-  for (var x = args[i]; i < len; x = args[++i]) {
-    if (isNull(x) || !isObject(x)) {
-      str += ' ' + x;
-    } else {
-      str += ' ' + inspect(x);
-    }
-  }
-  return str;
-};
-
-
-// Mark that a method should not be used.
-// Returns a modified function which warns once by default.
-// If --no-deprecation is set, then it is a no-op.
-exports.deprecate = function(fn, msg) {
-  // Allow for deprecating things in the process of starting up.
-  if (isUndefined(global.process)) {
-    return function() {
-      return exports.deprecate(fn, msg).apply(this, arguments);
-    };
-  }
-
-  if (process.noDeprecation === true) {
-    return fn;
-  }
-
-  var warned = false;
-  function deprecated() {
-    if (!warned) {
-      if (process.throwDeprecation) {
-        throw new Error(msg);
-      } else if (process.traceDeprecation) {
-        console.trace(msg);
-      } else {
-        console.error(msg);
-      }
-      warned = true;
-    }
-    return fn.apply(this, arguments);
-  }
-
-  return deprecated;
-};
-
-
-var debugs = {};
-var debugEnviron;
-exports.debuglog = function(set) {
-  if (isUndefined(debugEnviron))
-    debugEnviron = process.env.NODE_DEBUG || '';
-  set = set.toUpperCase();
-  if (!debugs[set]) {
-    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
-      var pid = process.pid;
-      debugs[set] = function() {
-        var msg = exports.format.apply(exports, arguments);
-        console.error('%s %d: %s', set, pid, msg);
-      };
-    } else {
-      debugs[set] = function() {};
-    }
-  }
-  return debugs[set];
-};
-
-
-/**
- * Echos the value of a value. Trys to print the value out
- * in the best way possible given the different types.
- *
- * @param {Object} obj The object to print out.
- * @param {Object} opts Optional options object that alters the output.
- */
-/* legacy: obj, showHidden, depth, colors*/
-function inspect(obj, opts) {
-  // default options
-  var ctx = {
-    seen: [],
-    stylize: stylizeNoColor
-  };
-  // legacy...
-  if (arguments.length >= 3) ctx.depth = arguments[2];
-  if (arguments.length >= 4) ctx.colors = arguments[3];
-  if (isBoolean(opts)) {
-    // legacy...
-    ctx.showHidden = opts;
-  } else if (opts) {
-    // got an "options" object
-    exports._extend(ctx, opts);
-  }
-  // set default options
-  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
-  if (isUndefined(ctx.depth)) ctx.depth = 2;
-  if (isUndefined(ctx.colors)) ctx.colors = false;
-  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
-  if (ctx.colors) ctx.stylize = stylizeWithColor;
-  return formatValue(ctx, obj, ctx.depth);
-}
-exports.inspect = inspect;
-
-
-// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-inspect.colors = {
-  'bold' : [1, 22],
-  'italic' : [3, 23],
-  'underline' : [4, 24],
-  'inverse' : [7, 27],
-  'white' : [37, 39],
-  'grey' : [90, 39],
-  'black' : [30, 39],
-  'blue' : [34, 39],
-  'cyan' : [36, 39],
-  'green' : [32, 39],
-  'magenta' : [35, 39],
-  'red' : [31, 39],
-  'yellow' : [33, 39]
-};
-
-// Don't use 'blue' not visible on cmd.exe
-inspect.styles = {
-  'special': 'cyan',
-  'number': 'yellow',
-  'boolean': 'yellow',
-  'undefined': 'grey',
-  'null': 'bold',
-  'string': 'green',
-  'date': 'magenta',
-  // "name": intentionally not styling
-  'regexp': 'red'
-};
-
-
-function stylizeWithColor(str, styleType) {
-  var style = inspect.styles[styleType];
-
-  if (style) {
-    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
-           '\u001b[' + inspect.colors[style][1] + 'm';
-  } else {
-    return str;
-  }
-}
-
-
-function stylizeNoColor(str, styleType) {
-  return str;
-}
-
-
-function arrayToHash(array) {
-  var hash = {};
-
-  array.forEach(function(val, idx) {
-    hash[val] = true;
-  });
-
-  return hash;
-}
-
-
-function formatValue(ctx, value, recurseTimes) {
-  // Provide a hook for user-specified inspect functions.
-  // Check that value is an object with an inspect function on it
-  if (ctx.customInspect &&
-      value &&
-      isFunction(value.inspect) &&
-      // Filter out the util module, it's inspect function is special
-      value.inspect !== exports.inspect &&
-      // Also filter out any prototype objects using the circular check.
-      !(value.constructor && value.constructor.prototype === value)) {
-    var ret = value.inspect(recurseTimes, ctx);
-    if (!isString(ret)) {
-      ret = formatValue(ctx, ret, recurseTimes);
-    }
-    return ret;
-  }
-
-  // Primitive types cannot have properties
-  var primitive = formatPrimitive(ctx, value);
-  if (primitive) {
-    return primitive;
-  }
-
-  // Look up the keys of the object.
-  var keys = Object.keys(value);
-  var visibleKeys = arrayToHash(keys);
-
-  if (ctx.showHidden) {
-    keys = Object.getOwnPropertyNames(value);
-  }
-
-  // IE doesn't make error fields non-enumerable
-  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
-  if (isError(value)
-      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
-    return formatError(value);
-  }
-
-  // Some type of object without properties can be shortcutted.
-  if (keys.length === 0) {
-    if (isFunction(value)) {
-      var name = value.name ? ': ' + value.name : '';
-      return ctx.stylize('[Function' + name + ']', 'special');
-    }
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    }
-    if (isDate(value)) {
-      return ctx.stylize(Date.prototype.toString.call(value), 'date');
-    }
-    if (isError(value)) {
-      return formatError(value);
-    }
-  }
-
-  var base = '', array = false, braces = ['{', '}'];
-
-  // Make Array say that they are Array
-  if (isArray(value)) {
-    array = true;
-    braces = ['[', ']'];
-  }
-
-  // Make functions say that they are functions
-  if (isFunction(value)) {
-    var n = value.name ? ': ' + value.name : '';
-    base = ' [Function' + n + ']';
-  }
-
-  // Make RegExps say that they are RegExps
-  if (isRegExp(value)) {
-    base = ' ' + RegExp.prototype.toString.call(value);
-  }
-
-  // Make dates with properties first say the date
-  if (isDate(value)) {
-    base = ' ' + Date.prototype.toUTCString.call(value);
-  }
-
-  // Make error with message first say the error
-  if (isError(value)) {
-    base = ' ' + formatError(value);
-  }
-
-  if (keys.length === 0 && (!array || value.length == 0)) {
-    return braces[0] + base + braces[1];
-  }
-
-  if (recurseTimes < 0) {
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    } else {
-      return ctx.stylize('[Object]', 'special');
-    }
-  }
-
-  ctx.seen.push(value);
-
-  var output;
-  if (array) {
-    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
-  } else {
-    output = keys.map(function(key) {
-      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
-    });
-  }
-
-  ctx.seen.pop();
-
-  return reduceToSingleString(output, base, braces);
-}
-
-
-function formatPrimitive(ctx, value) {
-  if (isUndefined(value))
-    return ctx.stylize('undefined', 'undefined');
-  if (isString(value)) {
-    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
-                                             .replace(/'/g, "\\'")
-                                             .replace(/\\"/g, '"') + '\'';
-    return ctx.stylize(simple, 'string');
-  }
-  if (isNumber(value))
-    return ctx.stylize('' + value, 'number');
-  if (isBoolean(value))
-    return ctx.stylize('' + value, 'boolean');
-  // For some reason typeof null is "object", so special case here.
-  if (isNull(value))
-    return ctx.stylize('null', 'null');
-}
-
-
-function formatError(value) {
-  return '[' + Error.prototype.toString.call(value) + ']';
-}
-
-
-function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
-  var output = [];
-  for (var i = 0, l = value.length; i < l; ++i) {
-    if (hasOwnProperty(value, String(i))) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          String(i), true));
-    } else {
-      output.push('');
-    }
-  }
-  keys.forEach(function(key) {
-    if (!key.match(/^\d+$/)) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          key, true));
-    }
-  });
-  return output;
-}
-
-
-function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
-  var name, str, desc;
-  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
-  if (desc.get) {
-    if (desc.set) {
-      str = ctx.stylize('[Getter/Setter]', 'special');
-    } else {
-      str = ctx.stylize('[Getter]', 'special');
-    }
-  } else {
-    if (desc.set) {
-      str = ctx.stylize('[Setter]', 'special');
-    }
-  }
-  if (!hasOwnProperty(visibleKeys, key)) {
-    name = '[' + key + ']';
-  }
-  if (!str) {
-    if (ctx.seen.indexOf(desc.value) < 0) {
-      if (isNull(recurseTimes)) {
-        str = formatValue(ctx, desc.value, null);
-      } else {
-        str = formatValue(ctx, desc.value, recurseTimes - 1);
-      }
-      if (str.indexOf('\n') > -1) {
-        if (array) {
-          str = str.split('\n').map(function(line) {
-            return '  ' + line;
-          }).join('\n').substr(2);
-        } else {
-          str = '\n' + str.split('\n').map(function(line) {
-            return '   ' + line;
-          }).join('\n');
-        }
-      }
-    } else {
-      str = ctx.stylize('[Circular]', 'special');
-    }
-  }
-  if (isUndefined(name)) {
-    if (array && key.match(/^\d+$/)) {
-      return str;
-    }
-    name = JSON.stringify('' + key);
-    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
-      name = name.substr(1, name.length - 2);
-      name = ctx.stylize(name, 'name');
-    } else {
-      name = name.replace(/'/g, "\\'")
-                 .replace(/\\"/g, '"')
-                 .replace(/(^"|"$)/g, "'");
-      name = ctx.stylize(name, 'string');
-    }
-  }
-
-  return name + ': ' + str;
-}
-
-
-function reduceToSingleString(output, base, braces) {
-  var numLinesEst = 0;
-  var length = output.reduce(function(prev, cur) {
-    numLinesEst++;
-    if (cur.indexOf('\n') >= 0) numLinesEst++;
-    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
-  }, 0);
-
-  if (length > 60) {
-    return braces[0] +
-           (base === '' ? '' : base + '\n ') +
-           ' ' +
-           output.join(',\n  ') +
-           ' ' +
-           braces[1];
-  }
-
-  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
-}
-
-
-// NOTE: These type checking functions intentionally don't use `instanceof`
-// because it is fragile and can be easily faked with `Object.create()`.
-function isArray(ar) {
-  return Array.isArray(ar);
-}
-exports.isArray = isArray;
-
-function isBoolean(arg) {
-  return typeof arg === 'boolean';
-}
-exports.isBoolean = isBoolean;
-
-function isNull(arg) {
-  return arg === null;
-}
-exports.isNull = isNull;
-
-function isNullOrUndefined(arg) {
-  return arg == null;
-}
-exports.isNullOrUndefined = isNullOrUndefined;
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-exports.isNumber = isNumber;
-
-function isString(arg) {
-  return typeof arg === 'string';
-}
-exports.isString = isString;
-
-function isSymbol(arg) {
-  return typeof arg === 'symbol';
-}
-exports.isSymbol = isSymbol;
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-exports.isUndefined = isUndefined;
-
-function isRegExp(re) {
-  return isObject(re) && objectToString(re) === '[object RegExp]';
-}
-exports.isRegExp = isRegExp;
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-exports.isObject = isObject;
-
-function isDate(d) {
-  return isObject(d) && objectToString(d) === '[object Date]';
-}
-exports.isDate = isDate;
-
-function isError(e) {
-  return isObject(e) &&
-      (objectToString(e) === '[object Error]' || e instanceof Error);
-}
-exports.isError = isError;
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-exports.isFunction = isFunction;
-
-function isPrimitive(arg) {
-  return arg === null ||
-         typeof arg === 'boolean' ||
-         typeof arg === 'number' ||
-         typeof arg === 'string' ||
-         typeof arg === 'symbol' ||  // ES6 symbol
-         typeof arg === 'undefined';
-}
-exports.isPrimitive = isPrimitive;
-
-exports.isBuffer = require('./support/isBuffer');
-
-function objectToString(o) {
-  return Object.prototype.toString.call(o);
-}
-
-
-function pad(n) {
-  return n < 10 ? '0' + n.toString(10) : n.toString(10);
-}
-
-
-var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-              'Oct', 'Nov', 'Dec'];
-
-// 26 Feb 16:19:34
-function timestamp() {
-  var d = new Date();
-  var time = [pad(d.getHours()),
-              pad(d.getMinutes()),
-              pad(d.getSeconds())].join(':');
-  return [d.getDate(), months[d.getMonth()], time].join(' ');
-}
-
-
-// log is just a thin wrapper to console.log that prepends a timestamp
-exports.log = function() {
-  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
-};
-
-
-/**
- * Inherit the prototype methods from one constructor into another.
- *
- * The Function.prototype.inherits from lang.js rewritten as a standalone
- * function (not on Function.prototype). NOTE: If this file is to be loaded
- * during bootstrapping this function needs to be rewritten using some native
- * functions as prototype setup using normal JavaScript does not work as
- * expected during bootstrapping (see mirror.js in r114903).
- *
- * @param {function} ctor Constructor function which needs to inherit the
- *     prototype.
- * @param {function} superCtor Constructor function to inherit prototype from.
- */
-exports.inherits = require('inherits');
-
-exports._extend = function(origin, add) {
-  // Don't do anything if add isn't an object
-  if (!add || !isObject(add)) return origin;
-
-  var keys = Object.keys(add);
-  var i = keys.length;
-  while (i--) {
-    origin[keys[i]] = add[keys[i]];
-  }
-  return origin;
-};
-
-function hasOwnProperty(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
-}
-
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":11,"_process":10,"inherits":9}],13:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var util = require('util');
 
@@ -3851,7 +3136,7 @@ module.exports.support = typeof window !== 'undefined' && window && window.File 
 module.exports.Sender = Sender;
 module.exports.Receiver = Receiver;
 
-},{"util":12,"wildemitter":115}],14:[function(require,module,exports){
+},{"util":118,"wildemitter":113}],10:[function(require,module,exports){
 var util = require('util');
 var hark = require('hark');
 var webrtc = require('webrtcsupport');
@@ -4153,7 +3438,7 @@ Object.defineProperty(LocalMedia.prototype, 'localScreen', {
 
 module.exports = LocalMedia;
 
-},{"getscreenmedia":15,"getusermedia":16,"hark":25,"mediastream-gain":26,"mockconsole":28,"util":12,"webrtcsupport":27,"wildemitter":115}],15:[function(require,module,exports){
+},{"getscreenmedia":11,"getusermedia":12,"hark":22,"mediastream-gain":23,"mockconsole":25,"util":118,"webrtcsupport":24,"wildemitter":113}],11:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -4325,7 +3610,7 @@ window.addEventListener('message', function (event) {
     }
 });
 
-},{"getusermedia":16}],16:[function(require,module,exports){
+},{"getusermedia":12}],12:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg used for navigator.getUserMedia shim
 var adapter = require('webrtc-adapter');
 
@@ -4408,7 +3693,7 @@ module.exports = function (constraints, cb) {
     });
 };
 
-},{"webrtc-adapter":17}],17:[function(require,module,exports){
+},{"webrtc-adapter":13}],13:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -4416,6 +3701,8 @@ module.exports = function (constraints, cb) {
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+ /* eslint-env node */
+
 'use strict';
 
 // Shimming starts here.
@@ -4428,25 +3715,27 @@ module.exports = function (constraints, cb) {
   module.exports.extractVersion = require('./utils').extractVersion;
   module.exports.disableLog = require('./utils').disableLog;
 
-  // Uncomment if you do not want any logging at all including the switch
-  // statement below. Can also be turned off in the browser via
-  // adapter.disableLog(true) but then logging from the switch statement below
-  // will still appear.
-  //require('./utils').disableLog(true);
+  // Comment out the line below if you want logging to occur, including logging
+  // for the switch statement below. Can also be turned on in the browser via
+  // adapter.disableLog(false), but then logging from the switch statement below
+  // will not appear.
+  require('./utils').disableLog(true);
 
   // Browser shims.
   var chromeShim = require('./chrome/chrome_shim') || null;
   var edgeShim = require('./edge/edge_shim') || null;
   var firefoxShim = require('./firefox/firefox_shim') || null;
+  var safariShim = require('./safari/safari_shim') || null;
 
   // Shim browser if found.
   switch (browserDetails.browser) {
+    case 'opera': // fallthrough as it uses chrome shims
     case 'chrome':
       if (!chromeShim || !chromeShim.shimPeerConnection) {
         logging('Chrome shim is not included in this adapter release.');
         return;
       }
-      logging('adapter.js shimming chrome!');
+      logging('adapter.js shimming chrome.');
       // Export to the adapter global object visible in the browser.
       module.exports.browserShim = chromeShim;
 
@@ -4455,23 +3744,12 @@ module.exports = function (constraints, cb) {
       chromeShim.shimPeerConnection();
       chromeShim.shimOnTrack();
       break;
-    case 'edge':
-      if (!edgeShim || !edgeShim.shimPeerConnection) {
-        logging('MS edge shim is not included in this adapter release.');
-        return;
-      }
-      logging('adapter.js shimming edge!');
-      // Export to the adapter global object visible in the browser.
-      module.exports.browserShim = edgeShim;
-
-      edgeShim.shimPeerConnection();
-      break;
     case 'firefox':
       if (!firefoxShim || !firefoxShim.shimPeerConnection) {
         logging('Firefox shim is not included in this adapter release.');
         return;
       }
-      logging('adapter.js shimming firefox!');
+      logging('adapter.js shimming firefox.');
       // Export to the adapter global object visible in the browser.
       module.exports.browserShim = firefoxShim;
 
@@ -4480,12 +3758,34 @@ module.exports = function (constraints, cb) {
       firefoxShim.shimPeerConnection();
       firefoxShim.shimOnTrack();
       break;
+    case 'edge':
+      if (!edgeShim || !edgeShim.shimPeerConnection) {
+        logging('MS edge shim is not included in this adapter release.');
+        return;
+      }
+      logging('adapter.js shimming edge.');
+      // Export to the adapter global object visible in the browser.
+      module.exports.browserShim = edgeShim;
+
+      edgeShim.shimPeerConnection();
+      break;
+    case 'safari':
+      if (!safariShim) {
+        logging('Safari shim is not included in this adapter release.');
+        return;
+      }
+      logging('adapter.js shimming safari.');
+      // Export to the adapter global object visible in the browser.
+      module.exports.browserShim = safariShim;
+
+      safariShim.shimGetUserMedia();
+      break;
     default:
       logging('Unsupported browser!');
   }
 })();
 
-},{"./chrome/chrome_shim":18,"./edge/edge_shim":21,"./firefox/firefox_shim":22,"./utils":24}],18:[function(require,module,exports){
+},{"./chrome/chrome_shim":14,"./edge/edge_shim":17,"./firefox/firefox_shim":18,"./safari/safari_shim":20,"./utils":21}],14:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -4493,6 +3793,7 @@ module.exports = function (constraints, cb) {
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+ /* eslint-env node */
 'use strict';
 var logging = require('../utils.js').log;
 var browserDetails = require('../utils.js').browserDetails;
@@ -4502,7 +3803,9 @@ var chromeShim = {
     if (typeof window === 'object' && window.RTCPeerConnection && !('ontrack' in
         window.RTCPeerConnection.prototype)) {
       Object.defineProperty(window.RTCPeerConnection.prototype, 'ontrack', {
-        get: function() { return this._ontrack; },
+        get: function() {
+          return this._ontrack;
+        },
         set: function(f) {
           var self = this;
           if (this._ontrack) {
@@ -4511,8 +3814,8 @@ var chromeShim = {
           }
           this.addEventListener('track', this._ontrack = f);
           this.addEventListener('addstream', this._ontrackpoly = function(e) {
-            // onaddstream does not fire when a track is added to an existing stream.
-            // but stream.onaddtrack is implemented so we use that
+            // onaddstream does not fire when a track is added to an existing
+            // stream. But stream.onaddtrack is implemented so we use that.
             e.stream.addEventListener('addtrack', function(te) {
               var event = new Event('track');
               event.track = te.track;
@@ -4555,8 +3858,8 @@ var chromeShim = {
               return;
             }
             this.src = URL.createObjectURL(stream);
-            // We need to recreate the blob url when a track is added or removed.
-            // Doing it manually since we want to avoid a recursion.
+            // We need to recreate the blob url when a track is added or
+            // removed. Doing it manually since we want to avoid a recursion.
             stream.addEventListener('addtrack', function() {
               if (self.src) {
                 URL.revokeObjectURL(self.src);
@@ -4585,9 +3888,9 @@ var chromeShim = {
         pcConfig.iceTransports = pcConfig.iceTransportPolicy;
       }
 
-      var pc = new webkitRTCPeerConnection(pcConfig, pcConstraints); // jscs:ignore requireCapitalizedConstructors
+      var pc = new webkitRTCPeerConnection(pcConfig, pcConstraints);
       var origGetStats = pc.getStats.bind(pc);
-      pc.getStats = function(selector, successCallback, errorCallback) { // jshint ignore: line
+      pc.getStats = function(selector, successCallback, errorCallback) {
         var self = this;
         var args = arguments;
 
@@ -4627,8 +3930,8 @@ var chromeShim = {
         // promise-support
         return new Promise(function(resolve, reject) {
           if (args.length === 1 && typeof selector === 'object') {
-            origGetStats.apply(self, [
-                function(response) {
+            origGetStats.apply(self,
+                [function(response) {
                   resolve.apply(null, [fixChromeStats_(response)]);
                 }, reject]);
           } else {
@@ -4645,12 +3948,7 @@ var chromeShim = {
     if (webkitRTCPeerConnection.generateCertificate) {
       Object.defineProperty(window.RTCPeerConnection, 'generateCertificate', {
         get: function() {
-          if (arguments.length) {
-            return webkitRTCPeerConnection.generateCertificate.apply(null,
-                arguments);
-          } else {
-            return webkitRTCPeerConnection.generateCertificate;
-          }
+          return webkitRTCPeerConnection.generateCertificate;
         }
       });
     }
@@ -4666,36 +3964,37 @@ var chromeShim = {
           return new Promise(function(resolve, reject) {
             nativeMethod.apply(self, [resolve, reject, opts]);
           });
-        } else {
-          return nativeMethod.apply(this, arguments);
         }
+        return nativeMethod.apply(this, arguments);
       };
     });
 
-    ['setLocalDescription', 'setRemoteDescription',
-        'addIceCandidate'].forEach(function(method) {
-      var nativeMethod = webkitRTCPeerConnection.prototype[method];
-      webkitRTCPeerConnection.prototype[method] = function() {
-        var args = arguments;
-        var self = this;
-        return new Promise(function(resolve, reject) {
-          nativeMethod.apply(self, [args[0],
-              function() {
-                resolve();
-                if (args.length >= 2) {
-                  args[1].apply(null, []);
-                }
-              },
-              function(err) {
-                reject(err);
-                if (args.length >= 3) {
-                  args[2].apply(null, [err]);
-                }
-              }]
-            );
+    ['setLocalDescription', 'setRemoteDescription', 'addIceCandidate']
+        .forEach(function(method) {
+          var nativeMethod = webkitRTCPeerConnection.prototype[method];
+          webkitRTCPeerConnection.prototype[method] = function() {
+            var args = arguments;
+            var self = this;
+            args[0] = new ((method === 'addIceCandidate')?
+                RTCIceCandidate : RTCSessionDescription)(args[0]);
+            return new Promise(function(resolve, reject) {
+              nativeMethod.apply(self, [args[0],
+                  function() {
+                    resolve();
+                    if (args.length >= 2) {
+                      args[1].apply(null, []);
+                    }
+                  },
+                  function(err) {
+                    reject(err);
+                    if (args.length >= 3) {
+                      args[2].apply(null, [err]);
+                    }
+                  }]
+                );
+            });
+          };
         });
-      };
-    });
   },
 
   // Attach a media stream to an element.
@@ -4731,7 +4030,7 @@ module.exports = {
   reattachMediaStream: chromeShim.reattachMediaStream
 };
 
-},{"../utils.js":24,"./getusermedia":19}],19:[function(require,module,exports){
+},{"../utils.js":21,"./getusermedia":15}],15:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -4739,6 +4038,7 @@ module.exports = {
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+ /* eslint-env node */
 'use strict';
 var logging = require('../utils.js').log;
 
@@ -4796,6 +4096,7 @@ module.exports = function() {
   };
 
   var getUserMedia_ = function(constraints, onSuccess, onError) {
+    constraints = JSON.parse(JSON.stringify(constraints));
     if (constraints.audio) {
       constraints.audio = constraintsToChrome_(constraints.audio);
     }
@@ -4815,20 +4116,22 @@ module.exports = function() {
   };
 
   if (!navigator.mediaDevices) {
-    navigator.mediaDevices = {getUserMedia: getUserMediaPromise_,
-                             enumerateDevices: function() {
-      return new Promise(function(resolve) {
-        var kinds = {audio: 'audioinput', video: 'videoinput'};
-        return MediaStreamTrack.getSources(function(devices) {
-          resolve(devices.map(function(device) {
-            return {label: device.label,
-                    kind: kinds[device.kind],
-                    deviceId: device.id,
-                    groupId: ''};
-          }));
+    navigator.mediaDevices = {
+      getUserMedia: getUserMediaPromise_,
+      enumerateDevices: function() {
+        return new Promise(function(resolve) {
+          var kinds = {audio: 'audioinput', video: 'videoinput'};
+          return MediaStreamTrack.getSources(function(devices) {
+            resolve(devices.map(function(device) {
+              return {label: device.label,
+                      kind: kinds[device.kind],
+                      deviceId: device.id,
+                      groupId: ''};
+            }));
+          });
         });
-      });
-    }};
+      }
+    };
   }
 
   // A shim for getUserMedia method on the mediaDevices object.
@@ -4868,7 +4171,7 @@ module.exports = function() {
   }
 };
 
-},{"../utils.js":24}],20:[function(require,module,exports){
+},{"../utils.js":21}],16:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -4876,6 +4179,7 @@ module.exports = function() {
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+ /* eslint-env node */
 'use strict';
 
 // SDP helpers.
@@ -4898,7 +4202,7 @@ SDPUtils.splitLines = function(blob) {
 };
 // Splits SDP into sessionpart and mediasections. Ensures CRLF.
 SDPUtils.splitSections = function(blob) {
-  var parts = blob.split('\r\nm=');
+  var parts = blob.split('\nm=');
   return parts.map(function(part, index) {
     return (index > 0 ? 'm=' + part : part).trim() + '\r\n';
   });
@@ -4912,7 +4216,8 @@ SDPUtils.matchPrefix = function(blob, prefix) {
 };
 
 // Parses an ICE candidate line. Sample input:
-// candidate:702786350 2 udp 41819902 8.8.8.8 60769 typ relay raddr 8.8.8.8 rport 55996"
+// candidate:702786350 2 udp 41819902 8.8.8.8 60769 typ relay raddr 8.8.8.8
+// rport 55996"
 SDPUtils.parseCandidate = function(line) {
   var parts;
   // Parse both variants.
@@ -4990,11 +4295,13 @@ SDPUtils.parseRtpMap = function(line) {
 
   parsed.name = parts[0];
   parsed.clockRate = parseInt(parts[1], 10); // was: clockrate
-  parsed.numChannels = parts.length === 3 ? parseInt(parts[2], 10) : 1; // was: channels
+  // was: channels
+  parsed.numChannels = parts.length === 3 ? parseInt(parts[2], 10) : 1;
   return parsed;
 };
 
-// Generate an a=rtpmap line from RTCRtpCodecCapability or RTCRtpCodecParameters.
+// Generate an a=rtpmap line from RTCRtpCodecCapability or
+// RTCRtpCodecParameters.
 SDPUtils.writeRtpMap = function(codec) {
   var pt = codec.payloadType;
   if (codec.preferredPayloadType !== undefined) {
@@ -5014,7 +4321,8 @@ SDPUtils.parseExtmap = function(line) {
   };
 };
 
-// Generates a=extmap line from RTCRtpHeaderExtensionParameters or RTCRtpHeaderExtension.
+// Generates a=extmap line from RTCRtpHeaderExtensionParameters or
+// RTCRtpHeaderExtension.
 SDPUtils.writeExtmap = function(headerExtension) {
   return 'a=extmap:' + (headerExtension.id || headerExtension.preferredId) +
        ' ' + headerExtension.uri + '\r\n';
@@ -5035,13 +4343,13 @@ SDPUtils.parseFmtp = function(line) {
 };
 
 // Generates an a=ftmp line from RTCRtpCodecCapability or RTCRtpCodecParameters.
-SDPUtils.writeFtmp = function(codec) {
+SDPUtils.writeFmtp = function(codec) {
   var line = '';
   var pt = codec.payloadType;
   if (codec.preferredPayloadType !== undefined) {
     pt = codec.preferredPayloadType;
   }
-  if (codec.parameters && codec.parameters.length) {
+  if (codec.parameters && Object.keys(codec.parameters).length) {
     var params = [];
     Object.keys(codec.parameters).forEach(function(param) {
       params.push(param + '=' + codec.parameters[param]);
@@ -5082,7 +4390,7 @@ SDPUtils.writeRtcpFb = function(codec) {
 SDPUtils.parseSsrcMedia = function(line) {
   var sp = line.indexOf(' ');
   var parts = {
-    ssrc: line.substr(7, sp - 7)
+    ssrc: parseInt(line.substr(7, sp - 7), 10)
   };
   var colon = line.indexOf(':', sp);
   if (colon > -1) {
@@ -5099,7 +4407,8 @@ SDPUtils.parseSsrcMedia = function(line) {
 //   get the fingerprint line as input. See also getIceParameters.
 SDPUtils.getDtlsParameters = function(mediaSection, sessionpart) {
   var lines = SDPUtils.splitLines(mediaSection);
-  lines = lines.concat(SDPUtils.splitLines(sessionpart)); // Search in session part, too.
+  // Search in session part, too.
+  lines = lines.concat(SDPUtils.splitLines(sessionpart));
   var fpLine = lines.filter(function(line) {
     return line.indexOf('a=fingerprint:') === 0;
   })[0].substr(14);
@@ -5127,7 +4436,8 @@ SDPUtils.writeDtlsParameters = function(params, setupType) {
 //   get the ice-ufrag and ice-pwd lines as input.
 SDPUtils.getIceParameters = function(mediaSection, sessionpart) {
   var lines = SDPUtils.splitLines(mediaSection);
-  lines = lines.concat(SDPUtils.splitLines(sessionpart)); // Search in session part, too.
+  // Search in session part, too.
+  lines = lines.concat(SDPUtils.splitLines(sessionpart));
   var iceParameters = {
     usernameFragment: lines.filter(function(line) {
       return line.indexOf('a=ice-ufrag:') === 0;
@@ -5169,10 +4479,13 @@ SDPUtils.parseRtpParameters = function(mediaSection) {
           mediaSection, 'a=rtcp-fb:' + pt + ' ')
         .map(SDPUtils.parseRtcpFb);
       description.codecs.push(codec);
-      switch(codec.name.toUpperCase()) {
+      // parse FEC mechanisms from rtpmap lines.
+      switch (codec.name.toUpperCase()) {
         case 'RED':
         case 'ULPFEC':
           description.fecMechanisms.push(codec.name.toUpperCase());
+          break;
+        default: // only RED and ULPFEC are recognized as FEC mechanisms.
           break;
       }
     }
@@ -5184,7 +4497,8 @@ SDPUtils.parseRtpParameters = function(mediaSection) {
   return description;
 };
 
-// Generates parts of the SDP media section describing the capabilities / parameters.
+// Generates parts of the SDP media section describing the capabilities /
+// parameters.
 SDPUtils.writeRtpDescription = function(kind, caps) {
   var sdp = '';
 
@@ -5205,12 +4519,84 @@ SDPUtils.writeRtpDescription = function(kind, caps) {
   // Add a=rtpmap lines for each codec. Also fmtp and rtcp-fb.
   caps.codecs.forEach(function(codec) {
     sdp += SDPUtils.writeRtpMap(codec);
-    sdp += SDPUtils.writeFtmp(codec);
+    sdp += SDPUtils.writeFmtp(codec);
     sdp += SDPUtils.writeRtcpFb(codec);
   });
   // FIXME: add headerExtensions, fecMechanismş and rtcp.
   sdp += 'a=rtcp-mux\r\n';
   return sdp;
+};
+
+// Parses the SDP media section and returns an array of
+// RTCRtpEncodingParameters.
+SDPUtils.parseRtpEncodingParameters = function(mediaSection) {
+  var encodingParameters = [];
+  var description = SDPUtils.parseRtpParameters(mediaSection);
+  var hasRed = description.fecMechanisms.indexOf('RED') !== -1;
+  var hasUlpfec = description.fecMechanisms.indexOf('ULPFEC') !== -1;
+
+  // filter a=ssrc:... cname:, ignore PlanB-msid
+  var ssrcs = SDPUtils.matchPrefix(mediaSection, 'a=ssrc:')
+  .map(function(line) {
+    return SDPUtils.parseSsrcMedia(line);
+  })
+  .filter(function(parts) {
+    return parts.attribute === 'cname';
+  });
+  var primarySsrc = ssrcs.length > 0 && ssrcs[0].ssrc;
+  var secondarySsrc;
+
+  var flows = SDPUtils.matchPrefix(mediaSection, 'a=ssrc-group:FID')
+  .map(function(line) {
+    var parts = line.split(' ');
+    parts.shift();
+    return parts.map(function(part) {
+      return parseInt(part, 10);
+    });
+  });
+  if (flows.length > 0 && flows[0].length > 1 && flows[0][0] === primarySsrc) {
+    secondarySsrc = flows[0][1];
+  }
+
+  description.codecs.forEach(function(codec) {
+    if (codec.name.toUpperCase() === 'RTX' && codec.parameters.apt) {
+      var encParam = {
+        ssrc: primarySsrc,
+        codecPayloadType: parseInt(codec.parameters.apt, 10),
+        rtx: {
+          ssrc: secondarySsrc
+        }
+      };
+      encodingParameters.push(encParam);
+      if (hasRed) {
+        encParam = JSON.parse(JSON.stringify(encParam));
+        encParam.fec = {
+          ssrc: secondarySsrc,
+          mechanism: hasUlpfec ? 'red+ulpfec' : 'red'
+        };
+        encodingParameters.push(encParam);
+      }
+    }
+  });
+  if (encodingParameters.length === 0 && primarySsrc) {
+    encodingParameters.push({
+      ssrc: primarySsrc
+    });
+  }
+
+  // we support both b=AS and b=TIAS but interpret AS as TIAS.
+  var bandwidth = SDPUtils.matchPrefix(mediaSection, 'b=');
+  if (bandwidth.length) {
+    if (bandwidth[0].indexOf('b=TIAS:') === 0) {
+      bandwidth = parseInt(bandwidth[0].substr(7), 10);
+    } else if (bandwidth[0].indexOf('b=AS:') === 0) {
+      bandwidth = parseInt(bandwidth[0].substr(5), 10);
+    }
+    encodingParameters.forEach(function(params) {
+      params.maxBitrate = bandwidth;
+    });
+  }
+  return encodingParameters;
 };
 
 SDPUtils.writeSessionBoilerplate = function() {
@@ -5250,11 +4636,12 @@ SDPUtils.writeMediaSection = function(transceiver, caps, type, stream) {
     var msid = 'msid:' + stream.id + ' ' +
         transceiver.rtpSender.track.id + '\r\n';
     sdp += 'a=' + msid;
-    sdp += 'a=ssrc:' + transceiver.sendSsrc + ' ' + msid;
+    sdp += 'a=ssrc:' + transceiver.sendEncodingParameters[0].ssrc +
+        ' ' + msid;
   }
   // FIXME: this should be written by writeRtpDescription.
-  sdp += 'a=ssrc:' + transceiver.sendSsrc + ' cname:' +
-      SDPUtils.localCName + '\r\n';
+  sdp += 'a=ssrc:' + transceiver.sendEncodingParameters[0].ssrc +
+      ' cname:' + SDPUtils.localCName + '\r\n';
   return sdp;
 };
 
@@ -5269,6 +4656,8 @@ SDPUtils.getDirection = function(mediaSection, sessionpart) {
       case 'a=recvonly':
       case 'a=inactive':
         return lines[i].substr(2);
+      default:
+        // FIXME: What should happen here?
     }
   }
   if (sessionpart) {
@@ -5280,7 +4669,7 @@ SDPUtils.getDirection = function(mediaSection, sessionpart) {
 // Expose public methods.
 module.exports = SDPUtils;
 
-},{}],21:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -5288,6 +4677,7 @@ module.exports = SDPUtils;
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+ /* eslint-env node */
 'use strict';
 
 var SDPUtils = require('./edge_sdp');
@@ -5317,10 +4707,10 @@ var edgeShim = {
       var self = this;
 
       var _eventTarget = document.createDocumentFragment();
-      ['addEventListener', 'removeEventListener', 'dispatchEvent'].forEach(
-          function(method) {
-        self[method] = _eventTarget[method].bind(_eventTarget);
-      });
+      ['addEventListener', 'removeEventListener', 'dispatchEvent']
+          .forEach(function(method) {
+            self[method] = _eventTarget[method].bind(_eventTarget);
+          });
 
       this.onicecandidate = null;
       this.onaddstream = null;
@@ -5333,8 +4723,12 @@ var edgeShim = {
 
       this.localStreams = [];
       this.remoteStreams = [];
-      this.getLocalStreams = function() { return self.localStreams; };
-      this.getRemoteStreams = function() { return self.remoteStreams; };
+      this.getLocalStreams = function() {
+        return self.localStreams;
+      };
+      this.getRemoteStreams = function() {
+        return self.remoteStreams;
+      };
 
       this.localDescription = new RTCSessionDescription({
         type: '',
@@ -5361,6 +4755,9 @@ var edgeShim = {
           case 'none':
             // FIXME: remove once implementation and spec have added this.
             throw new TypeError('iceTransportPolicy "none" not supported');
+          default:
+            // don't set iceTransportPolicy.
+            break;
         }
       }
       if (config && config.iceServers) {
@@ -5370,9 +4767,10 @@ var edgeShim = {
         this.iceOptions.iceServers = config.iceServers.filter(function(server) {
           if (server && server.urls) {
             server.urls = server.urls.filter(function(url) {
-              return url.indexOf('transport=udp') !== -1;
+              return url.indexOf('turn:') === 0 &&
+                  url.indexOf('transport=udp') !== -1;
             })[0];
-            return true;
+            return !!server.urls;
           }
           return false;
         });
@@ -5391,9 +4789,10 @@ var edgeShim = {
     window.RTCPeerConnection.prototype._emitBufferedCandidates = function() {
       var self = this;
       var sections = SDPUtils.splitSections(self.localDescription.sdp);
-      // FIXME: need to apply ice candidates in a way which is async but in-order
+      // FIXME: need to apply ice candidates in a way which is async but
+      // in-order
       this._localIceCandidatesBuffer.forEach(function(event) {
-        var end = !event.candidate || Object.keys(event.candidate).length == 0;
+        var end = !event.candidate || Object.keys(event.candidate).length === 0;
         if (end) {
           for (var j = 1; j < sections.length; j++) {
             if (sections[j].indexOf('\r\na=end-of-candidates\r\n') === -1) {
@@ -5441,125 +4840,132 @@ var edgeShim = {
     // Determines the intersection of local and remote capabilities.
     window.RTCPeerConnection.prototype._getCommonCapabilities =
         function(localCapabilities, remoteCapabilities) {
-      var commonCapabilities = {
-        codecs: [],
-        headerExtensions: [],
-        fecMechanisms: []
-      };
-      localCapabilities.codecs.forEach(function(lCodec) {
-        for (var i = 0; i < remoteCapabilities.codecs.length; i++) {
-          var rCodec = remoteCapabilities.codecs[i];
-          if (lCodec.name.toLowerCase() === rCodec.name.toLowerCase() &&
-              lCodec.clockRate === rCodec.clockRate &&
-              lCodec.numChannels === rCodec.numChannels) {
-            // push rCodec so we reply with offerer payload type
-            commonCapabilities.codecs.push(rCodec);
+          var commonCapabilities = {
+            codecs: [],
+            headerExtensions: [],
+            fecMechanisms: []
+          };
+          localCapabilities.codecs.forEach(function(lCodec) {
+            for (var i = 0; i < remoteCapabilities.codecs.length; i++) {
+              var rCodec = remoteCapabilities.codecs[i];
+              if (lCodec.name.toLowerCase() === rCodec.name.toLowerCase() &&
+                  lCodec.clockRate === rCodec.clockRate &&
+                  lCodec.numChannels === rCodec.numChannels) {
+                // push rCodec so we reply with offerer payload type
+                commonCapabilities.codecs.push(rCodec);
 
-            // FIXME: also need to determine intersection between
-            // .rtcpFeedback and .parameters
-            break;
-          }
-        }
-      });
+                // FIXME: also need to determine intersection between
+                // .rtcpFeedback and .parameters
+                break;
+              }
+            }
+          });
 
-      localCapabilities.headerExtensions.forEach(function(lHeaderExtension) {
-        for (var i = 0; i < remoteCapabilities.headerExtensions.length; i++) {
-          var rHeaderExtension = remoteCapabilities.headerExtensions[i];
-          if (lHeaderExtension.uri === rHeaderExtension.uri) {
-            commonCapabilities.headerExtensions.push(rHeaderExtension);
-            break;
-          }
-        }
-      });
+          localCapabilities.headerExtensions
+              .forEach(function(lHeaderExtension) {
+                for (var i = 0; i < remoteCapabilities.headerExtensions.length;
+                     i++) {
+                  var rHeaderExtension = remoteCapabilities.headerExtensions[i];
+                  if (lHeaderExtension.uri === rHeaderExtension.uri) {
+                    commonCapabilities.headerExtensions.push(rHeaderExtension);
+                    break;
+                  }
+                }
+              });
 
-      // FIXME: fecMechanisms
-      return commonCapabilities;
-    };
+          // FIXME: fecMechanisms
+          return commonCapabilities;
+        };
 
     // Create ICE gatherer, ICE transport and DTLS transport.
     window.RTCPeerConnection.prototype._createIceAndDtlsTransports =
         function(mid, sdpMLineIndex) {
-      var self = this;
-      var iceGatherer = new RTCIceGatherer(self.iceOptions);
-      var iceTransport = new RTCIceTransport(iceGatherer);
-      iceGatherer.onlocalcandidate = function(evt) {
-        var event = new Event('icecandidate');
-        event.candidate = {sdpMid: mid, sdpMLineIndex: sdpMLineIndex};
+          var self = this;
+          var iceGatherer = new RTCIceGatherer(self.iceOptions);
+          var iceTransport = new RTCIceTransport(iceGatherer);
+          iceGatherer.onlocalcandidate = function(evt) {
+            var event = new Event('icecandidate');
+            event.candidate = {sdpMid: mid, sdpMLineIndex: sdpMLineIndex};
 
-        var cand = evt.candidate;
-        var end = !cand || Object.keys(cand).length === 0;
-        // Edge emits an empty object for RTCIceCandidateComplete‥
-        if (end) {
-          // polyfill since RTCIceGatherer.state is not implemented in Edge 10547 yet.
-          if (iceGatherer.state === undefined) {
-            iceGatherer.state = 'completed';
-          }
+            var cand = evt.candidate;
+            var end = !cand || Object.keys(cand).length === 0;
+            // Edge emits an empty object for RTCIceCandidateComplete‥
+            if (end) {
+              // polyfill since RTCIceGatherer.state is not implemented in
+              // Edge 10547 yet.
+              if (iceGatherer.state === undefined) {
+                iceGatherer.state = 'completed';
+              }
 
-          // Emit a candidate with type endOfCandidates to make the samples work.
-          // Edge requires addIceCandidate with this empty candidate to start checking.
-          // The real solution is to signal end-of-candidates to the other side when
-          // getting the null candidate but some apps (like the samples) don't do that.
-          event.candidate.candidate =
-              'candidate:1 1 udp 1 0.0.0.0 9 typ endOfCandidates';
-        } else {
-          // RTCIceCandidate doesn't have a component, needs to be added
-          cand.component = iceTransport.component === 'RTCP' ? 2 : 1;
-          event.candidate.candidate = SDPUtils.writeCandidate(cand);
-        }
-
-        var complete = self.transceivers.every(function(transceiver) {
-          return transceiver.iceGatherer &&
-              transceiver.iceGatherer.state === 'completed';
-        });
-
-        // Emit candidate if localDescription is set.
-        // Also emits null candidate when all gatherers are complete.
-        switch(self.iceGatheringState) {
-        case 'new':
-          self._localIceCandidatesBuffer.push(event);
-          if (end && complete) {
-            self._localIceCandidatesBuffer.push(new Event('icecandidate'));
-          }
-          break;
-        case 'gathering':
-          self._emitBufferedCandidates();
-          self.dispatchEvent(event);
-          if (self.onicecandidate !== null) {
-            self.onicecandidate(event);
-          }
-          if (complete) {
-            self.dispatchEvent(new Event('icecandidate'));
-            if (self.onicecandidate !== null) {
-              self.onicecandidate(new Event('icecandidate'));
+              // Emit a candidate with type endOfCandidates to make the samples
+              // work. Edge requires addIceCandidate with this empty candidate
+              // to start checking. The real solution is to signal
+              // end-of-candidates to the other side when getting the null
+              // candidate but some apps (like the samples) don't do that.
+              event.candidate.candidate =
+                  'candidate:1 1 udp 1 0.0.0.0 9 typ endOfCandidates';
+            } else {
+              // RTCIceCandidate doesn't have a component, needs to be added
+              cand.component = iceTransport.component === 'RTCP' ? 2 : 1;
+              event.candidate.candidate = SDPUtils.writeCandidate(cand);
             }
-            self.iceGatheringState = 'complete';
-          }
-          break;
-        case 'complete':
-          // should not happen... currently!
-          break;
-        }
-      };
-      iceTransport.onicestatechange = function() {
-        self._updateConnectionState();
-      };
 
-      var dtlsTransport = new RTCDtlsTransport(iceTransport);
-      dtlsTransport.ondtlsstatechange = function() {
-        self._updateConnectionState();
-      };
-      dtlsTransport.onerror = function() {
-        // onerror does not set state to failed by itself.
-        dtlsTransport.state = 'failed';
-        self._updateConnectionState();
-      };
+            var complete = self.transceivers.every(function(transceiver) {
+              return transceiver.iceGatherer &&
+                  transceiver.iceGatherer.state === 'completed';
+            });
 
-      return {
-        iceGatherer: iceGatherer,
-        iceTransport: iceTransport,
-        dtlsTransport: dtlsTransport
-      };
-    };
+            // Emit candidate if localDescription is set.
+            // Also emits null candidate when all gatherers are complete.
+            switch (self.iceGatheringState) {
+              case 'new':
+                self._localIceCandidatesBuffer.push(event);
+                if (end && complete) {
+                  self._localIceCandidatesBuffer.push(
+                      new Event('icecandidate'));
+                }
+                break;
+              case 'gathering':
+                self._emitBufferedCandidates();
+                self.dispatchEvent(event);
+                if (self.onicecandidate !== null) {
+                  self.onicecandidate(event);
+                }
+                if (complete) {
+                  self.dispatchEvent(new Event('icecandidate'));
+                  if (self.onicecandidate !== null) {
+                    self.onicecandidate(new Event('icecandidate'));
+                  }
+                  self.iceGatheringState = 'complete';
+                }
+                break;
+              case 'complete':
+                // should not happen... currently!
+                break;
+              default: // no-op.
+                break;
+            }
+          };
+          iceTransport.onicestatechange = function() {
+            self._updateConnectionState();
+          };
+
+          var dtlsTransport = new RTCDtlsTransport(iceTransport);
+          dtlsTransport.ondtlsstatechange = function() {
+            self._updateConnectionState();
+          };
+          dtlsTransport.onerror = function() {
+            // onerror does not set state to failed by itself.
+            dtlsTransport.state = 'failed';
+            self._updateConnectionState();
+          };
+
+          return {
+            iceGatherer: iceGatherer,
+            iceTransport: iceTransport,
+            dtlsTransport: dtlsTransport
+          };
+        };
 
     // Start the RTP Sender and Receiver for a transceiver.
     window.RTCPeerConnection.prototype._transceive = function(transceiver,
@@ -5567,311 +4973,332 @@ var edgeShim = {
       var params = this._getCommonCapabilities(transceiver.localCapabilities,
           transceiver.remoteCapabilities);
       if (send && transceiver.rtpSender) {
-        params.encodings = [{
-          ssrc: transceiver.sendSsrc
-        }];
+        params.encodings = transceiver.sendEncodingParameters;
         params.rtcp = {
-          cname: SDPUtils.localCName,
-          ssrc: transceiver.recvSsrc
+          cname: SDPUtils.localCName
         };
+        if (transceiver.recvEncodingParameters.length) {
+          params.rtcp.ssrc = transceiver.recvEncodingParameters[0].ssrc;
+        }
         transceiver.rtpSender.send(params);
       }
       if (recv && transceiver.rtpReceiver) {
-        params.encodings = [{
-          ssrc: transceiver.recvSsrc
-        }];
+        params.encodings = transceiver.recvEncodingParameters;
         params.rtcp = {
-          cname: transceiver.cname,
-          ssrc: transceiver.sendSsrc
+          cname: transceiver.cname
         };
+        if (transceiver.sendEncodingParameters.length) {
+          params.rtcp.ssrc = transceiver.sendEncodingParameters[0].ssrc;
+        }
         transceiver.rtpReceiver.receive(params);
       }
     };
 
     window.RTCPeerConnection.prototype.setLocalDescription =
         function(description) {
-      var self = this;
-      var sections;
-      var sessionpart;
-      if (description.type === 'offer') {
-        if (!this._pendingOffer) {
-        } else { 
-          // VERY limited support for SDP munging. Limited to:
-          // * changing the order of codecs
-          sections = SDPUtils.splitSections(description.sdp);
-          sessionpart = sections.shift();
-          sections.forEach(function(mediaSection, sdpMLineIndex) {
-            var caps = SDPUtils.parseRtpParameters(mediaSection);
-            self._pendingOffer[sdpMLineIndex].localCapabilities = caps;
+          var self = this;
+          var sections;
+          var sessionpart;
+          if (description.type === 'offer') {
+            // FIXME: What was the purpose of this empty if statement?
+            // if (!this._pendingOffer) {
+            // } else {
+            if (this._pendingOffer) {
+              // VERY limited support for SDP munging. Limited to:
+              // * changing the order of codecs
+              sections = SDPUtils.splitSections(description.sdp);
+              sessionpart = sections.shift();
+              sections.forEach(function(mediaSection, sdpMLineIndex) {
+                var caps = SDPUtils.parseRtpParameters(mediaSection);
+                self._pendingOffer[sdpMLineIndex].localCapabilities = caps;
+              });
+              this.transceivers = this._pendingOffer;
+              delete this._pendingOffer;
+            }
+          } else if (description.type === 'answer') {
+            sections = SDPUtils.splitSections(self.remoteDescription.sdp);
+            sessionpart = sections.shift();
+            sections.forEach(function(mediaSection, sdpMLineIndex) {
+              var transceiver = self.transceivers[sdpMLineIndex];
+              var iceGatherer = transceiver.iceGatherer;
+              var iceTransport = transceiver.iceTransport;
+              var dtlsTransport = transceiver.dtlsTransport;
+              var localCapabilities = transceiver.localCapabilities;
+              var remoteCapabilities = transceiver.remoteCapabilities;
+              var rejected = mediaSection.split('\n', 1)[0]
+                  .split(' ', 2)[1] === '0';
+
+              if (!rejected) {
+                var remoteIceParameters = SDPUtils.getIceParameters(
+                    mediaSection, sessionpart);
+                iceTransport.start(iceGatherer, remoteIceParameters,
+                    'controlled');
+
+                var remoteDtlsParameters = SDPUtils.getDtlsParameters(
+                    mediaSection, sessionpart);
+                dtlsTransport.start(remoteDtlsParameters);
+
+                // Calculate intersection of capabilities.
+                var params = self._getCommonCapabilities(localCapabilities,
+                    remoteCapabilities);
+
+                // Start the RTCRtpSender. The RTCRtpReceiver for this
+                // transceiver has already been started in setRemoteDescription.
+                self._transceive(transceiver,
+                    params.codecs.length > 0,
+                    false);
+              }
+            });
+          }
+
+          this.localDescription = {
+            type: description.type,
+            sdp: description.sdp
+          };
+          switch (description.type) {
+            case 'offer':
+              this._updateSignalingState('have-local-offer');
+              break;
+            case 'answer':
+              this._updateSignalingState('stable');
+              break;
+            default:
+              throw new TypeError('unsupported type "' + description.type +
+                  '"');
+          }
+
+          // If a success callback was provided, emit ICE candidates after it
+          // has been executed. Otherwise, emit callback after the Promise is
+          // resolved.
+          var hasCallback = arguments.length > 1 &&
+            typeof arguments[1] === 'function';
+          if (hasCallback) {
+            var cb = arguments[1];
+            window.setTimeout(function() {
+              cb();
+              if (self.iceGatheringState === 'new') {
+                self.iceGatheringState = 'gathering';
+              }
+              self._emitBufferedCandidates();
+            }, 0);
+          }
+          var p = Promise.resolve();
+          p.then(function() {
+            if (!hasCallback) {
+              if (self.iceGatheringState === 'new') {
+                self.iceGatheringState = 'gathering';
+              }
+              // Usually candidates will be emitted earlier.
+              window.setTimeout(self._emitBufferedCandidates.bind(self), 500);
+            }
           });
-          this.transceivers = this._pendingOffer;
-          delete this._pendingOffer;
-        }
-      } else if (description.type === 'answer') {
-        sections = SDPUtils.splitSections(self.remoteDescription.sdp);
-        sessionpart = sections.shift();
-        sections.forEach(function(mediaSection, sdpMLineIndex) {
-          var transceiver = self.transceivers[sdpMLineIndex];
-          var iceGatherer = transceiver.iceGatherer;
-          var iceTransport = transceiver.iceTransport;
-          var dtlsTransport = transceiver.dtlsTransport;
-          var localCapabilities = transceiver.localCapabilities;
-          var remoteCapabilities = transceiver.remoteCapabilities;
-          var rejected = mediaSection.split('\n', 1)[0]
-              .split(' ', 2)[1] === '0';
-
-          if (!rejected) {
-            var remoteIceParameters = SDPUtils.getIceParameters(mediaSection,
-                sessionpart);
-            iceTransport.start(iceGatherer, remoteIceParameters, 'controlled');
-
-            var remoteDtlsParameters = SDPUtils.getDtlsParameters(mediaSection,
-              sessionpart);
-            dtlsTransport.start(remoteDtlsParameters);
-
-            // Calculate intersection of capabilities.
-            var params = self._getCommonCapabilities(localCapabilities,
-                remoteCapabilities);
-
-            // Start the RTCRtpSender. The RTCRtpReceiver for this transceiver
-            // has already been started in setRemoteDescription.
-            self._transceive(transceiver,
-                params.codecs.length > 0,
-                false);
-          }
-        });
-      }
-
-      this.localDescription = {
-        type: description.type,
-        sdp: description.sdp
-      };
-      switch (description.type) {
-        case 'offer':
-          this._updateSignalingState('have-local-offer');
-          break;
-        case 'answer':
-          this._updateSignalingState('stable');
-          break;
-        default:
-          throw new TypeError('unsupported type "' + description.type + '"');
-      }
-
-      // If a success callback was provided, emit ICE candidates after it has been
-      // executed. Otherwise, emit callback after the Promise is resolved.
-      var hasCallback = arguments.length > 1 &&
-        typeof arguments[1] === 'function';
-      if (hasCallback) {
-        var cb = arguments[1];
-        window.setTimeout(function() {
-          cb();
-          if (self.iceGatheringState === 'new') {
-            self.iceGatheringState = 'gathering';
-          }
-          self._emitBufferedCandidates();
-        }, 0);
-      }
-      var p = Promise.resolve();
-      p.then(function() {
-        if (!hasCallback) {
-          if (self.iceGatheringState === 'new') {
-            self.iceGatheringState = 'gathering';
-          }
-          // Usually candidates will be emitted earlier.
-          window.setTimeout(self._emitBufferedCandidates.bind(self), 500);
-        }
-      });
-      return p;
-    };
+          return p;
+        };
 
     window.RTCPeerConnection.prototype.setRemoteDescription =
         function(description) {
-      var self = this;
-      var stream = new MediaStream();
-      var receiverList = [];
-      var sections = SDPUtils.splitSections(description.sdp);
-      var sessionpart = sections.shift();
-      sections.forEach(function(mediaSection, sdpMLineIndex) {
-        var lines = SDPUtils.splitLines(mediaSection);
-        var mline = lines[0].substr(2).split(' ');
-        var kind = mline[0];
-        var rejected = mline[1] === '0';
-        var direction = SDPUtils.getDirection(mediaSection, sessionpart);
+          var self = this;
+          var stream = new MediaStream();
+          var receiverList = [];
+          var sections = SDPUtils.splitSections(description.sdp);
+          var sessionpart = sections.shift();
+          sections.forEach(function(mediaSection, sdpMLineIndex) {
+            var lines = SDPUtils.splitLines(mediaSection);
+            var mline = lines[0].substr(2).split(' ');
+            var kind = mline[0];
+            var rejected = mline[1] === '0';
+            var direction = SDPUtils.getDirection(mediaSection, sessionpart);
 
-        var transceiver;
-        var iceGatherer;
-        var iceTransport;
-        var dtlsTransport;
-        var rtpSender;
-        var rtpReceiver;
-        var sendSsrc;
-        var recvSsrc;
-        var localCapabilities;
+            var transceiver;
+            var iceGatherer;
+            var iceTransport;
+            var dtlsTransport;
+            var rtpSender;
+            var rtpReceiver;
+            var sendEncodingParameters;
+            var recvEncodingParameters;
+            var localCapabilities;
 
-        var track;
-        // FIXME: ensure the mediaSection has rtcp-mux set.
-        var remoteCapabilities = SDPUtils.parseRtpParameters(mediaSection);
-        var remoteIceParameters;
-        var remoteDtlsParameters;
-        if (!rejected) {
-          remoteIceParameters = SDPUtils.getIceParameters(mediaSection,
-              sessionpart);
-          remoteDtlsParameters = SDPUtils.getDtlsParameters(mediaSection,
-              sessionpart);
-        }
-        var mid = SDPUtils.matchPrefix(mediaSection, 'a=mid:')[0].substr(6);
+            var track;
+            // FIXME: ensure the mediaSection has rtcp-mux set.
+            var remoteCapabilities = SDPUtils.parseRtpParameters(mediaSection);
+            var remoteIceParameters;
+            var remoteDtlsParameters;
+            if (!rejected) {
+              remoteIceParameters = SDPUtils.getIceParameters(mediaSection,
+                  sessionpart);
+              remoteDtlsParameters = SDPUtils.getDtlsParameters(mediaSection,
+                  sessionpart);
+            }
+            recvEncodingParameters =
+                SDPUtils.parseRtpEncodingParameters(mediaSection);
 
-        var cname;
-        // Gets the first SSRC. Note that with RTX there might be multiple SSRCs.
-        var remoteSsrc = SDPUtils.matchPrefix(mediaSection, 'a=ssrc:')
-            .map(function(line) {
-              return SDPUtils.parseSsrcMedia(line);
-            })
-            .filter(function(obj) {
-              return obj.attribute === 'cname';
-            })[0];
-        if (remoteSsrc) {
-          recvSsrc = parseInt(remoteSsrc.ssrc, 10);
-          cname = remoteSsrc.value;
-        }
+            var mid = SDPUtils.matchPrefix(mediaSection, 'a=mid:');
+            if (mid.length) {
+              mid = mid[0].substr(6);
+            } else {
+              mid = SDPUtils.generateIdentifier();
+            }
 
-        var isComplete = SDPUtils.matchPrefix(mediaSection,
-            'a=end-of-candidates').length > 0;
-        var cands = SDPUtils.matchPrefix(mediaSection, 'a=candidate:')
-            .map(function(cand) {
-              return SDPUtils.parseCandidate(cand);
-            })
-            .filter(function(cand) {
-              return cand.component === '1';
-            });
-        if (description.type === 'offer') {
-          var transports = self._createIceAndDtlsTransports(mid, sdpMLineIndex);
-          if (isComplete) {
-            transports.iceTransport.setRemoteCandidates(cands);
-          }
+            var cname;
+            // Gets the first SSRC. Note that with RTX there might be multiple
+            // SSRCs.
+            var remoteSsrc = SDPUtils.matchPrefix(mediaSection, 'a=ssrc:')
+                .map(function(line) {
+                  return SDPUtils.parseSsrcMedia(line);
+                })
+                .filter(function(obj) {
+                  return obj.attribute === 'cname';
+                })[0];
+            if (remoteSsrc) {
+              cname = remoteSsrc.value;
+            }
 
-          localCapabilities = RTCRtpReceiver.getCapabilities(kind);
-          sendSsrc = (2 * sdpMLineIndex + 2) * 1001;
+            var isComplete = SDPUtils.matchPrefix(mediaSection,
+                'a=end-of-candidates').length > 0;
+            var cands = SDPUtils.matchPrefix(mediaSection, 'a=candidate:')
+                .map(function(cand) {
+                  return SDPUtils.parseCandidate(cand);
+                })
+                .filter(function(cand) {
+                  return cand.component === '1';
+                });
+            if (description.type === 'offer' && !rejected) {
+              var transports = self._createIceAndDtlsTransports(mid,
+                  sdpMLineIndex);
+              if (isComplete) {
+                transports.iceTransport.setRemoteCandidates(cands);
+              }
 
-          rtpReceiver = new RTCRtpReceiver(transports.dtlsTransport, kind);
+              localCapabilities = RTCRtpReceiver.getCapabilities(kind);
+              sendEncodingParameters = [{
+                ssrc: (2 * sdpMLineIndex + 2) * 1001
+              }];
 
-          track = rtpReceiver.track;
-          receiverList.push([track, rtpReceiver]);
-          // FIXME: not correct when there are multiple streams but that is
-          // not currently supported in this shim.
-          stream.addTrack(track);
+              rtpReceiver = new RTCRtpReceiver(transports.dtlsTransport, kind);
 
-          // FIXME: look at direction.
-          if (self.localStreams.length > 0 &&
-              self.localStreams[0].getTracks().length >= sdpMLineIndex) {
-            // FIXME: actually more complicated, needs to match types etc
-            var localtrack = self.localStreams[0].getTracks()[sdpMLineIndex];
-            rtpSender = new RTCRtpSender(localtrack, transports.dtlsTransport);
-          }
+              track = rtpReceiver.track;
+              receiverList.push([track, rtpReceiver]);
+              // FIXME: not correct when there are multiple streams but that is
+              // not currently supported in this shim.
+              stream.addTrack(track);
 
-          self.transceivers[sdpMLineIndex] = {
-            iceGatherer: transports.iceGatherer,
-            iceTransport: transports.iceTransport,
-            dtlsTransport: transports.dtlsTransport,
-            localCapabilities: localCapabilities,
-            remoteCapabilities: remoteCapabilities,
-            rtpSender: rtpSender,
-            rtpReceiver: rtpReceiver,
-            kind: kind,
-            mid: mid,
-            cname: cname,
-            sendSsrc: sendSsrc,
-            recvSsrc: recvSsrc
-          };
-          // Start the RTCRtpReceiver now. The RTPSender is started in setLocalDescription.
-          self._transceive(self.transceivers[sdpMLineIndex],
-              false,
-              direction === 'sendrecv' || direction === 'sendonly');
-        } else if (description.type === 'answer' && !rejected) {
-          transceiver = self.transceivers[sdpMLineIndex];
-          iceGatherer = transceiver.iceGatherer;
-          iceTransport = transceiver.iceTransport;
-          dtlsTransport = transceiver.dtlsTransport;
-          rtpSender = transceiver.rtpSender;
-          rtpReceiver = transceiver.rtpReceiver;
-          sendSsrc = transceiver.sendSsrc;
-          //recvSsrc = transceiver.recvSsrc;
-          localCapabilities = transceiver.localCapabilities;
+              // FIXME: look at direction.
+              if (self.localStreams.length > 0 &&
+                  self.localStreams[0].getTracks().length >= sdpMLineIndex) {
+                // FIXME: actually more complicated, needs to match types etc
+                var localtrack = self.localStreams[0]
+                    .getTracks()[sdpMLineIndex];
+                rtpSender = new RTCRtpSender(localtrack,
+                    transports.dtlsTransport);
+              }
 
-          self.transceivers[sdpMLineIndex].recvSsrc = recvSsrc;
-          self.transceivers[sdpMLineIndex].remoteCapabilities =
-              remoteCapabilities;
-          self.transceivers[sdpMLineIndex].cname = cname;
+              self.transceivers[sdpMLineIndex] = {
+                iceGatherer: transports.iceGatherer,
+                iceTransport: transports.iceTransport,
+                dtlsTransport: transports.dtlsTransport,
+                localCapabilities: localCapabilities,
+                remoteCapabilities: remoteCapabilities,
+                rtpSender: rtpSender,
+                rtpReceiver: rtpReceiver,
+                kind: kind,
+                mid: mid,
+                cname: cname,
+                sendEncodingParameters: sendEncodingParameters,
+                recvEncodingParameters: recvEncodingParameters
+              };
+              // Start the RTCRtpReceiver now. The RTPSender is started in
+              // setLocalDescription.
+              self._transceive(self.transceivers[sdpMLineIndex],
+                  false,
+                  direction === 'sendrecv' || direction === 'sendonly');
+            } else if (description.type === 'answer' && !rejected) {
+              transceiver = self.transceivers[sdpMLineIndex];
+              iceGatherer = transceiver.iceGatherer;
+              iceTransport = transceiver.iceTransport;
+              dtlsTransport = transceiver.dtlsTransport;
+              rtpSender = transceiver.rtpSender;
+              rtpReceiver = transceiver.rtpReceiver;
+              sendEncodingParameters = transceiver.sendEncodingParameters;
+              localCapabilities = transceiver.localCapabilities;
 
-          if (isComplete) {
-            iceTransport.setRemoteCandidates(cands);
-          }
-          iceTransport.start(iceGatherer, remoteIceParameters, 'controlling');
-          dtlsTransport.start(remoteDtlsParameters);
+              self.transceivers[sdpMLineIndex].recvEncodingParameters =
+                  recvEncodingParameters;
+              self.transceivers[sdpMLineIndex].remoteCapabilities =
+                  remoteCapabilities;
+              self.transceivers[sdpMLineIndex].cname = cname;
 
-          self._transceive(transceiver,
-              direction === 'sendrecv' || direction === 'recvonly',
-              direction === 'sendrecv' || direction === 'sendonly');
+              if (isComplete) {
+                iceTransport.setRemoteCandidates(cands);
+              }
+              iceTransport.start(iceGatherer, remoteIceParameters,
+                  'controlling');
+              dtlsTransport.start(remoteDtlsParameters);
 
-          if (rtpReceiver &&
-              (direction === 'sendrecv' || direction === 'sendonly')) {
-            track = rtpReceiver.track;
-            receiverList.push([track, rtpReceiver]);
-            stream.addTrack(track);
-          } else {
-            // FIXME: actually the receiver should be created later.
-            delete transceiver.rtpReceiver;
-          }
-        }
-      });
+              self._transceive(transceiver,
+                  direction === 'sendrecv' || direction === 'recvonly',
+                  direction === 'sendrecv' || direction === 'sendonly');
 
-      this.remoteDescription = {
-          type: description.type,
-          sdp: description.sdp
-      };
-      switch (description.type) {
-        case 'offer':
-          this._updateSignalingState('have-remote-offer');
-          break;
-        case 'answer':
-          this._updateSignalingState('stable');
-          break;
-        default:
-          throw new TypeError('unsupported type "' + description.type + '"');
-      }
-      if (stream.getTracks().length) {
-        self.remoteStreams.push(stream);
-        window.setTimeout(function() {
-          var event = new Event('addstream');
-          event.stream = stream;
-          self.dispatchEvent(event);
-          if (self.onaddstream !== null) {
-            window.setTimeout(function() {
-              self.onaddstream(event);
-            }, 0);
-          }
-
-          receiverList.forEach(function(item) {
-            var track = item[0];
-            var receiver = item[1];
-            var event = new Event('track');
-            event.track = track;
-            event.receiver = receiver;
-            event.streams = [stream];
-            self.dispatchEvent(event);
-            if (self.ontrack !== null) {
-                window.setTimeout(function() {
-                  self.ontrack(event);
-                }, 0);
+              if (rtpReceiver &&
+                  (direction === 'sendrecv' || direction === 'sendonly')) {
+                track = rtpReceiver.track;
+                receiverList.push([track, rtpReceiver]);
+                stream.addTrack(track);
+              } else {
+                // FIXME: actually the receiver should be created later.
+                delete transceiver.rtpReceiver;
+              }
             }
           });
-        }, 0);
-      }
-      if (arguments.length > 1 && typeof arguments[1] === 'function') {
-        window.setTimeout(arguments[1], 0);
-      }
-      return Promise.resolve();
-    };
+
+          this.remoteDescription = {
+            type: description.type,
+            sdp: description.sdp
+          };
+          switch (description.type) {
+            case 'offer':
+              this._updateSignalingState('have-remote-offer');
+              break;
+            case 'answer':
+              this._updateSignalingState('stable');
+              break;
+            default:
+              throw new TypeError('unsupported type "' + description.type +
+                  '"');
+          }
+          if (stream.getTracks().length) {
+            self.remoteStreams.push(stream);
+            window.setTimeout(function() {
+              var event = new Event('addstream');
+              event.stream = stream;
+              self.dispatchEvent(event);
+              if (self.onaddstream !== null) {
+                window.setTimeout(function() {
+                  self.onaddstream(event);
+                }, 0);
+              }
+
+              receiverList.forEach(function(item) {
+                var track = item[0];
+                var receiver = item[1];
+                var trackEvent = new Event('track');
+                trackEvent.track = track;
+                trackEvent.receiver = receiver;
+                trackEvent.streams = [stream];
+                self.dispatchEvent(event);
+                if (self.ontrack !== null) {
+                  window.setTimeout(function() {
+                    self.ontrack(trackEvent);
+                  }, 0);
+                }
+              });
+            }, 0);
+          }
+          if (arguments.length > 1 && typeof arguments[1] === 'function') {
+            window.setTimeout(arguments[1], 0);
+          }
+          return Promise.resolve();
+        };
 
     window.RTCPeerConnection.prototype.close = function() {
       this.transceivers.forEach(function(transceiver) {
@@ -5900,28 +5327,27 @@ var edgeShim = {
     // Update the signaling state.
     window.RTCPeerConnection.prototype._updateSignalingState =
         function(newState) {
-      this.signalingState = newState;
-      var event = new Event('signalingstatechange');
-      this.dispatchEvent(event);
-      if (this.onsignalingstatechange !== null) {
-        this.onsignalingstatechange(event);
-      }
-    };
+          this.signalingState = newState;
+          var event = new Event('signalingstatechange');
+          this.dispatchEvent(event);
+          if (this.onsignalingstatechange !== null) {
+            this.onsignalingstatechange(event);
+          }
+        };
 
     // Determine whether to fire the negotiationneeded event.
     window.RTCPeerConnection.prototype._maybeFireNegotiationNeeded =
         function() {
-      // Fire away (for now).
-      var event = new Event('negotiationneeded');
-      this.dispatchEvent(event);
-      if (this.onnegotiationneeded !== null) {
-        this.onnegotiationneeded(event);
-      }
-    };
+          // Fire away (for now).
+          var event = new Event('negotiationneeded');
+          this.dispatchEvent(event);
+          if (this.onnegotiationneeded !== null) {
+            this.onnegotiationneeded(event);
+          }
+        };
 
     // Update the connection state.
-    window.RTCPeerConnection.prototype._updateConnectionState =
-        function() {
+    window.RTCPeerConnection.prototype._updateConnectionState = function() {
       var self = this;
       var newState;
       var states = {
@@ -5938,18 +5364,18 @@ var edgeShim = {
         states[transceiver.dtlsTransport.state]++;
       });
       // ICETransport.completed and connected are the same for this purpose.
-      states['connected'] += states['completed'];
+      states.connected += states.completed;
 
       newState = 'new';
-      if (states['failed'] > 0) {
+      if (states.failed > 0) {
         newState = 'failed';
-      } else if (states['connecting'] > 0 || states['checking'] > 0) {
+      } else if (states.connecting > 0 || states.checking > 0) {
         newState = 'connecting';
-      } else if (states['disconnected'] > 0) {
+      } else if (states.disconnected > 0) {
         newState = 'disconnected';
-      } else if (states['new'] > 0) {
+      } else if (states.new > 0) {
         newState = 'new';
-      } else if (states['connecting'] > 0 || states['completed'] > 0) {
+      } else if (states.connected > 0 || states.completed > 0) {
         newState = 'connected';
       }
 
@@ -6034,8 +5460,8 @@ var edgeShim = {
       var sdp = SDPUtils.writeSessionBoilerplate();
       var transceivers = [];
       tracks.forEach(function(mline, sdpMLineIndex) {
-        // For each track, create an ice gatherer, ice transport, dtls transport,
-        // potentially rtpsender and rtpreceiver.
+        // For each track, create an ice gatherer, ice transport,
+        // dtls transport, potentially rtpsender and rtpreceiver.
         var track = mline.track;
         var kind = mline.kind;
         var mid = SDPUtils.generateIdentifier();
@@ -6047,7 +5473,9 @@ var edgeShim = {
         var rtpReceiver;
 
         // generate an ssrc now, to be used later in rtpSender.send
-        var sendSsrc = (2 * sdpMLineIndex + 1) * 1001;
+        var sendEncodingParameters = [{
+          ssrc: (2 * sdpMLineIndex + 1) * 1001
+        }];
         if (track) {
           rtpSender = new RTCRtpSender(track, transports.dtlsTransport);
         }
@@ -6066,8 +5494,8 @@ var edgeShim = {
           rtpReceiver: rtpReceiver,
           kind: kind,
           mid: mid,
-          sendSsrc: sendSsrc,
-          recvSsrc: null
+          sendEncodingParameters: sendEncodingParameters,
+          recvEncodingParameters: null
         };
         var transceiver = transceivers[sdpMLineIndex];
         sdp += SDPUtils.writeMediaSection(transceiver,
@@ -6087,12 +5515,6 @@ var edgeShim = {
 
     window.RTCPeerConnection.prototype.createAnswer = function() {
       var self = this;
-      var answerOptions;
-      if (arguments.length === 1 && typeof arguments[0] !== 'function') {
-        answerOptions = arguments[0];
-      } else if (arguments.length === 3) {
-        answerOptions = arguments[2];
-      }
 
       var sdp = SDPUtils.writeSessionBoilerplate();
       this.transceivers.forEach(function(transceiver) {
@@ -6160,10 +5582,10 @@ var edgeShim = {
       this.transceivers.forEach(function(transceiver) {
         ['rtpSender', 'rtpReceiver', 'iceGatherer', 'iceTransport',
             'dtlsTransport'].forEach(function(method) {
-          if (transceiver[method]) {
-            promises.push(transceiver[method].getStats());
-          }
-        });
+              if (transceiver[method]) {
+                promises.push(transceiver[method].getStats());
+              }
+            });
       });
       var cb = arguments.length > 1 && typeof arguments[1] === 'function' &&
           arguments[1];
@@ -6203,7 +5625,7 @@ module.exports = {
   reattachMediaStream: edgeShim.reattachMediaStream
 };
 
-},{"../utils":24,"./edge_sdp":20}],22:[function(require,module,exports){
+},{"../utils":21,"./edge_sdp":16}],18:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -6211,6 +5633,7 @@ module.exports = {
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+ /* eslint-env node */
 'use strict';
 
 var logging = require('../utils').log;
@@ -6221,7 +5644,9 @@ var firefoxShim = {
     if (typeof window === 'object' && window.RTCPeerConnection && !('ontrack' in
         window.RTCPeerConnection.prototype)) {
       Object.defineProperty(window.RTCPeerConnection.prototype, 'ontrack', {
-        get: function() { return this._ontrack; },
+        get: function() {
+          return this._ontrack;
+        },
         set: function(f) {
           if (this._ontrack) {
             this.removeEventListener('track', this._ontrack);
@@ -6289,7 +5714,7 @@ var firefoxShim = {
             pcConfig.iceServers = newIceServers;
           }
         }
-        return new mozRTCPeerConnection(pcConfig, pcConstraints); // jscs:ignore requireCapitalizedConstructors
+        return new mozRTCPeerConnection(pcConfig, pcConstraints);
       };
       window.RTCPeerConnection.prototype = mozRTCPeerConnection.prototype;
 
@@ -6297,12 +5722,7 @@ var firefoxShim = {
       if (mozRTCPeerConnection.generateCertificate) {
         Object.defineProperty(window.RTCPeerConnection, 'generateCertificate', {
           get: function() {
-            if (arguments.length) {
-              return mozRTCPeerConnection.generateCertificate.apply(null,
-                  arguments);
-            } else {
-              return mozRTCPeerConnection.generateCertificate;
-            }
+            return mozRTCPeerConnection.generateCertificate;
           }
         });
       }
@@ -6310,6 +5730,17 @@ var firefoxShim = {
       window.RTCSessionDescription = mozRTCSessionDescription;
       window.RTCIceCandidate = mozRTCIceCandidate;
     }
+
+    // shim away need for obsolete RTCIceCandidate/RTCSessionDescription.
+    ['setLocalDescription', 'setRemoteDescription', 'addIceCandidate']
+        .forEach(function(method) {
+          var nativeMethod = RTCPeerConnection.prototype[method];
+          RTCPeerConnection.prototype[method] = function() {
+            arguments[0] = new ((method === 'addIceCandidate')?
+                RTCIceCandidate : RTCSessionDescription)(arguments[0]);
+            return nativeMethod.apply(this, arguments);
+          };
+        });
   },
 
   shimGetUserMedia: function() {
@@ -6359,6 +5790,7 @@ var firefoxShim = {
         }
         return c;
       };
+      constraints = JSON.parse(JSON.stringify(constraints));
       if (browserDetails.version < 38) {
         logging('spec: ' + JSON.stringify(constraints));
         if (constraints.audio) {
@@ -6390,14 +5822,14 @@ var firefoxShim = {
     }
     navigator.mediaDevices.enumerateDevices =
         navigator.mediaDevices.enumerateDevices || function() {
-      return new Promise(function(resolve) {
-        var infos = [
-          {kind: 'audioinput', deviceId: 'default', label: '', groupId: ''},
-          {kind: 'videoinput', deviceId: 'default', label: '', groupId: ''}
-        ];
-        resolve(infos);
-      });
-    };
+          return new Promise(function(resolve) {
+            var infos = [
+              {kind: 'audioinput', deviceId: 'default', label: '', groupId: ''},
+              {kind: 'videoinput', deviceId: 'default', label: '', groupId: ''}
+            ];
+            resolve(infos);
+          });
+        };
 
     if (browserDetails.version < 41) {
       // Work around http://bugzil.la/1169665
@@ -6436,7 +5868,7 @@ module.exports = {
   reattachMediaStream: firefoxShim.reattachMediaStream
 };
 
-},{"../utils":24,"./getusermedia":23}],23:[function(require,module,exports){
+},{"../utils":21,"./getusermedia":19}],19:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -6444,6 +5876,7 @@ module.exports = {
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+ /* eslint-env node */
 'use strict';
 
 var logging = require('../utils').log;
@@ -6496,6 +5929,7 @@ module.exports = function() {
       }
       return c;
     };
+    constraints = JSON.parse(JSON.stringify(constraints));
     if (browserDetails.version < 38) {
       logging('spec: ' + JSON.stringify(constraints));
       if (constraints.audio) {
@@ -6527,14 +5961,14 @@ module.exports = function() {
   }
   navigator.mediaDevices.enumerateDevices =
       navigator.mediaDevices.enumerateDevices || function() {
-    return new Promise(function(resolve) {
-      var infos = [
-        {kind: 'audioinput', deviceId: 'default', label: '', groupId: ''},
-        {kind: 'videoinput', deviceId: 'default', label: '', groupId: ''}
-      ];
-      resolve(infos);
-    });
-  };
+        return new Promise(function(resolve) {
+          var infos = [
+            {kind: 'audioinput', deviceId: 'default', label: '', groupId: ''},
+            {kind: 'videoinput', deviceId: 'default', label: '', groupId: ''}
+          ];
+          resolve(infos);
+        });
+      };
 
   if (browserDetails.version < 41) {
     // Work around http://bugzil.la/1169665
@@ -6551,7 +5985,7 @@ module.exports = function() {
   }
 };
 
-},{"../utils":24}],24:[function(require,module,exports){
+},{"../utils":21}],20:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -6559,6 +5993,43 @@ module.exports = function() {
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+'use strict';
+var safariShim = {
+  // TODO: DrAlex, should be here, double check against LayoutTests
+  // shimOnTrack: function() { },
+
+  // TODO: DrAlex
+  // attachMediaStream: function(element, stream) { },
+  // reattachMediaStream: function(to, from) { },
+
+  // TODO: once the back-end for the mac port is done, add.
+  // TODO: check for webkitGTK+
+  // shimPeerConnection: function() { },
+
+  shimGetUserMedia: function() {
+    navigator.getUserMedia = navigator.webkitGetUserMedia;
+  }
+};
+
+// Expose public methods.
+module.exports = {
+  shimGetUserMedia: safariShim.shimGetUserMedia
+  // TODO
+  // shimOnTrack: safariShim.shimOnTrack,
+  // shimPeerConnection: safariShim.shimPeerConnection,
+  // attachMediaStream: safariShim.attachMediaStream,
+  // reattachMediaStream: safariShim.reattachMediaStream
+};
+
+},{}],21:[function(require,module,exports){
+/*
+ *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
+ /* eslint-env node */
 'use strict';
 
 var logDisabled_ = false;
@@ -6580,7 +6051,9 @@ var utils = {
       if (logDisabled_) {
         return;
       }
-      console.log.apply(console, arguments);
+      if (typeof console !== 'undefined' && typeof console.log === 'function') {
+        console.log.apply(console, arguments);
+      }
     }
   },
 
@@ -6610,28 +6083,65 @@ var utils = {
     result.version = null;
     result.minVersion = null;
 
+    // Fail early if it's not a browser
     if (typeof window === 'undefined' || !window.navigator) {
       result.browser = 'Not a browser.';
       return result;
-    } else if (navigator.mozGetUserMedia) {
-      // Firefox.
+    }
+
+    // Firefox.
+    if (navigator.mozGetUserMedia) {
       result.browser = 'firefox';
       result.version = this.extractVersion(navigator.userAgent,
           /Firefox\/([0-9]+)\./, 1);
       result.minVersion = 31;
-    } else if (navigator.webkitGetUserMedia && window.webkitRTCPeerConnection) {
-      // Chrome, Chromium, WebView, Opera and other WebKit browsers.
-      result.browser = 'chrome';
-      result.version = this.extractVersion(navigator.userAgent,
+
+    // all webkit-based browsers
+    } else if (navigator.webkitGetUserMedia) {
+      // Chrome, Chromium, Webview, Opera, all use the chrome shim for now
+      if (window.webkitRTCPeerConnection) {
+        result.browser = 'chrome';
+        result.version = this.extractVersion(navigator.userAgent,
           /Chrom(e|ium)\/([0-9]+)\./, 2);
-      result.minVersion = 38;
-    } else if(navigator.mediaDevices &&
+        result.minVersion = 38;
+
+      // Safari or unknown webkit-based
+      // for the time being Safari has support for MediaStreams but not webRTC
+      } else {
+        // Safari UA substrings of interest for reference:
+        // - webkit version:           AppleWebKit/602.1.25 (also used in Op,Cr)
+        // - safari UI version:        Version/9.0.3 (unique to Safari)
+        // - safari UI webkit version: Safari/601.4.4 (also used in Op,Cr)
+        //
+        // if the webkit version and safari UI webkit versions are equals,
+        // ... this is a stable version.
+        //
+        // only the internal webkit version is important today to know if
+        // media streams are supported
+        //
+        if (navigator.userAgent.match(/Version\/(\d+).(\d+)/)) {
+          result.browser = 'safari';
+          result.version = this.extractVersion(navigator.userAgent,
+            /AppleWebKit\/([0-9]+)\./, 1);
+          result.minVersion = 602;
+
+        // unknown webkit-based browser
+        } else {
+          result.browser = 'Unsupported webkit-based browser ' +
+              'with GUM support but no WebRTC support.';
+          return result;
+        }
+      }
+
+    // Edge.
+    } else if (navigator.mediaDevices &&
         navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)) {
-      // Edge.
       result.browser = 'edge';
       result.version = this.extractVersion(navigator.userAgent,
           /Edge\/(\d+).(\d+)$/, 2);
       result.minVersion = 10547;
+
+    // Default fallthrough: not supported.
     } else {
       result.browser = 'Not a supported browser.';
       return result;
@@ -6656,7 +6166,7 @@ module.exports = {
   extractVersion: utils.extractVersion
 };
 
-},{}],25:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -6786,7 +6296,7 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":115}],26:[function(require,module,exports){
+},{"wildemitter":113}],23:[function(require,module,exports){
 var support = require('webrtcsupport');
 
 
@@ -6833,7 +6343,7 @@ GainController.prototype.on = function () {
 
 module.exports = GainController;
 
-},{"webrtcsupport":27}],27:[function(require,module,exports){
+},{"webrtcsupport":24}],24:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 var version;
@@ -6885,7 +6395,7 @@ module.exports = {
     getUserMedia: getUserMedia
 };
 
-},{}],28:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
 var l = methods.length;
 var fn = function () {};
@@ -6897,7 +6407,7 @@ while (l--) {
 
 module.exports = mockconsole;
 
-},{}],29:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 /**
  * lodash 3.0.3 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -6961,7 +6471,7 @@ var forEach = createForEach(arrayEach, baseEach);
 
 module.exports = forEach;
 
-},{"lodash._arrayeach":30,"lodash._baseeach":31,"lodash._bindcallback":35,"lodash.isarray":36}],30:[function(require,module,exports){
+},{"lodash._arrayeach":27,"lodash._baseeach":28,"lodash._bindcallback":32,"lodash.isarray":33}],27:[function(require,module,exports){
 /**
  * lodash 3.0.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -6994,7 +6504,7 @@ function arrayEach(array, iteratee) {
 
 module.exports = arrayEach;
 
-},{}],31:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 /**
  * lodash 3.0.4 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -7177,7 +6687,7 @@ function isObject(value) {
 
 module.exports = baseEach;
 
-},{"lodash.keys":32}],32:[function(require,module,exports){
+},{"lodash.keys":29}],29:[function(require,module,exports){
 /**
  * lodash 3.1.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -7415,7 +6925,7 @@ function keysIn(object) {
 
 module.exports = keys;
 
-},{"lodash._getnative":33,"lodash.isarguments":34,"lodash.isarray":36}],33:[function(require,module,exports){
+},{"lodash._getnative":30,"lodash.isarguments":31,"lodash.isarray":33}],30:[function(require,module,exports){
 /**
  * lodash 3.9.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -7554,7 +7064,7 @@ function isNative(value) {
 
 module.exports = getNative;
 
-},{}],34:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 /**
  * lodash 3.0.8 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -7799,7 +7309,7 @@ function isObjectLike(value) {
 
 module.exports = isArguments;
 
-},{}],35:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -7866,7 +7376,7 @@ function identity(value) {
 
 module.exports = bindCallback;
 
-},{}],36:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 /**
  * lodash 3.0.4 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8048,7 +7558,7 @@ function isNative(value) {
 
 module.exports = isArray;
 
-},{}],37:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 /**
  * lodash 3.1.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8207,7 +7717,7 @@ function property(path) {
 
 module.exports = pluck;
 
-},{"lodash._baseget":38,"lodash._topath":39,"lodash.isarray":40,"lodash.map":41}],38:[function(require,module,exports){
+},{"lodash._baseget":35,"lodash._topath":36,"lodash.isarray":37,"lodash.map":38}],35:[function(require,module,exports){
 /**
  * lodash 3.7.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8283,7 +7793,7 @@ function isObject(value) {
 
 module.exports = baseGet;
 
-},{}],39:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 /**
  * lodash 3.8.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8332,9 +7842,9 @@ function toPath(value) {
 
 module.exports = toPath;
 
-},{"lodash.isarray":40}],40:[function(require,module,exports){
-arguments[4][36][0].apply(exports,arguments)
-},{"dup":36}],41:[function(require,module,exports){
+},{"lodash.isarray":37}],37:[function(require,module,exports){
+arguments[4][33][0].apply(exports,arguments)
+},{"dup":33}],38:[function(require,module,exports){
 /**
  * lodash 3.1.4 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8486,7 +7996,7 @@ function map(collection, iteratee, thisArg) {
 
 module.exports = map;
 
-},{"lodash._arraymap":42,"lodash._basecallback":43,"lodash._baseeach":48,"lodash.isarray":40}],42:[function(require,module,exports){
+},{"lodash._arraymap":39,"lodash._basecallback":40,"lodash._baseeach":45,"lodash.isarray":37}],39:[function(require,module,exports){
 /**
  * lodash 3.0.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8518,7 +8028,7 @@ function arrayMap(array, iteratee) {
 
 module.exports = arrayMap;
 
-},{}],43:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 /**
  * lodash 3.3.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8942,7 +8452,7 @@ function property(path) {
 
 module.exports = baseCallback;
 
-},{"lodash._baseisequal":44,"lodash._bindcallback":46,"lodash.isarray":40,"lodash.pairs":47}],44:[function(require,module,exports){
+},{"lodash._baseisequal":41,"lodash._bindcallback":43,"lodash.isarray":37,"lodash.pairs":44}],41:[function(require,module,exports){
 /**
  * lodash 3.0.7 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -9286,7 +8796,7 @@ function isObject(value) {
 
 module.exports = baseIsEqual;
 
-},{"lodash.isarray":40,"lodash.istypedarray":45,"lodash.keys":49}],45:[function(require,module,exports){
+},{"lodash.isarray":37,"lodash.istypedarray":42,"lodash.keys":46}],42:[function(require,module,exports){
 /**
  * lodash 3.0.6 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -9436,9 +8946,9 @@ function isTypedArray(value) {
 
 module.exports = isTypedArray;
 
-},{}],46:[function(require,module,exports){
-arguments[4][35][0].apply(exports,arguments)
-},{"dup":35}],47:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
+arguments[4][32][0].apply(exports,arguments)
+},{"dup":32}],44:[function(require,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -9518,15 +9028,15 @@ function pairs(object) {
 
 module.exports = pairs;
 
-},{"lodash.keys":49}],48:[function(require,module,exports){
+},{"lodash.keys":46}],45:[function(require,module,exports){
+arguments[4][28][0].apply(exports,arguments)
+},{"dup":28,"lodash.keys":46}],46:[function(require,module,exports){
+arguments[4][29][0].apply(exports,arguments)
+},{"dup":29,"lodash._getnative":47,"lodash.isarguments":48,"lodash.isarray":37}],47:[function(require,module,exports){
+arguments[4][30][0].apply(exports,arguments)
+},{"dup":30}],48:[function(require,module,exports){
 arguments[4][31][0].apply(exports,arguments)
-},{"dup":31,"lodash.keys":49}],49:[function(require,module,exports){
-arguments[4][32][0].apply(exports,arguments)
-},{"dup":32,"lodash._getnative":50,"lodash.isarguments":51,"lodash.isarray":40}],50:[function(require,module,exports){
-arguments[4][33][0].apply(exports,arguments)
-},{"dup":33}],51:[function(require,module,exports){
-arguments[4][34][0].apply(exports,arguments)
-},{"dup":34}],52:[function(require,module,exports){
+},{"dup":31}],49:[function(require,module,exports){
 var toSDP = require('./lib/tosdp');
 var toJSON = require('./lib/tojson');
 
@@ -9648,7 +9158,7 @@ exports.toCandidateJSON = toJSON.toCandidateJSON;
 exports.toMediaJSON = toJSON.toMediaJSON;
 exports.toSessionJSON = toJSON.toSessionJSON;
 
-},{"./lib/tojson":55,"./lib/tosdp":56}],53:[function(require,module,exports){
+},{"./lib/tojson":52,"./lib/tosdp":53}],50:[function(require,module,exports){
 exports.lines = function (sdp) {
     return sdp.split('\r\n').filter(function (line) {
         return line.length > 0;
@@ -9919,7 +9429,7 @@ exports.msid = function (line) {
     };
 };
 
-},{}],54:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 module.exports = {
     initiator: {
         incoming: {
@@ -9967,7 +9477,7 @@ module.exports = {
     }
 };
 
-},{}],55:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 var SENDERS = require('./senders');
 var parsers = require('./parsers');
 var idCounter = Math.random();
@@ -10191,7 +9701,7 @@ exports.toCandidateJSON = function (line) {
     return candidate;
 };
 
-},{"./parsers":53,"./senders":54}],56:[function(require,module,exports){
+},{"./parsers":50,"./senders":51}],53:[function(require,module,exports){
 var SENDERS = require('./senders');
 
 
@@ -10430,7 +9940,7 @@ exports.toCandidateSDP = function (candidate) {
     return 'a=candidate:' + sdp.join(' ');
 };
 
-},{"./senders":54}],57:[function(require,module,exports){
+},{"./senders":51}],54:[function(require,module,exports){
 // based on https://github.com/ESTOS/strophe.jingle/
 // adds wildemitter support
 var util = require('util');
@@ -10643,23 +10153,25 @@ TraceablePeerConnection.prototype.getStats = function () {
 
 module.exports = TraceablePeerConnection;
 
-},{"util":12,"webrtc-adapter":58,"wildemitter":115}],58:[function(require,module,exports){
+},{"util":118,"webrtc-adapter":55,"wildemitter":113}],55:[function(require,module,exports){
+arguments[4][13][0].apply(exports,arguments)
+},{"./chrome/chrome_shim":56,"./edge/edge_shim":59,"./firefox/firefox_shim":60,"./safari/safari_shim":62,"./utils":63,"dup":13}],56:[function(require,module,exports){
+arguments[4][14][0].apply(exports,arguments)
+},{"../utils.js":63,"./getusermedia":57,"dup":14}],57:[function(require,module,exports){
+arguments[4][15][0].apply(exports,arguments)
+},{"../utils.js":63,"dup":15}],58:[function(require,module,exports){
+arguments[4][16][0].apply(exports,arguments)
+},{"dup":16}],59:[function(require,module,exports){
 arguments[4][17][0].apply(exports,arguments)
-},{"./chrome/chrome_shim":59,"./edge/edge_shim":62,"./firefox/firefox_shim":63,"./utils":65,"dup":17}],59:[function(require,module,exports){
+},{"../utils":63,"./edge_sdp":58,"dup":17}],60:[function(require,module,exports){
 arguments[4][18][0].apply(exports,arguments)
-},{"../utils.js":65,"./getusermedia":60,"dup":18}],60:[function(require,module,exports){
+},{"../utils":63,"./getusermedia":61,"dup":18}],61:[function(require,module,exports){
 arguments[4][19][0].apply(exports,arguments)
-},{"../utils.js":65,"dup":19}],61:[function(require,module,exports){
+},{"../utils":63,"dup":19}],62:[function(require,module,exports){
 arguments[4][20][0].apply(exports,arguments)
-},{"dup":20}],62:[function(require,module,exports){
+},{"dup":20}],63:[function(require,module,exports){
 arguments[4][21][0].apply(exports,arguments)
-},{"../utils":65,"./edge_sdp":61,"dup":21}],63:[function(require,module,exports){
-arguments[4][22][0].apply(exports,arguments)
-},{"../utils":65,"./getusermedia":64,"dup":22}],64:[function(require,module,exports){
-arguments[4][23][0].apply(exports,arguments)
-},{"../utils":65,"dup":23}],65:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"dup":24}],66:[function(require,module,exports){
+},{"dup":21}],64:[function(require,module,exports){
 var util = require('util');
 var each = require('lodash.foreach');
 var pluck = require('lodash.pluck');
@@ -11488,11 +11000,11 @@ PeerConnection.prototype.getStats = function (cb) {
 
 module.exports = PeerConnection;
 
-},{"lodash.foreach":29,"lodash.pluck":37,"sdp-jingle-json":52,"traceablepeerconnection":57,"util":12,"webrtc-adapter":58,"wildemitter":115}],67:[function(require,module,exports){
+},{"lodash.foreach":26,"lodash.pluck":34,"sdp-jingle-json":49,"traceablepeerconnection":54,"util":118,"webrtc-adapter":55,"wildemitter":113}],65:[function(require,module,exports){
 
 module.exports = require('./lib/');
 
-},{"./lib/":68}],68:[function(require,module,exports){
+},{"./lib/":66}],66:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -11581,7 +11093,7 @@ exports.connect = lookup;
 exports.Manager = require('./manager');
 exports.Socket = require('./socket');
 
-},{"./manager":69,"./socket":71,"./url":72,"debug":76,"socket.io-parser":109}],69:[function(require,module,exports){
+},{"./manager":67,"./socket":69,"./url":70,"debug":74,"socket.io-parser":107}],67:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -12086,7 +11598,7 @@ Manager.prototype.onreconnect = function(){
   this.emitAll('reconnect', attempt);
 };
 
-},{"./on":70,"./socket":71,"./url":72,"backo2":73,"component-bind":74,"component-emitter":75,"debug":76,"engine.io-client":77,"indexof":105,"object-component":106,"socket.io-parser":109}],70:[function(require,module,exports){
+},{"./on":68,"./socket":69,"./url":70,"backo2":71,"component-bind":72,"component-emitter":73,"debug":74,"engine.io-client":75,"indexof":103,"object-component":104,"socket.io-parser":107}],68:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -12112,7 +11624,7 @@ function on(obj, ev, fn) {
   };
 }
 
-},{}],71:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -12499,7 +12011,7 @@ Socket.prototype.disconnect = function(){
   return this;
 };
 
-},{"./on":70,"component-bind":74,"component-emitter":75,"debug":76,"has-binary":103,"socket.io-parser":109,"to-array":113}],72:[function(require,module,exports){
+},{"./on":68,"component-bind":72,"component-emitter":73,"debug":74,"has-binary":101,"socket.io-parser":107,"to-array":111}],70:[function(require,module,exports){
 (function (global){
 
 /**
@@ -12576,7 +12088,7 @@ function url(uri, loc){
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"debug":76,"parseuri":107}],73:[function(require,module,exports){
+},{"debug":74,"parseuri":105}],71:[function(require,module,exports){
 
 /**
  * Expose `Backoff`.
@@ -12663,7 +12175,7 @@ Backoff.prototype.setJitter = function(jitter){
 };
 
 
-},{}],74:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 /**
  * Slice reference.
  */
@@ -12688,7 +12200,7 @@ module.exports = function(obj, fn){
   }
 };
 
-},{}],75:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -12854,7 +12366,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],76:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 
 /**
  * Expose `debug()` as the module.
@@ -12993,11 +12505,11 @@ try {
   if (window.localStorage) debug.enable(localStorage.debug);
 } catch(e){}
 
-},{}],77:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 
 module.exports =  require('./lib/');
 
-},{"./lib/":78}],78:[function(require,module,exports){
+},{"./lib/":76}],76:[function(require,module,exports){
 
 module.exports = require('./socket');
 
@@ -13009,7 +12521,7 @@ module.exports = require('./socket');
  */
 module.exports.parser = require('engine.io-parser');
 
-},{"./socket":79,"engine.io-parser":91}],79:[function(require,module,exports){
+},{"./socket":77,"engine.io-parser":89}],77:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -13718,7 +13230,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./transport":80,"./transports":81,"component-emitter":75,"debug":88,"engine.io-parser":91,"indexof":105,"parsejson":100,"parseqs":101,"parseuri":102}],80:[function(require,module,exports){
+},{"./transport":78,"./transports":79,"component-emitter":73,"debug":86,"engine.io-parser":89,"indexof":103,"parsejson":98,"parseqs":99,"parseuri":100}],78:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -13879,7 +13391,7 @@ Transport.prototype.onClose = function () {
   this.emit('close');
 };
 
-},{"component-emitter":75,"engine.io-parser":91}],81:[function(require,module,exports){
+},{"component-emitter":73,"engine.io-parser":89}],79:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies
@@ -13936,7 +13448,7 @@ function polling(opts){
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling-jsonp":82,"./polling-xhr":83,"./websocket":85,"xmlhttprequest":86}],82:[function(require,module,exports){
+},{"./polling-jsonp":80,"./polling-xhr":81,"./websocket":83,"xmlhttprequest":84}],80:[function(require,module,exports){
 (function (global){
 
 /**
@@ -14173,7 +13685,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":84,"component-inherit":87}],83:[function(require,module,exports){
+},{"./polling":82,"component-inherit":85}],81:[function(require,module,exports){
 (function (global){
 /**
  * Module requirements.
@@ -14561,7 +14073,7 @@ function unloadHandler() {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":84,"component-emitter":75,"component-inherit":87,"debug":88,"xmlhttprequest":86}],84:[function(require,module,exports){
+},{"./polling":82,"component-emitter":73,"component-inherit":85,"debug":86,"xmlhttprequest":84}],82:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -14808,7 +14320,7 @@ Polling.prototype.uri = function(){
   return schema + '://' + this.hostname + port + this.path + query;
 };
 
-},{"../transport":80,"component-inherit":87,"debug":88,"engine.io-parser":91,"parseqs":101,"xmlhttprequest":86}],85:[function(require,module,exports){
+},{"../transport":78,"component-inherit":85,"debug":86,"engine.io-parser":89,"parseqs":99,"xmlhttprequest":84}],83:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -15048,7 +14560,7 @@ WS.prototype.check = function(){
   return !!WebSocket && !('__initialize' in WebSocket && this.name === WS.prototype.name);
 };
 
-},{"../transport":80,"component-inherit":87,"debug":88,"engine.io-parser":91,"parseqs":101,"ws":116}],86:[function(require,module,exports){
+},{"../transport":78,"component-inherit":85,"debug":86,"engine.io-parser":89,"parseqs":99,"ws":114}],84:[function(require,module,exports){
 // browser shim for xmlhttprequest module
 var hasCORS = require('has-cors');
 
@@ -15086,7 +14598,7 @@ module.exports = function(opts) {
   }
 }
 
-},{"has-cors":98}],87:[function(require,module,exports){
+},{"has-cors":96}],85:[function(require,module,exports){
 
 module.exports = function(a, b){
   var fn = function(){};
@@ -15094,7 +14606,7 @@ module.exports = function(a, b){
   a.prototype = new fn;
   a.prototype.constructor = a;
 };
-},{}],88:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 
 /**
  * This is the web browser implementation of `debug()`.
@@ -15243,7 +14755,7 @@ function load() {
 
 exports.enable(load());
 
-},{"./debug":89}],89:[function(require,module,exports){
+},{"./debug":87}],87:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -15442,7 +14954,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":90}],90:[function(require,module,exports){
+},{"ms":88}],88:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -15555,7 +15067,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],91:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -16153,7 +15665,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./keys":92,"after":93,"arraybuffer.slice":94,"base64-arraybuffer":95,"blob":96,"has-binary":103,"utf8":97}],92:[function(require,module,exports){
+},{"./keys":90,"after":91,"arraybuffer.slice":92,"base64-arraybuffer":93,"blob":94,"has-binary":101,"utf8":95}],90:[function(require,module,exports){
 
 /**
  * Gets the keys for an object.
@@ -16174,7 +15686,7 @@ module.exports = Object.keys || function keys (obj){
   return arr;
 };
 
-},{}],93:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 module.exports = after
 
 function after(count, callback, err_cb) {
@@ -16204,7 +15716,7 @@ function after(count, callback, err_cb) {
 
 function noop() {}
 
-},{}],94:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 /**
  * An abstraction for slicing an arraybuffer even when
  * ArrayBuffer.prototype.slice is not supported
@@ -16235,7 +15747,7 @@ module.exports = function(arraybuffer, start, end) {
   return result.buffer;
 };
 
-},{}],95:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 /*
  * base64-arraybuffer
  * https://github.com/niklasvh/base64-arraybuffer
@@ -16296,7 +15808,7 @@ module.exports = function(arraybuffer, start, end) {
   };
 })("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
 
-},{}],96:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 (function (global){
 /**
  * Create a blob builder even when vendor prefixes exist
@@ -16396,7 +15908,7 @@ module.exports = (function() {
 })();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],97:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/utf8js v2.0.0 by @mathias */
 ;(function(root) {
@@ -16644,7 +16156,7 @@ module.exports = (function() {
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],98:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -16669,7 +16181,7 @@ try {
   module.exports = false;
 }
 
-},{"global":99}],99:[function(require,module,exports){
+},{"global":97}],97:[function(require,module,exports){
 
 /**
  * Returns `this`. Execute this without a "context" (i.e. without it being
@@ -16679,7 +16191,7 @@ try {
 
 module.exports = (function () { return this; })();
 
-},{}],100:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 (function (global){
 /**
  * JSON parse.
@@ -16714,7 +16226,7 @@ module.exports = function parsejson(data) {
   }
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],101:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 /**
  * Compiles a querystring
  * Returns string representation of the object
@@ -16753,7 +16265,7 @@ exports.decode = function(qs){
   return qry;
 };
 
-},{}],102:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 /**
  * Parses an URI
  *
@@ -16794,7 +16306,7 @@ module.exports = function parseuri(str) {
     return uri;
 };
 
-},{}],103:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 (function (global){
 
 /*
@@ -16856,12 +16368,12 @@ function hasBinary(data) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"isarray":104}],104:[function(require,module,exports){
+},{"isarray":102}],102:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],105:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -16872,7 +16384,7 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
-},{}],106:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 
 /**
  * HOP ref.
@@ -16957,7 +16469,7 @@ exports.length = function(obj){
 exports.isEmpty = function(obj){
   return 0 == exports.length(obj);
 };
-},{}],107:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 /**
  * Parses an URI
  *
@@ -16984,7 +16496,7 @@ module.exports = function parseuri(str) {
   return uri;
 };
 
-},{}],108:[function(require,module,exports){
+},{}],106:[function(require,module,exports){
 (function (global){
 /*global Blob,File*/
 
@@ -17129,7 +16641,7 @@ exports.removeBlobs = function(data, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./is-buffer":110,"isarray":111}],109:[function(require,module,exports){
+},{"./is-buffer":108,"isarray":109}],107:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -17531,7 +17043,7 @@ function error(data){
   };
 }
 
-},{"./binary":108,"./is-buffer":110,"component-emitter":75,"debug":76,"isarray":111,"json3":112}],110:[function(require,module,exports){
+},{"./binary":106,"./is-buffer":108,"component-emitter":73,"debug":74,"isarray":109,"json3":110}],108:[function(require,module,exports){
 (function (global){
 
 module.exports = isBuf;
@@ -17548,9 +17060,9 @@ function isBuf(obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],111:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],112:[function(require,module,exports){
+},{}],109:[function(require,module,exports){
+arguments[4][102][0].apply(exports,arguments)
+},{"dup":102}],110:[function(require,module,exports){
 /*! JSON v3.2.6 | http://bestiejs.github.io/json3 | Copyright 2012-2013, Kit Cambridge | http://kit.mit-license.org */
 ;(function (window) {
   // Convenience aliases.
@@ -18413,7 +17925,7 @@ arguments[4][104][0].apply(exports,arguments)
   }
 }(this));
 
-},{}],113:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 module.exports = toArray
 
 function toArray(list, index) {
@@ -18428,7 +17940,7 @@ function toArray(list, index) {
     return array
 }
 
-},{}],114:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 var version;
@@ -18475,7 +17987,7 @@ module.exports = {
     getUserMedia: getUserMedia
 };
 
-},{}],115:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based
 on @visionmedia's Emitter from UI Kit.
@@ -18630,7 +18142,7 @@ WildEmitter.mixin = function (constructor) {
 
 WildEmitter.mixin(WildEmitter);
 
-},{}],116:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -18675,4 +18187,719 @@ function ws(uri, protocols, opts) {
 
 if (WebSocket) ws.prototype = WebSocket.prototype;
 
-},{}]},{},[2]);
+},{}],115:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],116:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = setTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    clearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        setTimeout(drainQueue, 0);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],117:[function(require,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],118:[function(require,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = require('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = require('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":117,"_process":116,"inherits":115}]},{},[2]);
