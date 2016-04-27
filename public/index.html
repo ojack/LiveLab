@@ -6,16 +6,21 @@
     <body>
         <h1 id="title">Start a room</h1>
         <style>
+
+            video::-webkit-media-controls {
+                display:none !important;
+            }
+
             .videoContainer {
                 position: relative;
                 display: inline-block;
                 width: 400px;
-                height: 300px;
+                height: 325px;
             }
             .videoContainer video {
                 position: absolute;
                 width: 100%;
-                height: 100%;
+                height: 90%;
             }
             .volume_bar {
                 position: absolute;
@@ -39,6 +44,17 @@
                 font-family: "Lucida Console", Monaco, monospace;
             }
         </style>
+
+        <center>
+            <form>
+
+                <input type="button" onClick="newWindow()" value="window">
+                <input type="button" onClick="showWindow.document.getElementById('showVideo').webkitRequestFullScreen()" value="Enter Full">
+                <input type="button" onClick="showWindow.document.getElementById('showVideo').webkitExitFullscreen()" value="Exit Full">
+
+            </form>
+        </center>
+
         <p id="subTitle"></p>
         <form id="createRoom">
             <input id="sessionInput"/>
@@ -47,8 +63,12 @@
        
         <div id="remotes">
              <div class="videoContainer">
+
+                <input type="button" onClick="showWindow.document.getElementById('showVideo').src=document.getElementById('localVideo').src" value="Show">
+
                 <video id="localVideo" style="height: 300px;" oncontextmenu="return false;"></video>
                 <div id="localVolume" class="volume_bar"></div>
+
             </div>
         </div>
         <div id="chat-window">
@@ -64,7 +84,15 @@
          <script src="osc-browser.js"></script>
         <script src="bundle.js"></script>
             
-           
-        </script>
+    <script type="text/javascript">
+
+        var showWindow;
+
+        function newWindow() {
+            showWindow = window.open("https://localhost:8000/show.html", "Show");
+        }
+
+    </script>
+
     </body>
 </html>
