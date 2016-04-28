@@ -1,9 +1,12 @@
-var LOCAL_SOCKET = "wss://localhost:8000";
 
 var SimpleWebRTC = require('./libs/simplewebrtc');
-var LiveLabOsc = require('./LiveLabOsc');
+var LiveLabOsc = require('./LiveLabOsc')
 
- var webrtc, chatlog, oscChannel;
+var BASE_SOCKET_URL = "wss://localhost";
+var BASE_SOCKET_PORT = 8000;
+
+ var webrtc, chatlog, osc;
+
  window.onload = function(){
      // grab the room from the URL
     var room = location.search && location.search.split('?')[1];
@@ -22,12 +25,14 @@ var LiveLabOsc = require('./LiveLabOsc');
         autoAdjustMic: false
      });
 
-    // TO DO: ERROR CHECKING FOR WHETHER WEBSOCKETS ARE AVAILABLE
-    //Create html element for OSC ui
-    var streamContainer = document.createElement('div');
-    document.body.appendChild(streamContainer);   
-    oscChannel = new LiveLabOsc(LOCAL_SOCKET, webrtc, streamContainer);
-   
+    //create div element for local osc streams
+    var streamDiv = document.createElement('div');
+    streamDiv.className = "stream-holder";
+    document.getElementById("localContainer").appendChild(streamDiv);
+    osc = new LiveLabOsc(BASE_SOCKET_PORT, webrtc, streamDiv, BASE_SOCKET_URL);
+    //connect to server via websockets
+
+
        
         // when it's ready, join if we got a room from the URL
     webrtc.on('readyToCall', function () {
@@ -42,7 +47,8 @@ var LiveLabOsc = require('./LiveLabOsc');
             chatlog.innerHTML += "</br>"+peer.id + ": " + data.payload; 
             console.log(data);
         }  else if(data.type=="osc"){
-                $("#osc-remote").text(JSON.stringify(data.payload, undefined, 2));
+                osc.receivedRemoteStream(data, peer.id, label);
+               
         }
     });
 
@@ -62,6 +68,10 @@ var LiveLabOsc = require('./LiveLabOsc');
                 video.style.height = video.videoHeight + 'px';
             };
             d.appendChild(vol);
+            var streamDiv = document.createElement('div');
+            streamDiv.className = "stream-holder";
+            osc.addPeer(peer.id, streamDiv);
+            d.appendChild(streamDiv);
             remotes.appendChild(d);
         }
     });

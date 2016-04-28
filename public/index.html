@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>SimpleWebRTC Demo</title>
+        <title>LiveLab</title>
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/skeleton.css">
     </head>
     <body>
         <h1 id="title">Start a room</h1>
@@ -33,6 +35,31 @@
                 width: 200px;
                 padding: 10px;
             }
+            .list-item{
+                margin: 5px;
+                padding: 5px;
+            }
+
+            .stream-label{
+                color:  #12acef;
+            }
+            .stream-holder{
+                position: absolute;
+                top: 350px;
+                left: 0px;
+                display: block;
+                color: #fff;
+                z-index: 100;
+                font-size: 11px;
+            }
+
+            .list-item.active{
+                background-color: #333;
+            }
+
+            input[type="text"]{
+                color: #000;
+            }
             html, body {
                 background-color: #000;
                 color: #fff;
@@ -46,7 +73,7 @@
         </form>
        
         <div id="remotes">
-             <div class="videoContainer">
+             <div class="videoContainer" id="localContainer">
                 <video id="localVideo" style="height: 300px;" oncontextmenu="return false;"></video>
                 <div id="localVolume" class="volume_bar"></div>
             </div>
