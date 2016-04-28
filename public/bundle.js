@@ -135,157 +135,6 @@ LiveLabOsc.prototype.receivedRemoteStream = function(data, peer_id, label){
 module.exports = LiveLabOsc;
 
 },{}],2:[function(require,module,exports){
-var SimpleWebRTC = require('./webrtc/simplewebrtc');
-var LiveLabOsc = require('./LiveLabOsc')
-
-var BASE_SOCKET_URL = "wss://localhost";
-var BASE_SOCKET_PORT = 8000;
-
- var webrtc, chatlog, osc;
- window.onload = function(){
-     // grab the room from the URL
-    var room = location.search && location.search.split('?')[1];
-    chatlog = document.getElementById("chatlog");
-
-     // create our webrtc connection
-    webrtc = new SimpleWebRTC({
-        // the id/element dom element that will hold "our" video
-        localVideoEl: 'localVideo',
-        // the id/element dom element that will hold remote videos
-        remoteVideosEl: '',
-        // immediately ask for camera access
-        autoRequestMedia: true,
-        debug: false,
-        detectSpeakingEvents: true,
-        autoAdjustMic: false
-     });
-
-    //create div element for local osc streams
-    var streamDiv = document.createElement('div');
-    streamDiv.className = "stream-holder";
-    document.getElementById("localContainer").appendChild(streamDiv);
-    osc = new LiveLabOsc(BASE_SOCKET_PORT, webrtc, streamDiv, BASE_SOCKET_URL);
-    //connect to server via websockets
-
-       
-        // when it's ready, join if we got a room from the URL
-    webrtc.on('readyToCall', function () {
-        // you can name it anything
-        if (room) webrtc.joinRoom(room);
-    });
-
-     webrtc.on('channelMessage', function (peer, label, data) {
-        if (data.type == 'volume') {
-            showVolume(document.getElementById('volume_' + peer.id), data.volume);
-        } else if(data.type=="chat"){
-            chatlog.innerHTML += "</br>"+peer.id + ": " + data.payload; 
-            console.log(data);
-        }  else if(data.type=="osc"){
-                osc.receivedRemoteStream(data, peer.id, label);
-               
-        }
-    });
-
-    webrtc.on('videoAdded', function (video, peer) {
-        console.log('video added', peer);
-        var remotes = document.getElementById('remotes');
-        if (remotes) {
-            var d = document.createElement('div');
-            d.className = 'videoContainer';
-            d.id = 'container_' + webrtc.getDomId(peer);
-            d.appendChild(video);
-            var vol = document.createElement('div');
-            vol.id = 'volume_' + peer.id;
-            vol.className = 'volume_bar';
-            video.onclick = function () {
-                video.style.width = video.videoWidth + 'px';
-                video.style.height = video.videoHeight + 'px';
-            };
-            d.appendChild(vol);
-            var streamDiv = document.createElement('div');
-            streamDiv.className = "stream-holder";
-            osc.addPeer(peer.id, streamDiv);
-            d.appendChild(streamDiv);
-            remotes.appendChild(d);
-        }
-    });
-
-    webrtc.on('videoRemoved', function (video, peer) {
-        console.log('video removed ', peer);
-        var remotes = document.getElementById('remotes');
-        var el = document.getElementById('container_' + webrtc.getDomId(peer));
-        if (remotes && el) {
-            remotes.removeChild(el);
-        }
-    });
-
-    webrtc.on('volumeChange', function (volume, treshold) {
-        //console.log('own volume', volume);
-        showVolume(document.getElementById('localVolume'), volume);
-    });
-     
-    if (room) {
-        setRoom(room);
-    } else {
-        $('#createRoom').submit(function () {
-            var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
-            webrtc.createRoom(val, function (err, name) {
-                console.log(' create room cb', arguments);
-            
-                var newUrl = location.pathname + '?' + name;
-                if (!err) {
-                    history.replaceState({foo: 'bar'}, null, newUrl);
-                    setRoom(name);
-                } else {
-                    console.log(err);
-                }
-            });
-            return false;          
-        });
-    }
-
-       $('#sendChat').submit(function () {
-       		 var msg = document.getElementById("chat").value;
-    		chatlog.innerHTML += "</br> me: " + msg; 
-    		webrtc.sendDirectlyToAll("simplewebrtc", "chat", msg) ;
-             return false;
-    	});
- }
- 
-function showVolume(el, volume) {
-    if (!el) return;
-    if (volume < -45) { // vary between -45 and -20
-        el.style.height = '0px';
-    } else if (volume > -20) {
-        el.style.height = '100%';
-    } else {
-        el.style.height = '' + Math.floor((volume + 100) * 100 / 25 - 220) + '%';
-    }
-}
-
-
-// Since we use this twice we put it here
-function setRoom(name) {
-    $('#createRoom').remove();
-    $('h1').text(name);
-   // $('#subTitle').text(name + " || link: "+ location.href);
-    $('body').addClass('active');
-}
-
-          
-/*- sendDirectlyToAll() broadcasts a message to all peers in the room via a dataChannel
-string channelLabel - the label for the dataChannel to send on
-string messageType - the key for the type of message being sent
-object payload - an arbitrary value or object to send to peers 
-function sendmessage(){
-    var msg = document.getElementById("chat").value;
-    chatlog.innerHTML += "</br> me: " + msg; 
-    webrtc.sendDirectlyToAll("simplewebrtc", "chat", msg) ;
-*/
-
-          
-
-},{"./LiveLabOsc":1,"./webrtc/simplewebrtc":4}],3:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var PeerConnection = require('rtcpeerconnection');
@@ -574,7 +423,7 @@ Peer.prototype.sendFile = function (file) {
 
 module.exports = Peer;
 
-},{"filetransfer":9,"rtcpeerconnection":64,"util":118,"webrtcsupport":112,"wildemitter":113}],4:[function(require,module,exports){
+},{"filetransfer":9,"rtcpeerconnection":64,"util":118,"webrtcsupport":112,"wildemitter":113}],3:[function(require,module,exports){
 var WebRTC = require('./webrtc');
 var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
@@ -1040,7 +889,7 @@ SimpleWebRTC.prototype.sendFile = function () {
 
 module.exports = SimpleWebRTC;
 
-},{"./socketioconnection":5,"./webrtc":6,"attachmediastream":7,"mockconsole":25,"webrtcsupport":112,"wildemitter":113}],5:[function(require,module,exports){
+},{"./socketioconnection":4,"./webrtc":5,"attachmediastream":7,"mockconsole":25,"webrtcsupport":112,"wildemitter":113}],4:[function(require,module,exports){
 var io = require('socket.io-client');
 
 function SocketIoConnection(config) {
@@ -1065,7 +914,7 @@ SocketIoConnection.prototype.disconnect = function () {
 
 module.exports = SocketIoConnection;
 
-},{"socket.io-client":65}],6:[function(require,module,exports){
+},{"socket.io-client":65}],5:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var WildEmitter = require('wildemitter');
@@ -1226,7 +1075,150 @@ WebRTC.prototype.sendDirectlyToAll = function (channel, message, payload) {
 
 module.exports = WebRTC;
 
-},{"./peer":3,"localmedia":10,"mockconsole":25,"util":118,"webrtcsupport":112,"wildemitter":113}],7:[function(require,module,exports){
+},{"./peer":2,"localmedia":10,"mockconsole":25,"util":118,"webrtcsupport":112,"wildemitter":113}],6:[function(require,module,exports){
+
+var SimpleWebRTC = require('./libs/simplewebrtc');
+var LiveLabOsc = require('./LiveLabOsc')
+
+var BASE_SOCKET_URL = "wss://localhost";
+var BASE_SOCKET_PORT = 8000;
+
+ var webrtc, chatlog, osc;
+
+ window.onload = function(){
+     // grab the room from the URL
+    var room = location.search && location.search.split('?')[1];
+    chatlog = document.getElementById("chatlog");
+
+     // create our webrtc connection
+    webrtc = new SimpleWebRTC({
+        // the id/element dom element that will hold "our" video
+        localVideoEl: 'localVideo',
+        // the id/element dom element that will hold remote videos
+        remoteVideosEl: '',
+        // immediately ask for camera access
+        autoRequestMedia: true,
+        debug: false,
+        detectSpeakingEvents: true,
+        autoAdjustMic: false
+     });
+
+    //create div element for local osc streams
+    var streamDiv = document.createElement('div');
+    streamDiv.className = "stream-holder";
+    document.getElementById("localContainer").appendChild(streamDiv);
+    osc = new LiveLabOsc(BASE_SOCKET_PORT, webrtc, streamDiv, BASE_SOCKET_URL);
+    //connect to server via websockets
+
+
+       
+        // when it's ready, join if we got a room from the URL
+    webrtc.on('readyToCall', function () {
+        // you can name it anything
+        if (room) webrtc.joinRoom(room);
+    });
+
+     webrtc.on('channelMessage', function (peer, label, data) {
+        if (data.type == 'volume') {
+            showVolume(document.getElementById('volume_' + peer.id), data.volume);
+        } else if(data.type=="chat"){
+            chatlog.innerHTML += "</br>"+peer.id + ": " + data.payload; 
+            console.log(data);
+        }  else if(data.type=="osc"){
+                osc.receivedRemoteStream(data, peer.id, label);
+               
+        }
+    });
+
+    webrtc.on('videoAdded', function (video, peer) {
+        console.log('video added', peer);
+        var remotes = document.getElementById('remotes');
+        if (remotes) {
+            var d = document.createElement('div');
+            d.className = 'videoContainer';
+            d.id = 'container_' + webrtc.getDomId(peer);
+            d.appendChild(video);
+            var vol = document.createElement('div');
+            vol.id = 'volume_' + peer.id;
+            vol.className = 'volume_bar';
+            video.onclick = function () {
+                video.style.width = video.videoWidth + 'px';
+                video.style.height = video.videoHeight + 'px';
+            };
+            d.appendChild(vol);
+            var streamDiv = document.createElement('div');
+            streamDiv.className = "stream-holder";
+            osc.addPeer(peer.id, streamDiv);
+            d.appendChild(streamDiv);
+            remotes.appendChild(d);
+        }
+    });
+
+    webrtc.on('videoRemoved', function (video, peer) {
+        console.log('video removed ', peer);
+        var remotes = document.getElementById('remotes');
+        var el = document.getElementById('container_' + webrtc.getDomId(peer));
+        if (remotes && el) {
+            remotes.removeChild(el);
+        }
+    });
+
+    webrtc.on('volumeChange', function (volume, treshold) {
+        //console.log('own volume', volume);
+        showVolume(document.getElementById('localVolume'), volume);
+    });
+     
+    if (room) {
+        setRoom(room);
+    } else {
+        $('#createRoom').submit(function () {
+            var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
+            webrtc.createRoom(val, function (err, name) {
+                console.log(' create room cb', arguments);
+            
+                var newUrl = location.pathname + '?' + name;
+                if (!err) {
+                    history.replaceState({foo: 'bar'}, null, newUrl);
+                    setRoom(name);
+                } else {
+                    console.log(err);
+                }
+            });
+            return false;          
+        });
+    }
+
+       $('#sendChat').submit(function () {
+       		 var msg = document.getElementById("chat").value;
+    		chatlog.innerHTML += "</br> me: " + msg; 
+    		webrtc.sendDirectlyToAll("simplewebrtc", "chat", msg) ;
+             return false;
+    	});
+ }
+ 
+function showVolume(el, volume) {
+    if (!el) return;
+    if (volume < -45) { // vary between -45 and -20
+        el.style.height = '0px';
+    } else if (volume > -20) {
+        el.style.height = '100%';
+    } else {
+        el.style.height = '' + Math.floor((volume + 100) * 100 / 25 - 220) + '%';
+    }
+}
+
+
+function setRoom(name) {
+    $('#createRoom').remove();
+    $('h1').text(name);
+   // $('#subTitle').text(name + " || link: "+ location.href);
+    $('body').addClass('active');
+}
+
+
+          
+
+},{"./LiveLabOsc":1,"./libs/simplewebrtc":3}],7:[function(require,module,exports){
 var adapter = require('webrtc-adapter-test');
 module.exports = function (stream, el, options) {
     var item;
@@ -18902,4 +18894,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":117,"_process":116,"inherits":115}]},{},[2]);
+},{"./support/isBuffer":117,"_process":116,"inherits":115}]},{},[6]);

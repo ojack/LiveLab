@@ -1,10 +1,12 @@
-var SimpleWebRTC = require('./webrtc/simplewebrtc');
+
+var SimpleWebRTC = require('./libs/simplewebrtc');
 var LiveLabOsc = require('./LiveLabOsc')
 
 var BASE_SOCKET_URL = "wss://localhost";
 var BASE_SOCKET_PORT = 8000;
 
  var webrtc, chatlog, osc;
+
  window.onload = function(){
      // grab the room from the URL
     var room = location.search && location.search.split('?')[1];
@@ -29,6 +31,7 @@ var BASE_SOCKET_PORT = 8000;
     document.getElementById("localContainer").appendChild(streamDiv);
     osc = new LiveLabOsc(BASE_SOCKET_PORT, webrtc, streamDiv, BASE_SOCKET_URL);
     //connect to server via websockets
+
 
        
         // when it's ready, join if we got a room from the URL
@@ -127,7 +130,6 @@ function showVolume(el, volume) {
 }
 
 
-// Since we use this twice we put it here
 function setRoom(name) {
     $('#createRoom').remove();
     $('h1').text(name);
@@ -135,15 +137,5 @@ function setRoom(name) {
     $('body').addClass('active');
 }
 
-          
-/*- sendDirectlyToAll() broadcasts a message to all peers in the room via a dataChannel
-string channelLabel - the label for the dataChannel to send on
-string messageType - the key for the type of message being sent
-object payload - an arbitrary value or object to send to peers 
-function sendmessage(){
-    var msg = document.getElementById("chat").value;
-    chatlog.innerHTML += "</br> me: " + msg; 
-    webrtc.sendDirectlyToAll("simplewebrtc", "chat", msg) ;
-*/
 
           
