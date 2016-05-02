@@ -27,6 +27,10 @@
                 bottom: 0px;
                 background-color: #12acef;
             }
+            .outputSelector {
+                position: absolute;
+                float: top;
+            }
             #chat-window{
                 position: fixed;
                 right: 0px;
@@ -45,7 +49,7 @@
             }
             .stream-holder{
                 position: absolute;
-                top: 350px;
+                top: 400px;
                 left: 0px;
                 display: block;
                 color: #fff;
@@ -73,10 +77,16 @@
         </form>
        
         <div id="remotes">
-             <div class="videoContainer" id="localContainer">
+
+            <div class="videoContainer" id="localContainer">
                 <video id="localVideo" style="height: 300px;" oncontextmenu="return false;"></video>
                 <div id="localVolume" class="volume_bar"></div>
+                <div class="outputSelector">
+                    <label>Select local audio output: </label>
+                    <select></select>
+                </div>
             </div>
+
         </div>
         <div id="chat-window">
             <div id="chatlog"></div>
@@ -85,8 +95,14 @@
                 <button type="submit">Send</buttom>
             </form>
         </div>
+
+        <div>
+            <button id="getOuts">Get Audio Outs</button>
+        </div>
+
         <div id="osc"></div>
         <div id="osc-remote"></div>
+
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
          <script src="osc-browser.js"></script>
         <script src="bundle.js"></script>
