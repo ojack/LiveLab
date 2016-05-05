@@ -73,10 +73,11 @@ var BASE_SOCKET_PORT = 8000;
             d.appendChild(vol);
 
             d.appendChild(video);
+            video.id = 'video_' + peer.id;
             video.onclick = function () {
-                video.style.width = video.videoWidth + 'px';
-                video.style.height = video.videoHeight + 'px';
+                showWindow.document.getElementById('showVideo').src = document.getElementById('video_' + peer.id).src;
             };
+            video.oncanplay = function() {getOuts()};
 
             var streamDiv = document.createElement('div');
             streamDiv.className = "stream-holder";
@@ -97,7 +98,7 @@ var BASE_SOCKET_PORT = 8000;
             remotes.appendChild(d);
         };
         // to enumerate audio outs for new peer
-        gotDevices();
+        getOuts();
     });
 
     webrtc.on('videoRemoved', function (video, peer) {
@@ -160,8 +161,8 @@ function setRoom(name) {
     $('body').addClass('active');
 }
 
-// FIX: getOuts sould happen after start() and on.videoAdded
-document.getElementById('getOuts').onclick = function() {getOuts()};
+
+document.getElementById('localVideo').oncanplay = function() {getOuts()};
 function getOuts(){
     navigator.mediaDevices.enumerateDevices()
     .then(gotDevices)
