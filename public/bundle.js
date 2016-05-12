@@ -1078,7 +1078,9 @@ module.exports = WebRTC;
 },{"./peer":2,"localmedia":43,"mockconsole":64,"util":92,"webrtcsupport":103,"wildemitter":104}],6:[function(require,module,exports){
 
 var SimpleWebRTC = require('./libs/simplewebrtc');
-var LiveLabOsc = require('./LiveLabOsc')
+var LiveLabOsc = require('./LiveLabOsc');
+var MicGainController = require('mediastream-gain');
+
 
 var BASE_SOCKET_URL = "wss://localhost";
 var BASE_SOCKET_PORT = 8000;
@@ -1101,13 +1103,39 @@ var BASE_SOCKET_PORT = 8000;
     webrtc = new SimpleWebRTC({
         // the id/element dom element that will hold "our" video
         localVideoEl: 'localVideo',
+        localVideo: {
+                autoplay: true,
+                mirror: false,
+                muted: false
+            },
         // the id/element dom element that will hold remote videos
         remoteVideosEl: '',
         // immediately ask for camera access
         autoRequestMedia: true,
         debug: false,
         detectSpeakingEvents: true,
-        autoAdjustMic: false
+        autoAdjustMic: false,
+        adjustPeerVolume: false,
+        peerVolumeWhenSpeaking: 0.25,
+        media: {
+          audio: {
+            optional: [
+            {googAutoGainControl: false}, 
+            {googAutoGainControl2: false}, 
+            {googEchoCancellation: false},
+            {googEchoCancellation2: false},
+            {googNoiseSuppression: false},
+            {googNoiseSuppression2: false},
+            {googHighpassFilter: false},
+            {googTypingNoiseDetection: false},
+            {googAudioMirroring: false}
+            ]
+          },
+          video: {
+            optional: [
+            ]
+          }
+        }
      })
 
     //create div element for local osc streams
@@ -1173,10 +1201,27 @@ var BASE_SOCKET_PORT = 8000;
             audioOut.appendChild(audioOutSelector);
             d.appendChild(audioOut);
 
+            // volume control
+            var volCntl = document.createElement('div');
+            volCntl.className = 'volumeSlide';
+            volCntl.id = 'volCntl_' + peer.id;
+            var volumeLabel = document.createElement('label');
+            volumeLabel.innerHTML = 'Volume';
+            volCntl.appendChild(volumeLabel);
+            var volController = document.createElement('input');
+            volController.type = 'range';
+            volController.min = "0.0";
+            volController.max = "1.0";
+            volController.value = "0.0";
+            volController.step = "0.01";
+            volController.oninput = function() {
+              video.volume = volController.value;
+            };
+            volCntl.appendChild(volController);
+            d.appendChild(volCntl);
+
             remotes.appendChild(d);
         };
-        // to enumerate audio outs for new peer
-        getOuts();
     });
 
     webrtc.on('videoRemoved', function (video, peer) {
@@ -1239,7 +1284,24 @@ function setRoom(name) {
     $('body').addClass('active');
 }
 
+// echo cancellation
+var echoOff = {
+  audio: {optional: [ {googAutoGainControl: false}, {googAutoGainControl2: false}, {googEchoCancellation: false}, {googEchoCancellation2: false}, {googNoiseSuppression: false}, {googNoiseSuppression2: false}, {googHighpassFilter: false}, {googTypingNoiseDetection: false}, {googAudioMirroring: false}]}
+};
 
+var echoOn = {
+  audio: {optional: [ {googAutoGainControl: true}, {googAutoGainControl2: true}, {googEchoCancellation: true}, {googEchoCancellation2: true}, {googNoiseSuppression: true}, {googNoiseSuppression2: true}, {googHighpassFilter: true}, {googTypingNoiseDetection: true}, {googAudioMirroring: true}]}
+};
+
+function echoCancel(constraints) {
+  navigator.mediaDevices.getUserMedia(constraints);
+  // .then(start);
+}
+
+document.getElementById('echoOff').onclick = function() {echoCancel(echoOff)};
+document.getElementById('echoOn').onclick = function() {echoCancel(echoOn)};
+
+// audio out section
 document.getElementById('localVideo').oncanplay = function() {getOuts()};
 function getOuts(){
     navigator.mediaDevices.enumerateDevices()
@@ -1247,7 +1309,6 @@ function getOuts(){
     .catch(errorCallback);
 }
 
-// audio out section
 function gotDevices(deviceInfos) {
   console.log('window stream' + window.stream);
   var masterOutputSelector = document.createElement('select');
@@ -1313,7 +1374,7 @@ function errorCallback(error) {
 
 start();
 
-},{"./LiveLabOsc":1,"./libs/simplewebrtc":3}],7:[function(require,module,exports){
+},{"./LiveLabOsc":1,"./libs/simplewebrtc":3,"mediastream-gain":62}],7:[function(require,module,exports){
 module.exports = after
 
 function after(count, callback, err_cb) {
@@ -9782,6 +9843,9 @@ var currentQueue;
 var queueIndex = -1;
 
 function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
     draining = false;
     if (currentQueue.length) {
         queue = currentQueue.concat(queue);

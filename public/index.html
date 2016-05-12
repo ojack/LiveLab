@@ -21,15 +21,22 @@
             }
             .volume_bar {
                 position: absolute;
+                z-index: 5;
                 width: 5px;
                 height: 0px;
                 right: 0px;
                 bottom: 0px;
                 background-color: #12acef;
             }
+            .volumeSlide {
+                position: absolute;
+                right: 0px;
+                bottom: 0px;
+            }
             .outputSelector {
                 position: absolute;
-                float: top;
+                bottom: 0px;
+                left: 0px;
             }
             #chat-window{
                 position: fixed;
@@ -78,6 +85,8 @@
                 <input type="button" onClick="newWindow()" value="window">
                 <input type="button" onClick="enterFull()" value="Enter Full">
                 <input type="button" onClick="exitFull()" value="Exit Full">
+                <input id='echoOn' type="button" onClick="echoOn()" value="Echo On">
+                <input id='echoOff' type="button" onClick="echoOff()" value="Echo Off">
 
             </form>
         </center>
@@ -92,11 +101,19 @@
 
             <div class="videoContainer" id="localContainer">
                 <video id="localVideo" src="temp" style="height: 300px;" onClick="showWindow.document.getElementById('showVideo').src=src" oncontextmenu="return false;"></video>
+
                 <div id="localVolume" class="volume_bar"></div>
+
                 <div class="outputSelector">
                     <label>Select local audio output: </label>
                     <select></select>
                 </div>
+
+                <div class="volumeSlide">
+                    <label>Volume</label>
+                    <input id="loVolCon" class='volController' type="range" oninput="volChange()" min="0.0" max="1.0" value="0.0" step ="0.01">
+                </div>
+
             </div>
 
         </div>
@@ -124,6 +141,14 @@
             var showWindow;
 
             var showVideo;
+
+            var localVid = document.getElementById('localVideo');
+            localVid.volume = 0;
+            
+            function volChange() {
+                var localVol = document.getElementById('loVolCon').value;
+                localVid.volume = localVol;
+            }
 
             var isFirefox = typeof InstallTrigger !== 'undefined';
             console.log('firefox: ' + isFirefox);
