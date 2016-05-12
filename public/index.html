@@ -125,10 +125,6 @@
             </form>
         </div>
 
-<!--         <div>
-            <button id="getOuts">Get Audio Outs</button>
-        </div> -->
-
         <div id="osc"></div>
         <div id="osc-remote"></div>
 
@@ -138,10 +134,11 @@
 
         <script type="text/javascript">
 
+            var ip = location.host;
+            console.log('ip: ' + ip);
+
             var showWindow;
-
             var showVideo;
-
             var localVid = document.getElementById('localVideo');
             localVid.volume = 0;
             
@@ -151,13 +148,10 @@
             }
 
             var isFirefox = typeof InstallTrigger !== 'undefined';
-            console.log('firefox: ' + isFirefox);
-
             var isChrome = !!window.chrome && !!window.chrome.webstore;
-            console.log('chrome: ' + isChrome);
 
             function newWindow() {
-                showWindow = window.open("https://localhost:8000/show.html", "Show", 'popup');
+                showWindow = window.open("https://" + ip + "/show.html", "Show", 'popup');
                 showVideo = showWindow.document.getElementById('showVideo');
             }
 
