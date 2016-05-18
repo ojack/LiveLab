@@ -38,6 +38,32 @@
                 bottom: 0px;
                 left: 0px;
             }
+
+            .peerWindow {
+                position: absolute;
+                top: 0px;
+                left: 0px;
+            }
+            .peerFull {
+                position: absolute;
+                top: 0px;
+                left: 120px;                
+            }
+
+            #createRoom {
+                position: relative;
+                left: 0px;
+                top: 0px;    
+            }
+
+            #sessionControl {
+                position: fixed;
+                overflow: auto;
+                right: 250px;
+                top: 0px;
+                padding: 10px;
+            }
+
             #chat-window{
                 position: fixed;
                 right: 0px;
@@ -79,28 +105,31 @@
 
         </style>
 
-        <center>
-            <form>
-
-                <input type="button" onClick="newWindow()" value="window">
-                <input type="button" onClick="enterFull()" value="Enter Full">
-                <input type="button" onClick="exitFull()" value="Exit Full">
-                <input id='echoOn' type="button" onClick="echoOn()" value="Echo On">
-                <input id='echoOff' type="button" onClick="echoOff()" value="Echo Off">
-
-            </form>
-        </center>
-
         <p id="subTitle"></p>
         <form id="createRoom">
             <input id="sessionInput"/>
             <button type="submit">Create it!</button>
         </form>
+
+        <div id="sessionControl">
+            <input type="button" onClick="newWindow()" value="window">
+            <input type="checkbox" id="fullCheck" onChange="full()">Full<br>
+            <input type="checkbox" id="echoCheck" onChange="echo()">Echo Cancelation<br>
+        </div>
+
        
         <div id="remotes">
-
             <div class="videoContainer" id="localContainer">
+
                 <video id="localVideo" src="temp" style="height: 300px;" onClick="showWindow.document.getElementById('showVideo').src=src" oncontextmenu="return false;"></video>
+
+                <div class="peerWindow">
+                    <input type="button" onClick="newLocalWindow()" value="window">
+                </div>
+
+                <div class="peerFull">
+                    <input type="checkbox" id="localFullCheck" onClick="localFull()">Full<br>
+                </div>
 
                 <div id="localVolume" class="volume_bar"></div>
 
@@ -111,12 +140,12 @@
 
                 <div class="volumeSlide">
                     <label>Volume</label>
-                    <input id="loVolCon" class='volController' type="range" oninput="volChange()" min="0.0" max="1.0" value="0.0" step ="0.01">
+                    <input id="loVolCon" class="volController" type="range" onInput="volChange()" min="0.0" max="1.0" value="0.0" step ="0.01">
                 </div>
 
             </div>
-
         </div>
+
         <div id="chat-window">
             <div id="chatlog"></div>
             <form id="sendChat">
@@ -135,43 +164,93 @@
         <script type="text/javascript">
 
             var ip = location.host;
-            console.log('ip: ' + ip);
 
             var showWindow;
-            var showVideo;
+            var localWindow;
             var localVid = document.getElementById('localVideo');
             localVid.volume = 0;
+
+            var isFirefox = typeof InstallTrigger !== 'undefined';
+            var isChrome = !!window.chrome && !!window.chrome.webstore;
             
             function volChange() {
                 var localVol = document.getElementById('loVolCon').value;
                 localVid.volume = localVol;
             }
 
-            var isFirefox = typeof InstallTrigger !== 'undefined';
-            var isChrome = !!window.chrome && !!window.chrome.webstore;
-
             function newWindow() {
-                showWindow = window.open("https://" + ip + "/show.html", "Show", 'popup');
-                showVideo = showWindow.document.getElementById('showVideo');
+                showWindow = window.open("https://" + ip + "/show.html", "Show", 'popup')
             }
 
-            function enterFull() {
+            function newLocalWindow() {
+                localWindow = window.open("https://" + ip + "/show.html", "Local", 'popup');
+                localWindow.onload = function() {
+                    localWindow.document.getElementById('showVideo').src = localVid.src
+                    }
+            }
+
+            var fullCheck = document.getElementById('fullCheck');
+
+            function full() {
                 showWindow.focus();
-                if (isFirefox == true) {
-                    showWindow.document.getElementById('showVideo').mozRequestFullScreen();
-                }
-                if (isChrome == true) {
-                    showWindow.document.getElementById('showVideo').webkitRequestFullScreen();
+                if (fullCheck.checked == true) {
+                    if (isFirefox == true) {
+                        showWindow.document.getElementById('showVideo').mozRequestFullScreen();
+                    }
+                    if (isChrome == true) {
+                        showWindow.document.getElementById('showVideo').webkitRequestFullScreen();
+                    }
+                } else {
+                    if (isFirefox == true) {
+                        showWindow.document.getElementById('showVideo').mozCancelFullscreen();
+                    }
+                    if (isChrome == true) {
+                        showWindow.document.getElementById('showVideo').webkitExitFullscreen();
+                    }
                 }
             }
 
-            function exitFull() {
-                showWindow.focus();
-                if (isFirefox == true) {
-                    showWindow.document.getElementById('showVideo').mozCancelFullscreen();
+            var localFullCheck = document.getElementById('localFullCheck');
+
+            function localFull() {
+                localWindow.focus();
+                if (localFullCheck.checked == true) {
+                    if (isFirefox == true) {
+                        localWindow.document.getElementById('showVideo').mozRequestFullScreen();
+                    }
+                    if (isChrome == true) {
+                        localWindow.document.getElementById('showVideo').webkitRequestFullScreen();
+                    }
+                } else {
+                    if (isFirefox == true) {
+                        localWindow.document.getElementById('showVideo').mozCancelFullscreen();
+                    }
+                    if (isChrome == true) {
+                        localWindow.document.getElementById('showVideo').webkitExitFullscreen();
+                    }
                 }
-                if (isChrome == true) {
-                    showWindow.document.getElementById('showVideo').webkitExitFullscreen();
+            }
+
+            // echo cancellation
+            var echoCheck = document.getElementById('echoCheck');
+
+            var echoOff = {
+              audio: {optional: [ {googAutoGainControl: false}, {googAutoGainControl2: false}, {googEchoCancellation: false}, {googEchoCancellation2: false}, {googNoiseSuppression: false}, {googNoiseSuppression2: false}, {googHighpassFilter: false}, {googTypingNoiseDetection: false}, {googAudioMirroring: false}]}
+            };
+
+            var echoOn = {
+              audio: {optional: [ {googAutoGainControl: true}, {googAutoGainControl2: true}, {googEchoCancellation: true}, {googEchoCancellation2: true}, {googNoiseSuppression: true}, {googNoiseSuppression2: true}, {googHighpassFilter: true}, {googTypingNoiseDetection: true}, {googAudioMirroring: true}]}
+            };
+
+            function echoCancel(constraints) {
+              navigator.mediaDevices.getUserMedia(constraints);
+            }
+
+            function echo() {
+                if (echoCheck.checked == true) {
+                  echoCancel(echoOn)
+                } else {
+                  echoCancel(echoOff)
                 }
             }
 

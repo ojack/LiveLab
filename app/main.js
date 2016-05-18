@@ -15,7 +15,7 @@ var BASE_SOCKET_PORT = 8000;
         window.stream.getTracks().forEach(function(track) {
             track.stop();
         });
-    }
+    };
 
      // grab the room from the URL
     var room = location.search && location.search.split('?')[1];
@@ -38,7 +38,7 @@ var BASE_SOCKET_PORT = 8000;
         detectSpeakingEvents: true,
         autoAdjustMic: false,
         adjustPeerVolume: false,
-        peerVolumeWhenSpeaking: 0.25,
+        peerVolumeWhenSpeaking: 1.0,
         media: {
           audio: {
             optional: [
@@ -58,7 +58,7 @@ var BASE_SOCKET_PORT = 8000;
             ]
           }
         }
-     })
+     });
 
     //create div element for local osc streams
     var streamDiv = document.createElement('div');
@@ -105,12 +105,58 @@ var BASE_SOCKET_PORT = 8000;
             video.onclick = function () {
                 showWindow.document.getElementById('showVideo').src = document.getElementById('video_' + peer.id).src;
             };
+            video.volume = 0;
             video.oncanplay = function() {getOuts()};
 
             var streamDiv = document.createElement('div');
             streamDiv.className = "stream-holder";
             osc.addPeer(peer.id, streamDiv);
             d.appendChild(streamDiv);
+
+            // peer window section
+            var peerWin = document.createElement('div');
+            peerWin.className = 'peerWindow';
+            peerWin.id = 'peerWin_' + peer.id;
+            var peerWinButton = document.createElement('input');
+            peerWinButton.type = 'button';
+            peerWinButton.value = 'window';
+            var peerWindow;
+            peerWinButton.onclick = function () {
+              peerWindow = window.open("https://" + ip + "/show.html", 'Win_' + peer.id, 'popup');
+              peerWindow.onload = function() {
+                    peerWindow.document.getElementById('showVideo').src = document.getElementById('video_' + peer.id).src;
+                    }
+            };
+            peerWin.appendChild(peerWinButton);
+            d.appendChild(peerWin);
+
+            var peerFull = document.createElement('div');
+            peerFull.className = 'peerFull';
+            // peerFull.id = 'peerFull_' + peer.id;
+            var peerFullCheck = document.createElement('input');
+            peerFullCheck.type = 'checkbox';
+            peerFullCheck.onchange = function () {
+                peerWindow.focus();
+                if (peerFullCheck.checked == true) {
+                    if (isFirefox == true) {
+                        peerWindow.document.getElementById('showVideo').mozRequestFullScreen();
+                    }
+                    if (isChrome == true) {
+                        peerWindow.document.getElementById('showVideo').webkitRequestFullScreen();
+                    }
+                } else {
+                    if (isFirefox == true) {
+                        peerWindow.document.getElementById('showVideo').mozCancelFullscreen();
+                    }
+                    if (isChrome == true) {
+                        peerWindow.document.getElementById('showVideo').webkitExitFullscreen();
+                    }
+                }
+            }
+            peerFull.appendChild(peerFullCheck);
+            var fullText = document.createTextNode("Full");
+            peerFull.appendChild(fullText);
+            d.appendChild(peerFull);
             
             // audio output section
             var audioOut = document.createElement('div');
@@ -142,7 +188,7 @@ var BASE_SOCKET_PORT = 8000;
             volCntl.appendChild(volController);
             d.appendChild(volCntl);
 
-            remotes.appendChild(d);
+            remotes.appendChild(d);        
         };
     });
 
@@ -206,33 +252,38 @@ function setRoom(name) {
     $('body').addClass('active');
 }
 
-// echo cancellation
-var echoOff = {
-  audio: {optional: [ {googAutoGainControl: false}, {googAutoGainControl2: false}, {googEchoCancellation: false}, {googEchoCancellation2: false}, {googNoiseSuppression: false}, {googNoiseSuppression2: false}, {googHighpassFilter: false}, {googTypingNoiseDetection: false}, {googAudioMirroring: false}]}
-};
+// echo cancellation, I MOVED THIS TO INDEX BECAUSE THE CHECKBOX ELEMENT COULDN'T CALL THE FUNCTION WHEN IT'S HERE, HUH???
+// function echo() {
+//     if (echoCheck.checked == true) {
+//       echoCancel(echoOn)
+//     } else {
+//       echoCancel(echoOff)
+//     }
+// }
 
-var echoOn = {
-  audio: {optional: [ {googAutoGainControl: true}, {googAutoGainControl2: true}, {googEchoCancellation: true}, {googEchoCancellation2: true}, {googNoiseSuppression: true}, {googNoiseSuppression2: true}, {googHighpassFilter: true}, {googTypingNoiseDetection: true}, {googAudioMirroring: true}]}
-};
+// function echoCancel(constraints) {
+//   navigator.mediaDevices.getUserMedia(constraints);
+// }
 
-function echoCancel(constraints) {
-  navigator.mediaDevices.getUserMedia(constraints);
-  // .then(start);
-}
+// var echoCheck = document.getElementById('echoCheck');
 
-document.getElementById('echoOff').onclick = function() {echoCancel(echoOff)};
-document.getElementById('echoOn').onclick = function() {echoCancel(echoOn)};
+// var echoOff = {
+//   audio: {optional: [ {googAutoGainControl: false}, {googAutoGainControl2: false}, {googEchoCancellation: false}, {googEchoCancellation2: false}, {googNoiseSuppression: false}, {googNoiseSuppression2: false}, {googHighpassFilter: false}, {googTypingNoiseDetection: false}, {googAudioMirroring: false}]}
+// };
+
+// var echoOn = {
+//   audio: {optional: [ {googAutoGainControl: true}, {googAutoGainControl2: true}, {googEchoCancellation: true}, {googEchoCancellation2: true}, {googNoiseSuppression: true}, {googNoiseSuppression2: true}, {googHighpassFilter: true}, {googTypingNoiseDetection: true}, {googAudioMirroring: true}]}
+// };
 
 // audio out section
 document.getElementById('localVideo').oncanplay = function() {getOuts()};
 function getOuts(){
     navigator.mediaDevices.enumerateDevices()
-    .then(gotDevices)
+    .then(gotDevices, successCallback)
     .catch(errorCallback);
 }
 
 function gotDevices(deviceInfos) {
-  console.log('window stream' + window.stream);
   var masterOutputSelector = document.createElement('select');
 
   for (var i = 0; i !== deviceInfos.length; ++i) {
@@ -292,6 +343,10 @@ function changeAudioDestination(event) {
 
 function errorCallback(error) {
   console.log('Error: ', error);
+}
+
+function successCallback(stream) {
+  window.stream = stream; // make stream available to console
 }
 
 start();
