@@ -106,11 +106,11 @@ wss.on("connection", function (ws) {
             }
         } else if(message.type=="subscribeStream"){
             //create osc client at specified port
-            console.log("received data ");
-            console.log(message.payload);
+           // console.log("received data ");
+          //  console.log(message.payload);
            // console.log(message.payload);
             var msg = oscMin.toBuffer(message.payload);
-            console.log(msg);
+          //  console.log(msg);
           udp_client.send(msg, 0, msg.length, message.port, "127.0.0.1", function(error){
                 if(error) console.log("UDP SEND ERROR", error);
             });
