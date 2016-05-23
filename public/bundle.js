@@ -110,22 +110,61 @@ LiveLabOsc.prototype.addPeer = function(peer_id, div){
     peers[peer_id] = {div: div, streams: {}};
 }
 
+/*
+Subscribe to stream on local port
+*/
+LiveLabOsc.prototype.forwardToLocalPort = function(portNum, payload){
+     this.ws.send(JSON.stringify({
+        type: "subscribeStream",
+        port: portNum,
+        payload: payload
+    }));
+     // alert("clicked me");
+}
 /* When new message is received from remote peer, display in interface*/
 LiveLabOsc.prototype.receivedRemoteStream = function(data, peer_id, label){
     if(peers[peer_id].streams.hasOwnProperty(label)){
         console.log("add data");
-         peers[peer_id].streams[label].innerHTML = JSON.stringify(data.payload);
+
+         peers[peer_id].streams[label].div.innerHTML = JSON.stringify(data.payload);
+         if(peers[peer_id].streams[label].port){
+            console.log("broadcasting to local port");
+            this.forwardToLocalPort(peers[peer_id].streams[label].port, data.payload);
+        }
     } else {
         var newStream = document.createElement('div');
+        var streamLabel = document.createElement('div');
         var newSpan = document.createElement('span');
         newSpan.className = "stream-label";
+        newSpan.setAttribute("type", "button");
         newSpan.innerHTML = label + ":  ";
         var streamInput = document.createElement('span');
         streamInput.innerHTML = JSON.stringify(data.payload);
-        newStream.appendChild(newSpan);
-        newStream.appendChild(streamInput);
+        streamLabel.appendChild(newSpan);
+        streamLabel.appendChild(streamInput);
+        newStream.appendChild(streamLabel);
+
         peers[peer_id].div.appendChild(newStream);
-        peers[peer_id].streams[label] = streamInput;
+        peers[peer_id].streams[label] = {};
+        peers[peer_id].streams[label].div = streamInput;
+        streamLabel.onclick = function(e){
+           
+           var inputDiv = document.createElement('div');
+            var stream_name = addInputField("forward remote stream " + label + " to local port", inputDiv);
+
+             var sendBtn = document.createElement("BUTTON");
+            var t = document.createTextNode("done");       // Create a text node
+            sendBtn.appendChild(t);  
+            sendBtn.setAttribute("type", "button");
+            inputDiv.appendChild(sendBtn);
+            newStream.appendChild(inputDiv);
+            sendBtn.onclick = function(e){
+                console.log("broadcasting to local port "+ stream_name.value);
+                peers[peer_id].streams[label].port = parseInt(stream_name.value);
+                newSpan.innerHTML = label + " ::  " + stream_name.value + " : ";
+                newStream.removeChild(inputDiv);
+            }
+        }.bind(this);
     }
     //peers[peer_id].div.innerHTML = JSON.stringify(data.payload);
 

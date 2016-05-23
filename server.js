@@ -1,13 +1,16 @@
 
-//--------------------------------------------------
+/*--------------------------------------------------
 //  Bi-Directional OSC messaging Websocket <-> UDP
-// example from: 
+//  ToDO: switch to using simpler OSC library following example: https://github.com/toddtreece/osc-examples/blob/master/socketio.js
 //--------------------------------------------------
+*/
 var osc = require("osc"),
-    WebSocket = require("ws");
+    WebSocket = require("ws")
+    oscMin = require("osc-min");
 var https = require('https');
 var fs = require('fs');
 var portscanner = require('portscanner');
+var dgram = require('dgram');
 var static = require('node-static');
 
 var ports = {};
@@ -18,6 +21,8 @@ var options = {
 };
 
 var file = new static.Server('./public');
+
+var udp_client = dgram.createSocket('udp4', function(msg, rinfo) {});
 
 var httpsServer = https.createServer(options, function (request, response) {
   request.addListener('end', function () {
@@ -99,6 +104,19 @@ wss.on("connection", function (ws) {
             } else {
                 console.log("not valid port");
             }
+        } else if(message.type=="subscribeStream"){
+            //create osc client at specified port
+            console.log("received data ");
+            console.log(message.payload);
+           // console.log(message.payload);
+            var msg = oscMin.toBuffer(message.payload);
+            console.log(msg);
+          udp_client.send(msg, 0, msg.length, message.port, "127.0.0.1", function(error){
+                if(error) console.log("UDP SEND ERROR", error);
+            });
+
+           // udp_client.send(JSON.stringify(message.payl))
+
         }
   // flags.binary will be set if a binary data is received. 
   // flags.masked will be set if the data was masked. 
