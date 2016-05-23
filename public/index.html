@@ -21,12 +21,49 @@
             }
             .volume_bar {
                 position: absolute;
+                z-index: 5;
                 width: 5px;
                 height: 0px;
                 right: 0px;
                 bottom: 0px;
                 background-color: #12acef;
             }
+            .volumeSlide {
+                position: absolute;
+                right: 0px;
+                bottom: 0px;
+            }
+            .outputSelector {
+                position: absolute;
+                bottom: 0px;
+                left: 0px;
+            }
+
+            .peerWindow {
+                position: absolute;
+                top: 0px;
+                left: 0px;
+            }
+            .peerFull {
+                position: absolute;
+                top: 0px;
+                left: 120px;                
+            }
+
+            #createRoom {
+                position: relative;
+                left: 0px;
+                top: 0px;    
+            }
+
+            #sessionControl {
+                position: fixed;
+                overflow: auto;
+                right: 250px;
+                top: 0px;
+                padding: 10px;
+            }
+
             #chat-window{
                 position: fixed;
                 right: 0px;
@@ -42,10 +79,11 @@
 
             .stream-label{
                 color:  #12acef;
+                cursor: pointer;
             }
             .stream-holder{
                 position: absolute;
-                top: 350px;
+                top: 400px;
                 left: 0px;
                 display: block;
                 color: #fff;
@@ -65,19 +103,50 @@
                 color: #fff;
                 font-family: "Lucida Console", Monaco, monospace;
             }
+
         </style>
+
         <p id="subTitle"></p>
         <form id="createRoom">
             <input id="sessionInput"/>
             <button type="submit">Create it!</button>
         </form>
+
+        <div id="sessionControl">
+            <input type="button" onClick="newWindow()" value="window">
+            <input type="checkbox" id="fullCheck" onChange="full()">Full<br>
+            <input type="checkbox" id="echoCheck" onChange="echo()">Echo Cancelation<br>
+        </div>
+
        
         <div id="remotes">
-             <div class="videoContainer" id="localContainer">
-                <video id="localVideo" style="height: 300px;" oncontextmenu="return false;"></video>
+            <div class="videoContainer" id="localContainer">
+
+                <video id="localVideo" src="temp" style="height: 300px;" onClick="showWindow.document.getElementById('showVideo').src=src" oncontextmenu="return false;"></video>
+
+                <div class="peerWindow">
+                    <input type="button" onClick="newLocalWindow()" value="window">
+                </div>
+
+                <div class="peerFull">
+                    <input type="checkbox" id="localFullCheck" onClick="localFull()">Full<br>
+                </div>
+
                 <div id="localVolume" class="volume_bar"></div>
+
+                <div class="outputSelector">
+                    <label>Select local audio output: </label>
+                    <select></select>
+                </div>
+
+                <div class="volumeSlide">
+                    <label>Volume</label>
+                    <input id="loVolCon" class="volController" type="range" onInput="volChange()" min="0.0" max="1.0" value="0.0" step ="0.01">
+                </div>
+
             </div>
         </div>
+
         <div id="chat-window">
             <div id="chatlog"></div>
             <form id="sendChat">
@@ -85,13 +154,108 @@
                 <button type="submit">Send</buttom>
             </form>
         </div>
+
         <div id="osc"></div>
         <div id="osc-remote"></div>
+
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-         <script src="osc-browser.js"></script>
+        <script src="osc-browser.js"></script>
         <script src="bundle.js"></script>
+
+        <script type="text/javascript">
+
+            var ip = location.host;
+
+            var showWindow;
+            var localWindow;
+            var localVid = document.getElementById('localVideo');
+            localVid.volume = 0;
+
+            var isFirefox = typeof InstallTrigger !== 'undefined';
+            var isChrome = !!window.chrome && !!window.chrome.webstore;
             
-           
+            function volChange() {
+                var localVol = document.getElementById('loVolCon').value;
+                localVid.volume = localVol;
+            }
+
+            function newWindow() {
+                showWindow = window.open("https://" + ip + "/show.html", "Show", 'popup')
+            }
+
+            function newLocalWindow() {
+                localWindow = window.open("https://" + ip + "/show.html", "Local", 'popup');
+                localWindow.onload = function() {
+                    localWindow.document.getElementById('showVideo').src = localVid.src
+                    }
+            }
+
+            var fullCheck = document.getElementById('fullCheck');
+
+            function full() {
+                showWindow.focus();
+                if (fullCheck.checked == true) {
+                    if (isFirefox == true) {
+                        showWindow.document.getElementById('showVideo').mozRequestFullScreen();
+                    }
+                    if (isChrome == true) {
+                        showWindow.document.getElementById('showVideo').webkitRequestFullScreen();
+                    }
+                } else {
+                    if (isFirefox == true) {
+                        showWindow.document.getElementById('showVideo').mozCancelFullscreen();
+                    }
+                    if (isChrome == true) {
+                        showWindow.document.getElementById('showVideo').webkitExitFullscreen();
+                    }
+                }
+            }
+
+            var localFullCheck = document.getElementById('localFullCheck');
+
+            function localFull() {
+                localWindow.focus();
+                if (localFullCheck.checked == true) {
+                    if (isFirefox == true) {
+                        localWindow.document.getElementById('showVideo').mozRequestFullScreen();
+                    }
+                    if (isChrome == true) {
+                        localWindow.document.getElementById('showVideo').webkitRequestFullScreen();
+                    }
+                } else {
+                    if (isFirefox == true) {
+                        localWindow.document.getElementById('showVideo').mozCancelFullscreen();
+                    }
+                    if (isChrome == true) {
+                        localWindow.document.getElementById('showVideo').webkitExitFullscreen();
+                    }
+                }
+            }
+
+            // echo cancellation
+            var echoCheck = document.getElementById('echoCheck');
+
+            var echoOff = {
+              audio: {optional: [ {googAutoGainControl: false}, {googAutoGainControl2: false}, {googEchoCancellation: false}, {googEchoCancellation2: false}, {googNoiseSuppression: false}, {googNoiseSuppression2: false}, {googHighpassFilter: false}, {googTypingNoiseDetection: false}, {googAudioMirroring: false}]}
+            };
+
+            var echoOn = {
+              audio: {optional: [ {googAutoGainControl: true}, {googAutoGainControl2: true}, {googEchoCancellation: true}, {googEchoCancellation2: true}, {googNoiseSuppression: true}, {googNoiseSuppression2: true}, {googHighpassFilter: true}, {googTypingNoiseDetection: true}, {googAudioMirroring: true}]}
+            };
+
+            function echoCancel(constraints) {
+              navigator.mediaDevices.getUserMedia(constraints);
+            }
+
+            function echo() {
+                if (echoCheck.checked == true) {
+                  echoCancel(echoOn)
+                } else {
+                  echoCancel(echoOff)
+                }
+            }
+
         </script>
+
     </body>
 </html>

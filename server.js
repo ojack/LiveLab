@@ -1,16 +1,19 @@
 
-//--------------------------------------------------
+/*--------------------------------------------------
 //  Bi-Directional OSC messaging Websocket <-> UDP
-// example from: 
+//  ToDO: switch to using simpler OSC library following example: https://github.com/toddtreece/osc-examples/blob/master/socketio.js
 //--------------------------------------------------
+*/
 var osc = require("osc"),
-    WebSocket = require("ws");
+    WebSocket = require("ws")
+    oscMin = require("osc-min");
 var https = require('https');
 var fs = require('fs');
 var portscanner = require('portscanner');
+var dgram = require('dgram');
 var static = require('node-static');
 
-var ports = [];
+var ports = {};
 
 var options = {
   key: fs.readFileSync('key.pem'),
@@ -18,6 +21,8 @@ var options = {
 };
 
 var file = new static.Server('./public');
+
+var udp_client = dgram.createSocket('udp4', function(msg, rinfo) {});
 
 var httpsServer = https.createServer(options, function (request, response) {
   request.addListener('end', function () {
@@ -67,29 +72,51 @@ wss.on("connection", function (ws) {
         var message = JSON.parse(data);
         if(message.type=="broadcastStream"){
             if(message.port > 0 && message.port < 65536) {
+              //  console.log("checking port " + message.port);
+
+              /*PORT SCANNER IS NOT WORKING TO CORRECTLY IDENTIFY PORTS CREATED USING osc.UDPPort
+              temporary fix is that previously open ports are stored in ports{} object*/
                 portscanner.checkPortStatus(parseInt(message.port), '127.0.0.1', function(error, status) {
                  // Status is 'open' if currently in use or 'closed' if available 
-                    if(error) {
-                        //TO DO: send error back to user
-                        console.log("ERROR: "+error);
-                       //reak;
-                    } else {
-                        if(status=="closed"){
-                            portscanner.findAPortNotInUse(8000, 9000, '127.0.0.1', function(error, port) {
-                                console.log('AVAILABLE PORT AT: ' + port)
-                                addSocketUDPConnection(port, parseInt(message.port), message.name);
-                                ws.send(JSON.stringify({"type": "new channel", "port": port, "udpPort": message.port}));
-                            });
-                            //addUDPServer(message.port, ws, message.name);
+                   if(ports.hasOwnProperty(message.port)){
+                        console.log('port in use');
+                   } else {
+                        if(error) {
+                            //TO DO: send error back to user
+                            console.log("ERROR: "+error);
+                           //reak;
                         } else {
-                            console.log("other status");
-                            console.log(status);
+                            if(status=="closed"){
+                                ports[message.port] = "open";
+                                portscanner.findAPortNotInUse(8000, 9000, '127.0.0.1', function(error, port) {
+                                    console.log('AVAILABLE PORT AT: ' + port)
+                                    addSocketUDPConnection(port, parseInt(message.port), message.name);
+                                    ws.send(JSON.stringify({"type": "new channel", "port": port, "udpPort": message.port}));
+                                });
+                                //addUDPServer(message.port, ws, message.name);
+                            } else {
+                                console.log("other status");
+                                console.log(status);
+                            }
                         }
                     }
                 });
             } else {
                 console.log("not valid port");
             }
+        } else if(message.type=="subscribeStream"){
+            //create osc client at specified port
+            console.log("received data ");
+            console.log(message.payload);
+           // console.log(message.payload);
+            var msg = oscMin.toBuffer(message.payload);
+            console.log(msg);
+          udp_client.send(msg, 0, msg.length, message.port, "127.0.0.1", function(error){
+                if(error) console.log("UDP SEND ERROR", error);
+            });
+
+           // udp_client.send(JSON.stringify(message.payl))
+
         }
   // flags.binary will be set if a binary data is received. 
   // flags.masked will be set if the data was masked. 
@@ -103,6 +130,7 @@ function addSocketUDPConnection(socketPort, udpPort, name){
         server: socketServer
     });
 
+    console.log("adding udp port at "+ udpPort);
     var udpChannel = new osc.UDPPort({
         localAddress: "127.0.0.1",
         localPort: udpPort   
@@ -113,6 +141,9 @@ function addSocketUDPConnection(socketPort, udpPort, name){
         console.log("Listening for OSC over UDP.");
         ipAddresses.forEach(function (address) {
             console.log(" Host:", address + ", Port:", udpChannel.options.localPort);
+             portscanner.checkPortStatus(udpChannel.options.localPort, address, function(error, status) {
+                console.log("on ip "+ address + " port is "+ status);
+             });
         });
     });
 
