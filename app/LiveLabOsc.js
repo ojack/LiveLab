@@ -136,7 +136,7 @@ LiveLabOsc.prototype.receivedRemoteStream = function(data, peer_id, label){
         }
     } else {
         console.log(this.peers[peer_id]);
-        var dataDiv = this.peers[peer_id].peer.dataDiv;
+        var dataDiv = this.peers[peer_id].peerContainer.dataDiv;
         var newStream = document.createElement('div');
         var streamLabel = document.createElement('div');
         var newSpan = document.createElement('span');

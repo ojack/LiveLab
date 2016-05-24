@@ -2,57 +2,42 @@
         var newPeer = new PeerMediaContainer(peers[peer.id], webrtc, dashboard);*/
 
 
-function PeerMediaContainer(peer, video, webrtc, dashboard){
-	this.createAccordion(peer.id);
+function PeerMediaContainer(id, video, webrtc, dashboard){
+	this.id = id;
+	this.createAccordion(id);
+	this.dashboard = dashboard;
 	dashboard.appendChild(this.mediaContainer);
 	this.videoDiv.parentElement.className = "accordion-section open";
-	this.videoDiv.appendChild(video);
-	this.peer = peer;
-	this.video = video;
-  /*   var d = document.createElement('div');
-    d.className = 'videoContainer';
-    d.id = 'container_' + webrtc.getDomId(peerObj.peer);
-     d.appendChild(peerObj.video);*/
+	if(id!="local"){
+		this.videoDiv.appendChild(video);
+		this.video = video;
+	  /*   var d = document.createElement('div');
+	    d.className = 'videoContainer';
+	    d.id = 'container_' + webrtc.getDomId(peerObj.peer);
+	     d.appendChild(peerObj.video);*/
 
-    video.id = 'video_' + peer.id;
-    this.createPeerWindow();
+	    video.id = 'video_' + id;
+	   
+	    video.volume = 0.0;
+	    this.createPeerWindow();
+	 }
+	 
     this.createAudioSelector();
-    video.volume = 0.5;
-    video.oncanplay = getOuts;
+	this.createVolumeControl();
+	
+	
+   // video.oncanplay = getOuts;
  /*   video.onclick = function () {
         showWindow.document.getElementById('showVideo').src = document.getElementById('video_' + peer.id).src;
     };
-    video.volume = 0.5;
-    video.oncanplay = getOuts;
+    
 
 
     var vol = document.createElement('div');
     vol.id = 'volume_' + peer.id;
     vol.className = 'volume_bar';
     d.appendChild(vol);
-
-
-
-    // volume control
-    var volCntl = document.createElement('div');
-    volCntl.className = 'volumeSlide';
-    volCntl.id = 'volCntl_' + peer.id;
-    var volumeLabel = document.createElement('label');
-    volumeLabel.innerHTML = 'Volume';
-    volCntl.appendChild(volumeLabel);
-    var volController = document.createElement('input');
-    volController.type = 'range';
-    volController.min = "0.0";
-    volController.max = "1.0";
-    volController.value = "0.0";
-    volController.step = "0.01";
-    volController.oninput = function() {
-      video.volume = volController.value;
-    };
-    volCntl.appendChild(volController);
-    d.appendChild(volCntl);*/
-
-  
+*/
 }
 
 PeerMediaContainer.prototype.createAccordion = function(name){
@@ -74,13 +59,13 @@ PeerMediaContainer.prototype.createAudioSelector = function(){
     	//var masterOutputSelector = document.createElement('select');
     	var audioOut = document.createElement('div');
     	audioOut.className = 'outputSelector';
-   		audioOut.id = 'audioOut_' + this.peer.id;
+   		audioOut.id = 'audioOut_' + this.id;
     	var audioOutLabel = document.createElement('label');
-    audioOutLabel.innerHTML = 'Select peer audio output: ';
-    audioOut.appendChild(audioOutLabel);
-    var audioOutSelector = document.createElement('select');
-    this.audioDiv.appendChild(audioOut);
-    audioOut.appendChild(audioOutSelector);
+	    audioOutLabel.innerHTML = 'Select peer audio output: ';
+	    audioOut.appendChild(audioOutLabel);
+	    var audioOutSelector = document.createElement('select');
+	    this.audioDiv.appendChild(audioOut);
+	    audioOut.appendChild(audioOutSelector);
   		for (var i = 0; i !== deviceInfos.length; ++i) {
     		var deviceInfo = deviceInfos[i];
     		var option = document.createElement('option');
@@ -88,7 +73,7 @@ PeerMediaContainer.prototype.createAudioSelector = function(){
    			if (deviceInfo.kind === 'audiooutput') {
 	      		console.info('Found audio output device: ', deviceInfo);
 	      		option.text = deviceInfo.label || 'speaker ' +
-	          	(masterOutputSelector.length + 1);
+	          	(audioOutSelector.length + 1);
 	          	//option.value = deviceInfo.label;
 	      		//masterOutputSelector.appendChild(option);
 	      		audioOutSelector.appendChild(option);
@@ -101,26 +86,61 @@ PeerMediaContainer.prototype.createAudioSelector = function(){
   			console.log(this.video);
   			attachSinkId(this.video, e.target.value, audioOutSelector);
   		}.bind(this));
+  		this.audioDiv.appendChild(audioOut);
 
     }.bind(this), successCallback)
     .catch(errorCallback);
 
-    this.audioDiv.appendChild(audioOut);
+    
 }
 
+PeerMediaContainer.prototype.createVolumeControl = function() {
+	 // volume control
+    var volCntl = document.createElement('div');
+    volCntl.className = 'volumeSlide';
+    volCntl.id = 'volCntl_' + this.id;
+    var volumeLabel = document.createElement('label');
+    volumeLabel.innerHTML = 'Volume';
+    volCntl.appendChild(volumeLabel);
+    var volController = document.createElement('input');
+    volController.type = 'range';
+    volController.min = "0.0";
+    volController.max = "1.0";
+    volController.value = "0.0";
+    volController.step = "0.01";
+    volController.oninput = function() {
+      this.video.volume = volController.value;
+    }.bind(this);
+    volCntl.appendChild(volController);
+    this.audioDiv.appendChild(volCntl);
+
+}
+/* for local stream only; create video controls once video has been added */
+PeerMediaContainer.prototype.addVideoControls = function(){
+	if (!('video' in this)){
+		this.video = this.videoDiv.getElementsByTagName('video')[0];
+		console.log(this.video);
+		this.video.volume = 0.0;
+		this.createPeerWindow();
+	}
+};
+
+PeerMediaContainer.prototype.destroy = function(){
+	this.dashboard.removeChild(this.mediaContainer);
+};
 
 PeerMediaContainer.prototype.createPeerWindow = function(){
 	 // peer window section
     var peerWin = document.createElement('div');
     peerWin.className = 'peerWindow';
-    peerWin.id = 'peerWin_' + this.peer.id;
+    peerWin.id = 'peerWin_' + this.id;
     var peerWinButton = document.createElement('input');
     peerWinButton.type = 'button';
     peerWinButton.value = 'window';
     var peerWindow;
     var ip = window.location.host;
     peerWinButton.onclick = function () {
-      peerWindow = window.open("https://" + ip + "/show.html", 'Win_' + this.peer.id, 'popup');
+      peerWindow = window.open("https://" + ip + "/show.html", 'Win_' + this.id, 'popup');
        peerWindow.onload = function(){
        		console.log(this.video);
        		 peerWindow.document.getElementById('showVideo').src = this.video.src;
@@ -137,6 +157,8 @@ PeerMediaContainer.prototype.createPeerWindow = function(){
     // peerFull.id = 'peerFull_' + peer.id;
     var peerFullCheck = document.createElement('input');
     peerFullCheck.type = 'checkbox';
+    var isFirefox = typeof InstallTrigger !== 'undefined';
+     var isChrome = !!window.chrome && !!window.chrome.webstore;
     peerFullCheck.onchange = function () {
         peerWindow.focus();
         if (peerFullCheck.checked == true) {

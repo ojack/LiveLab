@@ -2810,7 +2810,7 @@ h4 {
   width: 400px;
   padding: 2px;
   margin: 2px;
-  background-color: #222;
+  background-color: #444;
 }
 .mediaContainer video {
   /* position: absolute;*/
@@ -2851,20 +2851,20 @@ h4 {
   visibility: hidden;
   height: 0px;
 }
-.volume_bar {
-  position: absolute;
-  z-index: 5;
-  width: 5px;
-  height: 0px;
-  right: 0px;
-  bottom: 0px;
-  background-color: #12acef;
+/*.volume_bar {
+    position: absolute;
+    z-index: 5;
+    width: 5px;
+    height: 0px;
+    right: 0px;
+    bottom: 0px;
+    background-color: #12acef;
 }
 .volumeSlide {
-  position: absolute;
-  right: 0px;
-  bottom: 0px;
-}
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+}*/
 /*.outputSelector {
     position: absolute;
     bottom: 0px;

@@ -1,16 +1,17 @@
 
 var SimpleWebRTC = require('./libs/simplewebrtc');
 var LiveLabOsc = require('./LiveLabOsc');
-var MicGainController = require('mediastream-gain');
+//var MicGainController = require('mediastream-gain'); // where is this used?
 var PeerMediaContainer = require('./PeerMediaContainer');
-var LocalMediaContainer = require('./LocalMediaContainer');
+var SessionControl = require('./SessionControl');
 
 var BASE_SOCKET_URL = "wss://localhost";
 var BASE_SOCKET_PORT = 8000;
 var USE_OSC = true;
  
- var webrtc, chatlog, oscChannels, room, localMedia, dashboard;
+ var webrtc, chatlog, oscChannels, room, localMedia, dashboard, sessionControl;
 
+/*Global object containing data about all connected peers*/
 var peers = {};
 
 window.onload = start;
@@ -47,7 +48,8 @@ function initWebRTC(){
     dashboard.setAttribute("id", "dashboard");
     document.body.appendChild(dashboard);
 
-    localMedia = new LocalMediaContainer(dashboard);
+   // localMedia = new LocalMediaContainer(dashboard);
+  localMedia = new PeerMediaContainer("local", null, webrtc, dashboard);
      webrtc = new SimpleWebRTC({
         // the id/element dom element that will hold "our" video
         localVideoEl: localMedia.videoDiv,
@@ -99,12 +101,18 @@ function initWebRTC(){
     webrtc.on('readyToCall', function () {
         // you can name it anything
         if (room) webrtc.joinRoom(room);
+        localMedia.addVideoControls();
+        sessionControl = new SessionControl(localMedia.video, document.body);
+        localMedia.video.addEventListener("click", function(e){
+            console.log("setting video ", e.target);
+            sessionControl.setVideo(e.target);
+        });
     });
 
     webrtc.on('channelMessage', function (peer, label, data) {
-        if (data.type == 'volume') {
+       /* if (data.type == 'volume') {
             showVolume(document.getElementById('volume_' + peer.id), data.volume);
-        } else if(data.type=="chat"){
+        } else*/ if(data.type=="chat"){
             chatlog.innerHTML += "</br>"+peer.id + ": " + data.payload; 
             console.log(data);
         }  else if(data.type=="osc"){
@@ -116,11 +124,24 @@ function initWebRTC(){
      webrtc.on('videoAdded', function (video, peer) {
         console.log('video added', peer);
           /*add new peer to peer object*/
-       
-        var newPeer = new PeerMediaContainer(peer, video, webrtc, dashboard);
-        peers[peer.id] = {peer: newPeer, dataStreams: {}};
-      
+       console.log(peer);
+        var newPeer = new PeerMediaContainer(peer.id, video, webrtc, dashboard);
+        peers[peer.id] = {peer: peer, peerContainer: newPeer, dataStreams: {}};
+        newPeer.video.addEventListener("click", function(e){
+            console.log("setting video ", e.target);
+            sessionControl.setVideo(e.target);
+        });
      });
+
+
+    webrtc.on('videoRemoved', function (video, peer) {
+        console.log('video removed ', peer);
+        console.log(peers);
+        var peerObj = peers[peer.id];
+        peerObj.peerContainer.destroy();
+        delete peers[peer.id];
+        console.log(peers);
+    });
 }
 
 function setRoom(name) {
