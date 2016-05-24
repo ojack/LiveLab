@@ -130,9 +130,9 @@ var BASE_SOCKET_PORT = 8000;
             peerWin.appendChild(peerWinButton);
             d.appendChild(peerWin);
 
+            // fullscreen window
             var peerFull = document.createElement('div');
             peerFull.className = 'peerFull';
-            // peerFull.id = 'peerFull_' + peer.id;
             var peerFullCheck = document.createElement('input');
             peerFullCheck.type = 'checkbox';
             peerFullCheck.onchange = function () {
@@ -252,28 +252,103 @@ function setRoom(name) {
     $('body').addClass('active');
 }
 
-// echo cancellation, I MOVED THIS TO INDEX BECAUSE THE CHECKBOX ELEMENT COULDN'T CALL THE FUNCTION WHEN IT'S HERE, HUH???
-// function echo() {
-//     if (echoCheck.checked == true) {
-//       echoCancel(echoOn)
-//     } else {
-//       echoCancel(echoOff)
-//     }
-// }
 
-// function echoCancel(constraints) {
-//   navigator.mediaDevices.getUserMedia(constraints);
-// }
+// echo cancellation
+var echoOff = {
+    // the id/element dom element that will hold "our" video
+    localVideoEl: 'localVideo',
+    localVideo: {
+        autoplay: true,
+        mirror: false,
+        muted: false
+        },
+    // the id/element dom element that will hold remote videos
+    remoteVideosEl: '',
+    // immediately ask for camera access
+    autoRequestMedia: true,
+    debug: false,
+    detectSpeakingEvents: true,
+    autoAdjustMic: false,
+    adjustPeerVolume: false,
+    peerVolumeWhenSpeaking: 1.0,
+    media: {
+      audio: {
+        optional: [
+        {googAutoGainControl: false}, 
+        {googAutoGainControl2: false}, 
+        {googEchoCancellation: false},
+        {googEchoCancellation2: false},
+        {googNoiseSuppression: false},
+        {googNoiseSuppression2: false},
+        {googHighpassFilter: false},
+        {googTypingNoiseDetection: false},
+        {googAudioMirroring: false}
+        ]
+      },
+      video: {
+        optional: [
+        ]
+      }
+    }
+};
 
-// var echoCheck = document.getElementById('echoCheck');
+var echoOn = {
+    localVideoEl: 'localVideo',
+    localVideo: {
+        autoplay: true,
+        mirror: false,
+        muted: false
+        },
+    // the id/element dom element that will hold remote videos
+    remoteVideosEl: '',
+    // immediately ask for camera access
+    autoRequestMedia: true,
+    debug: false,
+    detectSpeakingEvents: true,
+    autoAdjustMic: false,
+    adjustPeerVolume: false,
+    peerVolumeWhenSpeaking: 1.0,
+    media: {
+      audio: {
+        optional: [
+        {googAutoGainControl: true}, 
+        {googAutoGainControl2: true}, 
+        {googEchoCancellation: true},
+        {googEchoCancellation2: true},
+        {googNoiseSuppression: true},
+        {googNoiseSuppression2: true},
+        {googHighpassFilter: true},
+        {googTypingNoiseDetection: true},
+        {googAudioMirroring: true}
+        ]
+      },
+      video: {
+        optional: [
+        ]
+      }
+    }
+};
 
-// var echoOff = {
-//   audio: {optional: [ {googAutoGainControl: false}, {googAutoGainControl2: false}, {googEchoCancellation: false}, {googEchoCancellation2: false}, {googNoiseSuppression: false}, {googNoiseSuppression2: false}, {googHighpassFilter: false}, {googTypingNoiseDetection: false}, {googAudioMirroring: false}]}
-// };
+function echoCancel(constraints) {
+  webrtc = new SimpleWebRTC(constraints);
+}
 
-// var echoOn = {
-//   audio: {optional: [ {googAutoGainControl: true}, {googAutoGainControl2: true}, {googEchoCancellation: true}, {googEchoCancellation2: true}, {googNoiseSuppression: true}, {googNoiseSuppression2: true}, {googHighpassFilter: true}, {googTypingNoiseDetection: true}, {googAudioMirroring: true}]}
-// };
+var sessionControl = document.getElementById('sessionControl');
+if (sessionControl) {
+    var echoCheck = document.createElement('input');
+    echoCheck.type = 'checkbox';
+    echoCheck.onchange = function() {
+        if (echoCheck.checked == true) {
+          echoCancel(echoOn)
+        } else {
+          echoCancel(echoOff)
+        }
+    };
+    var echoLabel = document.createTextNode("Echo Cancelation");
+    sessionControl.appendChild(echoCheck);
+    sessionControl.appendChild(echoLabel);
+};
+
 
 // audio out section
 document.getElementById('localVideo').oncanplay = function() {getOuts()};
