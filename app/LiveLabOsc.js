@@ -1,7 +1,9 @@
-var streams = {}; //object containing local streams being broadcast, indexed by local UDP port
-var peers = {}; //object containing peer streams, indexed by peer-id and label
+//var osc = require('osc');
 
-function LiveLabOsc(port_loc, webrtc, container, base_url){
+var streams = {}; //object containing local streams being broadcast, indexed by local UDP port
+//var peers = {}; //object containing peer streams, indexed by peer-id and label
+
+function LiveLabOsc(port_loc, webrtc, container, base_url, peers){
      //connect to server via websockets
      var url = base_url + ":" + port_loc;
     this.ws = new WebSocket(url);
@@ -16,6 +18,7 @@ function LiveLabOsc(port_loc, webrtc, container, base_url){
     this.base_url = base_url;
     this.initBroadcastUI();
     this.webrtc = webrtc;
+    this.peers = peers;
 }
 
 //open new socket connection to receive  UDP stream
@@ -27,6 +30,7 @@ LiveLabOsc.prototype.createChannel = function (socketPort, udpPort) {
     streams[udpPort].div.className = "list-item";
     var url = this.base_url + ":" + socketPort;
        console.log(url);
+       console.log(osc);
     var oscChannel = new osc.WebSocketPort({
         url: url
     });
@@ -105,9 +109,9 @@ function addInputField(label, div){
      return i;
 }
 
-LiveLabOsc.prototype.addPeer = function(peer_id, div){
+/*LiveLabOsc.prototype.addPeer = function(peer_id, div){
     peers[peer_id] = {div: div, streams: {}};
-}
+}*/
 
 /*
 Subscribe to stream on local port
@@ -122,15 +126,17 @@ LiveLabOsc.prototype.forwardToLocalPort = function(portNum, payload){
 }
 /* When new message is received from remote peer, display in interface*/
 LiveLabOsc.prototype.receivedRemoteStream = function(data, peer_id, label){
-    if(peers[peer_id].streams.hasOwnProperty(label)){
+    if(this.peers[peer_id].dataStreams.hasOwnProperty(label)){
         console.log("add data");
 
-         peers[peer_id].streams[label].div.innerHTML = JSON.stringify(data.payload);
-         if(peers[peer_id].streams[label].port){
+         this.peers[peer_id].dataStreams[label].div.innerHTML = JSON.stringify(data.payload);
+         if(this.peers[peer_id].dataStreams[label].port){
             console.log("broadcasting to local port");
-            this.forwardToLocalPort(peers[peer_id].streams[label].port, data.payload);
+            this.forwardToLocalPort(this.peers[peer_id].dataStreams[label].port, data.payload);
         }
     } else {
+        console.log(this.peers[peer_id]);
+        var dataDiv = this.peers[peer_id].peer.dataDiv;
         var newStream = document.createElement('div');
         var streamLabel = document.createElement('div');
         var newSpan = document.createElement('span');
@@ -143,9 +149,9 @@ LiveLabOsc.prototype.receivedRemoteStream = function(data, peer_id, label){
         streamLabel.appendChild(streamInput);
         newStream.appendChild(streamLabel);
 
-        peers[peer_id].div.appendChild(newStream);
-        peers[peer_id].streams[label] = {};
-        peers[peer_id].streams[label].div = streamInput;
+        dataDiv.appendChild(newStream);
+        this.peers[peer_id].dataStreams[label] = {};
+        this.peers[peer_id].dataStreams[label].div = streamInput;
         streamLabel.onclick = function(e){
            
            var inputDiv = document.createElement('div');
@@ -159,10 +165,10 @@ LiveLabOsc.prototype.receivedRemoteStream = function(data, peer_id, label){
             newStream.appendChild(inputDiv);
             sendBtn.onclick = function(e){
                 console.log("broadcasting to local port "+ stream_name.value);
-                peers[peer_id].streams[label].port = parseInt(stream_name.value);
+                this.peers[peer_id].dataStreams[label].port = parseInt(stream_name.value);
                 newSpan.innerHTML = label + " ::  " + stream_name.value + " : ";
                 newStream.removeChild(inputDiv);
-            }
+            }.bind(this);
         }.bind(this);
     }
     //peers[peer_id].div.innerHTML = JSON.stringify(data.payload);

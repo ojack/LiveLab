@@ -1,8 +1,10 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var streams = {}; //object containing local streams being broadcast, indexed by local UDP port
-var peers = {}; //object containing peer streams, indexed by peer-id and label
+//var osc = require('osc');
 
-function LiveLabOsc(port_loc, webrtc, container, base_url){
+var streams = {}; //object containing local streams being broadcast, indexed by local UDP port
+//var peers = {}; //object containing peer streams, indexed by peer-id and label
+
+function LiveLabOsc(port_loc, webrtc, container, base_url, peers){
      //connect to server via websockets
      var url = base_url + ":" + port_loc;
     this.ws = new WebSocket(url);
@@ -17,6 +19,7 @@ function LiveLabOsc(port_loc, webrtc, container, base_url){
     this.base_url = base_url;
     this.initBroadcastUI();
     this.webrtc = webrtc;
+    this.peers = peers;
 }
 
 //open new socket connection to receive  UDP stream
@@ -28,6 +31,7 @@ LiveLabOsc.prototype.createChannel = function (socketPort, udpPort) {
     streams[udpPort].div.className = "list-item";
     var url = this.base_url + ":" + socketPort;
        console.log(url);
+       console.log(osc);
     var oscChannel = new osc.WebSocketPort({
         url: url
     });
@@ -106,9 +110,9 @@ function addInputField(label, div){
      return i;
 }
 
-LiveLabOsc.prototype.addPeer = function(peer_id, div){
+/*LiveLabOsc.prototype.addPeer = function(peer_id, div){
     peers[peer_id] = {div: div, streams: {}};
-}
+}*/
 
 /*
 Subscribe to stream on local port
@@ -123,15 +127,17 @@ LiveLabOsc.prototype.forwardToLocalPort = function(portNum, payload){
 }
 /* When new message is received from remote peer, display in interface*/
 LiveLabOsc.prototype.receivedRemoteStream = function(data, peer_id, label){
-    if(peers[peer_id].streams.hasOwnProperty(label)){
+    if(this.peers[peer_id].dataStreams.hasOwnProperty(label)){
         console.log("add data");
 
-         peers[peer_id].streams[label].div.innerHTML = JSON.stringify(data.payload);
-         if(peers[peer_id].streams[label].port){
+         this.peers[peer_id].dataStreams[label].div.innerHTML = JSON.stringify(data.payload);
+         if(this.peers[peer_id].dataStreams[label].port){
             console.log("broadcasting to local port");
-            this.forwardToLocalPort(peers[peer_id].streams[label].port, data.payload);
+            this.forwardToLocalPort(this.peers[peer_id].dataStreams[label].port, data.payload);
         }
     } else {
+        console.log(this.peers[peer_id]);
+        var dataDiv = this.peers[peer_id].peer.dataDiv;
         var newStream = document.createElement('div');
         var streamLabel = document.createElement('div');
         var newSpan = document.createElement('span');
@@ -144,9 +150,9 @@ LiveLabOsc.prototype.receivedRemoteStream = function(data, peer_id, label){
         streamLabel.appendChild(streamInput);
         newStream.appendChild(streamLabel);
 
-        peers[peer_id].div.appendChild(newStream);
-        peers[peer_id].streams[label] = {};
-        peers[peer_id].streams[label].div = streamInput;
+        dataDiv.appendChild(newStream);
+        this.peers[peer_id].dataStreams[label] = {};
+        this.peers[peer_id].dataStreams[label].div = streamInput;
         streamLabel.onclick = function(e){
            
            var inputDiv = document.createElement('div');
@@ -160,10 +166,10 @@ LiveLabOsc.prototype.receivedRemoteStream = function(data, peer_id, label){
             newStream.appendChild(inputDiv);
             sendBtn.onclick = function(e){
                 console.log("broadcasting to local port "+ stream_name.value);
-                peers[peer_id].streams[label].port = parseInt(stream_name.value);
+                this.peers[peer_id].dataStreams[label].port = parseInt(stream_name.value);
                 newSpan.innerHTML = label + " ::  " + stream_name.value + " : ";
                 newStream.removeChild(inputDiv);
-            }
+            }.bind(this);
         }.bind(this);
     }
     //peers[peer_id].div.innerHTML = JSON.stringify(data.payload);
@@ -174,6 +180,283 @@ LiveLabOsc.prototype.receivedRemoteStream = function(data, peer_id, label){
 module.exports = LiveLabOsc;
 
 },{}],2:[function(require,module,exports){
+
+
+function LocalMediaContainer(dashboard){
+    this.createAccordion("me");
+    dashboard.appendChild(this.mediaContainer);
+    this.videoDiv.parentElement.className = "accordion-section open";
+  
+}
+
+/*LocalMediaContainer.prototype.initOsc = function (webrtc, osc_config, peers) {
+    var streamDiv = document.createElement('div');
+    streamDiv.className = "stream-holder";
+    this.dataDiv.appendChild(streamDiv);
+    this.dataChannels = new LiveLabOsc(osc_config.socket_port, webrtc, streamDiv, osc_config.socket_url, peers);
+}*/
+
+LocalMediaContainer.prototype.createAccordion = function(name){
+    this.mediaContainer = document.createElement('div');
+    this.mediaContainer.className = "mediaContainer";
+    var peerHeader = document.createElement('h4');
+    peerHeader.innerHTML = name;
+    this.mediaContainer.appendChild(peerHeader);
+    this.videoDiv = addAccordionItem("video", this.mediaContainer);
+    this.soundDiv = addAccordionItem("sound", this.mediaContainer);
+    this.dataDiv = addAccordionItem("data", this.mediaContainer);
+}
+
+function addAccordionItem(name, container){
+    var newSection = document.createElement('div');
+    newSection.className = "accordion-section closed";
+    var divHeader = document.createElement('div');
+    divHeader.innerHTML = name;
+    divHeader.className = "accordion-header";
+    divHeader.onclick = function(e){
+        console.log(e.target.parentElement);
+        if(e.target.parentElement.className=="accordion-section open"){
+            e.target.parentElement.className = "accordion-section closed";
+        } else {
+            e.target.parentElement.className = "accordion-section open";
+        }
+    }
+    newSection.appendChild(divHeader);
+    container.appendChild(newSection);
+    var contentDiv = document.createElement("div");
+    contentDiv.className = "accordion-content "+ name;
+    newSection.appendChild(contentDiv);
+    return contentDiv;
+}
+
+module.exports = LocalMediaContainer;
+
+},{}],3:[function(require,module,exports){
+ /* peers[peer.id] = {peer: peer, video: video, dataStreams: {}};
+        var newPeer = new PeerMediaContainer(peers[peer.id], webrtc, dashboard);*/
+
+
+function PeerMediaContainer(peer, video, webrtc, dashboard){
+	this.createAccordion(peer.id);
+	dashboard.appendChild(this.mediaContainer);
+	this.videoDiv.parentElement.className = "accordion-section open";
+	this.videoDiv.appendChild(video);
+	this.peer = peer;
+	this.video = video;
+  /*   var d = document.createElement('div');
+    d.className = 'videoContainer';
+    d.id = 'container_' + webrtc.getDomId(peerObj.peer);
+     d.appendChild(peerObj.video);*/
+
+    video.id = 'video_' + peer.id;
+    this.createPeerWindow();
+    this.createAudioSelector();
+    video.volume = 0.5;
+    video.oncanplay = getOuts;
+ /*   video.onclick = function () {
+        showWindow.document.getElementById('showVideo').src = document.getElementById('video_' + peer.id).src;
+    };
+    video.volume = 0.5;
+    video.oncanplay = getOuts;
+
+
+    var vol = document.createElement('div');
+    vol.id = 'volume_' + peer.id;
+    vol.className = 'volume_bar';
+    d.appendChild(vol);
+
+
+
+    // volume control
+    var volCntl = document.createElement('div');
+    volCntl.className = 'volumeSlide';
+    volCntl.id = 'volCntl_' + peer.id;
+    var volumeLabel = document.createElement('label');
+    volumeLabel.innerHTML = 'Volume';
+    volCntl.appendChild(volumeLabel);
+    var volController = document.createElement('input');
+    volController.type = 'range';
+    volController.min = "0.0";
+    volController.max = "1.0";
+    volController.value = "0.0";
+    volController.step = "0.01";
+    volController.oninput = function() {
+      video.volume = volController.value;
+    };
+    volCntl.appendChild(volController);
+    d.appendChild(volCntl);*/
+
+  
+}
+
+PeerMediaContainer.prototype.createAccordion = function(name){
+	this.mediaContainer = document.createElement('div');
+	this.mediaContainer.className = "mediaContainer";
+	var peerHeader = document.createElement('h4');
+	peerHeader.innerHTML = name;
+	this.mediaContainer.appendChild(peerHeader);
+	this.videoDiv = addAccordionItem("video", this.mediaContainer);
+	this.audioDiv = addAccordionItem("audio", this.mediaContainer);
+	this.dataDiv = addAccordionItem("data", this.mediaContainer);
+}
+
+PeerMediaContainer.prototype.createAudioSelector = function(){
+
+    //show available audio output devices
+     navigator.mediaDevices.enumerateDevices()
+    .then(function(deviceInfos){
+    	//var masterOutputSelector = document.createElement('select');
+    	var audioOut = document.createElement('div');
+    	audioOut.className = 'outputSelector';
+   		audioOut.id = 'audioOut_' + this.peer.id;
+    	var audioOutLabel = document.createElement('label');
+    audioOutLabel.innerHTML = 'Select peer audio output: ';
+    audioOut.appendChild(audioOutLabel);
+    var audioOutSelector = document.createElement('select');
+    this.audioDiv.appendChild(audioOut);
+    audioOut.appendChild(audioOutSelector);
+  		for (var i = 0; i !== deviceInfos.length; ++i) {
+    		var deviceInfo = deviceInfos[i];
+    		var option = document.createElement('option');
+   			option.value = deviceInfo.deviceId;
+   			if (deviceInfo.kind === 'audiooutput') {
+	      		console.info('Found audio output device: ', deviceInfo);
+	      		option.text = deviceInfo.label || 'speaker ' +
+	          	(masterOutputSelector.length + 1);
+	          	//option.value = deviceInfo.label;
+	      		//masterOutputSelector.appendChild(option);
+	      		audioOutSelector.appendChild(option);
+    		} else {
+      			console.log('Found non audio output device: ', deviceInfo.label);
+    		}
+  		}
+  		audioOutSelector.addEventListener('change', function(e){
+  			console.log(e.target.value);
+  			console.log(this.video);
+  			attachSinkId(this.video, e.target.value, audioOutSelector);
+  		}.bind(this));
+
+    }.bind(this), successCallback)
+    .catch(errorCallback);
+
+    this.audioDiv.appendChild(audioOut);
+}
+
+
+PeerMediaContainer.prototype.createPeerWindow = function(){
+	 // peer window section
+    var peerWin = document.createElement('div');
+    peerWin.className = 'peerWindow';
+    peerWin.id = 'peerWin_' + this.peer.id;
+    var peerWinButton = document.createElement('input');
+    peerWinButton.type = 'button';
+    peerWinButton.value = 'window';
+    var peerWindow;
+    var ip = window.location.host;
+    peerWinButton.onclick = function () {
+      peerWindow = window.open("https://" + ip + "/show.html", 'Win_' + this.peer.id, 'popup');
+       peerWindow.onload = function(){
+       		console.log(this.video);
+       		 peerWindow.document.getElementById('showVideo').src = this.video.src;
+       }.bind(this);
+         console.log(peerWindow);
+    
+   		this.peerWindow = peerWindow;
+    }.bind(this);
+    peerWin.appendChild(peerWinButton);
+    this.videoDiv.appendChild(peerWin);
+
+    var peerFull = document.createElement('div');
+    peerFull.className = 'peerFull';
+    // peerFull.id = 'peerFull_' + peer.id;
+    var peerFullCheck = document.createElement('input');
+    peerFullCheck.type = 'checkbox';
+    peerFullCheck.onchange = function () {
+        peerWindow.focus();
+        if (peerFullCheck.checked == true) {
+            if (isFirefox == true) {
+                peerWindow.document.getElementById('showVideo').mozRequestFullScreen();
+            }
+            if (isChrome == true) {
+                peerWindow.document.getElementById('showVideo').webkitRequestFullScreen();
+            }
+        } else {
+            if (isFirefox == true) {
+                peerWindow.document.getElementById('showVideo').mozCancelFullscreen();
+            }
+            if (isChrome == true) {
+                peerWindow.document.getElementById('showVideo').webkitExitFullscreen();
+            }
+        }
+    }
+
+    peerFull.appendChild(peerFullCheck);
+    var fullText = document.createTextNode("Full");
+    peerFull.appendChild(fullText);
+    this.videoDiv.appendChild(peerFull);
+}
+
+function addAccordionItem(name, container){
+	var newSection = document.createElement('div');
+	newSection.className = "accordion-section closed";
+	var divHeader = document.createElement('div');
+	divHeader.innerHTML = name;
+	divHeader.className = "accordion-header";
+	divHeader.onclick = function(e){
+		console.log(e.target.parentElement);
+		if(e.target.parentElement.className=="accordion-section open"){
+			e.target.parentElement.className = "accordion-section closed";
+		} else {
+			e.target.parentElement.className = "accordion-section open";
+		}
+	}
+	newSection.appendChild(divHeader);
+	container.appendChild(newSection);
+	var contentDiv = document.createElement("div");
+	contentDiv.className = "accordion-content "+ name;
+	newSection.appendChild(contentDiv);
+	return contentDiv;
+}
+
+
+
+// Attach audio output device to the provided media element using the deviceId.
+function attachSinkId(element, sinkId, outputSelector) {
+
+  if (typeof element.sinkId !== 'undefined') {
+    element.setSinkId(sinkId)
+    .then(function() {
+      console.log('Success, audio output device attached: ' + sinkId + ' to ' +
+          'element with ' + element.id + ' as source.');
+    })
+    .catch(function(error) {
+      var errorMessage = error;
+      if (error.name === 'SecurityError') {
+        errorMessage = 'You need to use HTTPS for selecting audio output ' +
+            'device: ' + error;
+      }
+      console.error(errorMessage);
+      // Jump back to first output device in the list as it's the default.
+      outputSelector.selectedIndex = 0;
+    });
+  } else {
+    console.warn('Browser does not support output device selection.');
+  }
+}
+
+    
+
+function errorCallback(error) {
+  console.log('Error: ', error);
+}
+
+function successCallback(stream) {
+  window.stream = stream; // make stream available to console
+}
+
+module.exports = PeerMediaContainer;
+
+},{}],4:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var PeerConnection = require('rtcpeerconnection');
@@ -462,7 +745,7 @@ Peer.prototype.sendFile = function (file) {
 
 module.exports = Peer;
 
-},{"filetransfer":9,"rtcpeerconnection":68,"util":122,"webrtcsupport":116,"wildemitter":117}],3:[function(require,module,exports){
+},{"filetransfer":11,"rtcpeerconnection":70,"util":124,"webrtcsupport":118,"wildemitter":119}],5:[function(require,module,exports){
 var WebRTC = require('./webrtc');
 var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
@@ -928,7 +1211,7 @@ SimpleWebRTC.prototype.sendFile = function () {
 
 module.exports = SimpleWebRTC;
 
-},{"./socketioconnection":4,"./webrtc":5,"attachmediastream":7,"mockconsole":28,"webrtcsupport":116,"wildemitter":117}],4:[function(require,module,exports){
+},{"./socketioconnection":6,"./webrtc":7,"attachmediastream":9,"mockconsole":30,"webrtcsupport":118,"wildemitter":119}],6:[function(require,module,exports){
 var io = require('socket.io-client');
 
 function SocketIoConnection(config) {
@@ -953,7 +1236,7 @@ SocketIoConnection.prototype.disconnect = function () {
 
 module.exports = SocketIoConnection;
 
-},{"socket.io-client":69}],5:[function(require,module,exports){
+},{"socket.io-client":71}],7:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var WildEmitter = require('wildemitter');
@@ -1114,34 +1397,60 @@ WebRTC.prototype.sendDirectlyToAll = function (channel, message, payload) {
 
 module.exports = WebRTC;
 
-},{"./peer":2,"localmedia":10,"mockconsole":28,"util":122,"webrtcsupport":116,"wildemitter":117}],6:[function(require,module,exports){
+},{"./peer":4,"localmedia":12,"mockconsole":30,"util":124,"webrtcsupport":118,"wildemitter":119}],8:[function(require,module,exports){
 
 var SimpleWebRTC = require('./libs/simplewebrtc');
 var LiveLabOsc = require('./LiveLabOsc');
 var MicGainController = require('mediastream-gain');
-
+var PeerMediaContainer = require('./PeerMediaContainer');
+var LocalMediaContainer = require('./LocalMediaContainer');
 
 var BASE_SOCKET_URL = "wss://localhost";
 var BASE_SOCKET_PORT = 8000;
+var USE_OSC = true;
+ 
+ var webrtc, chatlog, oscChannels, room, localMedia, dashboard;
 
- var webrtc, chatlog, osc;
+var peers = {};
+
+window.onload = start;
 // had to change start function to control device enumeration
- function start() {
+function start() {
+     room = location.search && location.search.split('?')[1];
+    
+     if(room) {
+        initWebRTC();
+        setRoom(room);
+     } else {
+        document.getElementById("createRoom").onsubmit = function(){
+            var val = document.getElementById("sessionInput").value.toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, ''); 
+            initWebRTC();
 
-    if (window.stream) {
-        window.stream.getTracks().forEach(function(track) {
-            track.stop();
-        });
-    };
+            webrtc.createRoom(val, function (err, name) {
+                console.log(' create room cb', arguments);
+            
+                var newUrl = location.pathname + '?' + name;
+                if (!err) {
+                    history.replaceState({foo: 'bar'}, null, newUrl);
+                    setRoom(name);
+                } else {
+                    console.log(err);
+                }
+            });
+            return false;   
+        }
+     }
+}
 
-     // grab the room from the URL
-    var room = location.search && location.search.split('?')[1];
-    chatlog = document.getElementById("chatlog");
+function initWebRTC(){
+    dashboard = document.createElement('div');
+    dashboard.setAttribute("id", "dashboard");
+    document.body.appendChild(dashboard);
 
-     // create our webrtc connection
-    webrtc = new SimpleWebRTC({
+    localMedia = new LocalMediaContainer(dashboard);
+     webrtc = new SimpleWebRTC({
         // the id/element dom element that will hold "our" video
-        localVideoEl: 'localVideo',
+        localVideoEl: localMedia.videoDiv,
         localVideo: {
                 autoplay: true,
                 mirror: false,
@@ -1176,299 +1485,53 @@ var BASE_SOCKET_PORT = 8000;
           }
         }
      });
+    
+    if(USE_OSC){
+        var osc_config = {
+            "socket_port": BASE_SOCKET_PORT,
+            "socket_url": BASE_SOCKET_URL
+        }; 
 
-    //create div element for local osc streams
-    var streamDiv = document.createElement('div');
-    streamDiv.className = "stream-holder";
-    document.getElementById("localContainer").appendChild(streamDiv);
-    osc = new LiveLabOsc(BASE_SOCKET_PORT, webrtc, streamDiv, BASE_SOCKET_URL);
-    //connect to server via websockets
+        oscChannels = new LiveLabOsc(osc_config.socket_port, webrtc, localMedia.dataDiv, osc_config.socket_url, peers);
+        //localMedia.initOsc(webrtc, osc_config, peers);
+    }
 
-
-       
-        // when it's ready, join if we got a room from the URL
     webrtc.on('readyToCall', function () {
         // you can name it anything
         if (room) webrtc.joinRoom(room);
     });
 
-     webrtc.on('channelMessage', function (peer, label, data) {
+    webrtc.on('channelMessage', function (peer, label, data) {
         if (data.type == 'volume') {
             showVolume(document.getElementById('volume_' + peer.id), data.volume);
         } else if(data.type=="chat"){
             chatlog.innerHTML += "</br>"+peer.id + ": " + data.payload; 
             console.log(data);
         }  else if(data.type=="osc"){
-                osc.receivedRemoteStream(data, peer.id, label);
+                oscChannels.receivedRemoteStream(data, peer.id, label);
                
         }
     });
 
-    webrtc.on('videoAdded', function (video, peer) {
+     webrtc.on('videoAdded', function (video, peer) {
         console.log('video added', peer);
-        var remotes = document.getElementById('remotes');
-        if (remotes) {
-            var d = document.createElement('div');
-            d.className = 'videoContainer';
-            d.id = 'container_' + webrtc.getDomId(peer);
-
-            var vol = document.createElement('div');
-            vol.id = 'volume_' + peer.id;
-            vol.className = 'volume_bar';
-            d.appendChild(vol);
-
-            d.appendChild(video);
-            video.id = 'video_' + peer.id;
-            video.onclick = function () {
-                showWindow.document.getElementById('showVideo').src = document.getElementById('video_' + peer.id).src;
-            };
-            video.volume = 0;
-            video.oncanplay = function() {getOuts()};
-
-            var streamDiv = document.createElement('div');
-            streamDiv.className = "stream-holder";
-            osc.addPeer(peer.id, streamDiv);
-            d.appendChild(streamDiv);
-
-            // peer window section
-            var peerWin = document.createElement('div');
-            peerWin.className = 'peerWindow';
-            peerWin.id = 'peerWin_' + peer.id;
-            var peerWinButton = document.createElement('input');
-            peerWinButton.type = 'button';
-            peerWinButton.value = 'window';
-            var peerWindow;
-            peerWinButton.onclick = function () {
-              peerWindow = window.open("https://" + ip + "/show.html", 'Win_' + peer.id, 'popup');
-              peerWindow.onload = function() {
-                    peerWindow.document.getElementById('showVideo').src = document.getElementById('video_' + peer.id).src;
-                    }
-            };
-            peerWin.appendChild(peerWinButton);
-            d.appendChild(peerWin);
-
-            var peerFull = document.createElement('div');
-            peerFull.className = 'peerFull';
-            // peerFull.id = 'peerFull_' + peer.id;
-            var peerFullCheck = document.createElement('input');
-            peerFullCheck.type = 'checkbox';
-            peerFullCheck.onchange = function () {
-                peerWindow.focus();
-                if (peerFullCheck.checked == true) {
-                    if (isFirefox == true) {
-                        peerWindow.document.getElementById('showVideo').mozRequestFullScreen();
-                    }
-                    if (isChrome == true) {
-                        peerWindow.document.getElementById('showVideo').webkitRequestFullScreen();
-                    }
-                } else {
-                    if (isFirefox == true) {
-                        peerWindow.document.getElementById('showVideo').mozCancelFullscreen();
-                    }
-                    if (isChrome == true) {
-                        peerWindow.document.getElementById('showVideo').webkitExitFullscreen();
-                    }
-                }
-            }
-            peerFull.appendChild(peerFullCheck);
-            var fullText = document.createTextNode("Full");
-            peerFull.appendChild(fullText);
-            d.appendChild(peerFull);
-            
-            // audio output section
-            var audioOut = document.createElement('div');
-            audioOut.className = 'outputSelector';
-            audioOut.id = 'audioOut_' + peer.id;
-            var audioOutLabel = document.createElement('label');
-            audioOutLabel.innerHTML = 'Select peer audio output: ';
-            audioOut.appendChild(audioOutLabel);
-            var audioOutSelector = document.createElement('select');
-            audioOut.appendChild(audioOutSelector);
-            d.appendChild(audioOut);
-
-            // volume control
-            var volCntl = document.createElement('div');
-            volCntl.className = 'volumeSlide';
-            volCntl.id = 'volCntl_' + peer.id;
-            var volumeLabel = document.createElement('label');
-            volumeLabel.innerHTML = 'Volume';
-            volCntl.appendChild(volumeLabel);
-            var volController = document.createElement('input');
-            volController.type = 'range';
-            volController.min = "0.0";
-            volController.max = "1.0";
-            volController.value = "0.0";
-            volController.step = "0.01";
-            volController.oninput = function() {
-              video.volume = volController.value;
-            };
-            volCntl.appendChild(volController);
-            d.appendChild(volCntl);
-
-            remotes.appendChild(d);        
-        };
-    });
-
-    webrtc.on('videoRemoved', function (video, peer) {
-        console.log('video removed ', peer);
-        var remotes = document.getElementById('remotes');
-        var el = document.getElementById('container_' + webrtc.getDomId(peer));
-        if (remotes && el) {
-            remotes.removeChild(el);
-        }
-    });
-
-    webrtc.on('volumeChange', function (volume, treshold) {
-        //console.log('own volume', volume);
-        showVolume(document.getElementById('localVolume'), volume);
-    });
-     
-    if (room) {
-        setRoom(room);
-    } else {
-        $('#createRoom').submit(function () {
-            var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
-            webrtc.createRoom(val, function (err, name) {
-                console.log(' create room cb', arguments);
-            
-                var newUrl = location.pathname + '?' + name;
-                if (!err) {
-                    history.replaceState({foo: 'bar'}, null, newUrl);
-                    setRoom(name);
-                } else {
-                    console.log(err);
-                }
-            });
-            return false;          
-        });
-    }
-
-       $('#sendChat').submit(function () {
-       		 var msg = document.getElementById("chat").value;
-    		chatlog.innerHTML += "</br> me: " + msg; 
-    		webrtc.sendDirectlyToAll("simplewebrtc", "chat", msg) ;
-             return false;
-    	});
- }
- 
-function showVolume(el, volume) {
-    if (!el) return;
-    if (volume < -45) { // vary between -45 and -20
-        el.style.height = '0px';
-    } else if (volume > -20) {
-        el.style.height = '100%';
-    } else {
-        el.style.height = '' + Math.floor((volume + 100) * 100 / 25 - 220) + '%';
-    }
+          /*add new peer to peer object*/
+       
+        var newPeer = new PeerMediaContainer(peer, video, webrtc, dashboard);
+        peers[peer.id] = {peer: newPeer, dataStreams: {}};
+      
+     });
 }
 
 function setRoom(name) {
-    $('#createRoom').remove();
-    $('h1').text(name);
+    document.body.removeChild(document.getElementById("createRoom"));
+    document.getElementById("title").innerHTML = name;
+  //  $('h1').text(name);
    // $('#subTitle').text(name + " || link: "+ location.href);
-    $('body').addClass('active');
+   // $('body').addClass('active');
 }
 
-// echo cancellation, I MOVED THIS TO INDEX BECAUSE THE CHECKBOX ELEMENT COULDN'T CALL THE FUNCTION WHEN IT'S HERE, HUH???
-// function echo() {
-//     if (echoCheck.checked == true) {
-//       echoCancel(echoOn)
-//     } else {
-//       echoCancel(echoOff)
-//     }
-// }
-
-// function echoCancel(constraints) {
-//   navigator.mediaDevices.getUserMedia(constraints);
-// }
-
-// var echoCheck = document.getElementById('echoCheck');
-
-// var echoOff = {
-//   audio: {optional: [ {googAutoGainControl: false}, {googAutoGainControl2: false}, {googEchoCancellation: false}, {googEchoCancellation2: false}, {googNoiseSuppression: false}, {googNoiseSuppression2: false}, {googHighpassFilter: false}, {googTypingNoiseDetection: false}, {googAudioMirroring: false}]}
-// };
-
-// var echoOn = {
-//   audio: {optional: [ {googAutoGainControl: true}, {googAutoGainControl2: true}, {googEchoCancellation: true}, {googEchoCancellation2: true}, {googNoiseSuppression: true}, {googNoiseSuppression2: true}, {googHighpassFilter: true}, {googTypingNoiseDetection: true}, {googAudioMirroring: true}]}
-// };
-
-// audio out section
-document.getElementById('localVideo').oncanplay = function() {getOuts()};
-function getOuts(){
-    navigator.mediaDevices.enumerateDevices()
-    .then(gotDevices, successCallback)
-    .catch(errorCallback);
-}
-
-function gotDevices(deviceInfos) {
-  var masterOutputSelector = document.createElement('select');
-
-  for (var i = 0; i !== deviceInfos.length; ++i) {
-    var deviceInfo = deviceInfos[i];
-    var option = document.createElement('option');
-    option.value = deviceInfo.deviceId;
-    if (deviceInfo.kind === 'audiooutput') {
-      console.info('Found audio output device: ', deviceInfo.label);
-      option.text = deviceInfo.label || 'speaker ' +
-          (masterOutputSelector.length + 1);
-      masterOutputSelector.appendChild(option);
-    } else {
-      console.log('Found non audio output device: ', deviceInfo.label);
-    }
-  }
-
-  // Clone the master outputSelector and replace outputSelector placeholders.
-  var allOutputSelectors = document.querySelectorAll('select');
-  for (var selector = 0; selector < allOutputSelectors.length; selector++) {
-    var newOutputSelector = masterOutputSelector.cloneNode(true);
-    newOutputSelector.addEventListener('change', changeAudioDestination);
-    allOutputSelectors[selector].parentNode.replaceChild(newOutputSelector,
-        allOutputSelectors[selector]);
-  }
-}
-
-// Attach audio output device to the provided media element using the deviceId.
-function attachSinkId(element, sinkId, outputSelector) {
-
-  if (typeof element.sinkId !== 'undefined') {
-    element.setSinkId(sinkId)
-    .then(function() {
-      console.log('Success, audio output device attached: ' + sinkId + ' to ' +
-          'element with ' + element.id + ' as source.');
-    })
-    .catch(function(error) {
-      var errorMessage = error;
-      if (error.name === 'SecurityError') {
-        errorMessage = 'You need to use HTTPS for selecting audio output ' +
-            'device: ' + error;
-      }
-      console.error(errorMessage);
-      // Jump back to first output device in the list as it's the default.
-      outputSelector.selectedIndex = 0;
-    });
-  } else {
-    console.warn('Browser does not support output device selection.');
-  }
-}
-
-function changeAudioDestination(event) {
-  var deviceId = event.target.value;
-  var outputSelector = event.target;
-  var element = event.path[2].childNodes[1];
-  attachSinkId(element, deviceId, outputSelector);
-}        
-
-function errorCallback(error) {
-  console.log('Error: ', error);
-}
-
-function successCallback(stream) {
-  window.stream = stream; // make stream available to console
-}
-
-start();
-
-},{"./LiveLabOsc":1,"./libs/simplewebrtc":3,"mediastream-gain":26}],7:[function(require,module,exports){
+},{"./LiveLabOsc":1,"./LocalMediaContainer":2,"./PeerMediaContainer":3,"./libs/simplewebrtc":5,"mediastream-gain":28}],9:[function(require,module,exports){
 var adapter = require('webrtc-adapter-test');
 module.exports = function (stream, el, options) {
     var item;
@@ -1513,7 +1576,7 @@ module.exports = function (stream, el, options) {
     return element;
 };
 
-},{"webrtc-adapter-test":8}],8:[function(require,module,exports){
+},{"webrtc-adapter-test":10}],10:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -3290,7 +3353,7 @@ if (typeof module !== 'undefined') {
   });
 }
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var util = require('util');
 
@@ -3378,7 +3441,7 @@ module.exports.support = typeof window !== 'undefined' && window && window.File 
 module.exports.Sender = Sender;
 module.exports.Receiver = Receiver;
 
-},{"util":122,"wildemitter":117}],10:[function(require,module,exports){
+},{"util":124,"wildemitter":119}],12:[function(require,module,exports){
 var util = require('util');
 var hark = require('hark');
 var webrtcSupport = require('webrtcsupport');
@@ -3680,7 +3743,7 @@ Object.defineProperty(LocalMedia.prototype, 'localScreen', {
 
 module.exports = LocalMedia;
 
-},{"getscreenmedia":11,"getusermedia":12,"hark":23,"mediastream-gain":24,"mockconsole":28,"util":122,"webrtcsupport":116,"wildemitter":117}],11:[function(require,module,exports){
+},{"getscreenmedia":13,"getusermedia":14,"hark":25,"mediastream-gain":26,"mockconsole":30,"util":124,"webrtcsupport":118,"wildemitter":119}],13:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -3848,7 +3911,7 @@ window.addEventListener('message', function (event) {
     }
 });
 
-},{"getusermedia":12}],12:[function(require,module,exports){
+},{"getusermedia":14}],14:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg used for navigator.getUserMedia shim
 var adapter = require('webrtc-adapter');
 
@@ -3931,7 +3994,7 @@ module.exports = function (constraints, cb) {
     });
 };
 
-},{"webrtc-adapter":14}],13:[function(require,module,exports){
+},{"webrtc-adapter":16}],15:[function(require,module,exports){
  /* eslint-env node */
 'use strict';
 
@@ -4423,7 +4486,7 @@ SDPUtils.getDirection = function(mediaSection, sessionpart) {
 // Expose public methods.
 module.exports = SDPUtils;
 
-},{}],14:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -4517,7 +4580,7 @@ module.exports = SDPUtils;
   }
 })();
 
-},{"./chrome/chrome_shim":15,"./edge/edge_shim":17,"./firefox/firefox_shim":19,"./safari/safari_shim":21,"./utils":22}],15:[function(require,module,exports){
+},{"./chrome/chrome_shim":17,"./edge/edge_shim":19,"./firefox/firefox_shim":21,"./safari/safari_shim":23,"./utils":24}],17:[function(require,module,exports){
 
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
@@ -4794,7 +4857,7 @@ module.exports = {
   reattachMediaStream: chromeShim.reattachMediaStream
 };
 
-},{"../utils.js":22,"./getusermedia":16}],16:[function(require,module,exports){
+},{"../utils.js":24,"./getusermedia":18}],18:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -4985,7 +5048,7 @@ module.exports = function() {
   }
 };
 
-},{"../utils.js":22}],17:[function(require,module,exports){
+},{"../utils.js":24}],19:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -5983,7 +6046,7 @@ module.exports = {
   reattachMediaStream: edgeShim.reattachMediaStream
 };
 
-},{"../utils":22,"./getusermedia":18,"sdp":13}],18:[function(require,module,exports){
+},{"../utils":24,"./getusermedia":20,"sdp":15}],20:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -6017,7 +6080,7 @@ module.exports = function() {
   };
 };
 
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -6283,7 +6346,7 @@ module.exports = {
   reattachMediaStream: firefoxShim.reattachMediaStream
 };
 
-},{"../utils":22,"./getusermedia":20}],20:[function(require,module,exports){
+},{"../utils":24,"./getusermedia":22}],22:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -6423,7 +6486,7 @@ module.exports = function() {
   }
 };
 
-},{"../utils":22}],21:[function(require,module,exports){
+},{"../utils":24}],23:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -6459,7 +6522,7 @@ module.exports = {
   // reattachMediaStream: safariShim.reattachMediaStream
 };
 
-},{}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -6604,7 +6667,7 @@ module.exports = {
   extractVersion: utils.extractVersion
 };
 
-},{}],23:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -6734,7 +6797,7 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":117}],24:[function(require,module,exports){
+},{"wildemitter":119}],26:[function(require,module,exports){
 var support = require('webrtcsupport');
 
 
@@ -6781,7 +6844,7 @@ GainController.prototype.on = function () {
 
 module.exports = GainController;
 
-},{"webrtcsupport":25}],25:[function(require,module,exports){
+},{"webrtcsupport":27}],27:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 var version;
@@ -6833,11 +6896,11 @@ module.exports = {
     getUserMedia: getUserMedia
 };
 
-},{}],26:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"dup":24,"webrtcsupport":27}],27:[function(require,module,exports){
-arguments[4][25][0].apply(exports,arguments)
-},{"dup":25}],28:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
+arguments[4][26][0].apply(exports,arguments)
+},{"dup":26,"webrtcsupport":29}],29:[function(require,module,exports){
+arguments[4][27][0].apply(exports,arguments)
+},{"dup":27}],30:[function(require,module,exports){
 var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
 var l = methods.length;
 var fn = function () {};
@@ -6849,7 +6912,7 @@ while (l--) {
 
 module.exports = mockconsole;
 
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 /**
  * lodash 3.0.3 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -6913,7 +6976,7 @@ var forEach = createForEach(arrayEach, baseEach);
 
 module.exports = forEach;
 
-},{"lodash._arrayeach":30,"lodash._baseeach":31,"lodash._bindcallback":35,"lodash.isarray":36}],30:[function(require,module,exports){
+},{"lodash._arrayeach":32,"lodash._baseeach":33,"lodash._bindcallback":37,"lodash.isarray":38}],32:[function(require,module,exports){
 /**
  * lodash 3.0.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -6946,7 +7009,7 @@ function arrayEach(array, iteratee) {
 
 module.exports = arrayEach;
 
-},{}],31:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 /**
  * lodash 3.0.4 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -7129,7 +7192,7 @@ function isObject(value) {
 
 module.exports = baseEach;
 
-},{"lodash.keys":32}],32:[function(require,module,exports){
+},{"lodash.keys":34}],34:[function(require,module,exports){
 /**
  * lodash 3.1.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -7367,7 +7430,7 @@ function keysIn(object) {
 
 module.exports = keys;
 
-},{"lodash._getnative":33,"lodash.isarguments":34,"lodash.isarray":36}],33:[function(require,module,exports){
+},{"lodash._getnative":35,"lodash.isarguments":36,"lodash.isarray":38}],35:[function(require,module,exports){
 /**
  * lodash 3.9.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -7506,7 +7569,7 @@ function isNative(value) {
 
 module.exports = getNative;
 
-},{}],34:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 /**
  * lodash 3.0.8 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -7751,7 +7814,7 @@ function isObjectLike(value) {
 
 module.exports = isArguments;
 
-},{}],35:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -7818,7 +7881,7 @@ function identity(value) {
 
 module.exports = bindCallback;
 
-},{}],36:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 /**
  * lodash 3.0.4 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8000,7 +8063,7 @@ function isNative(value) {
 
 module.exports = isArray;
 
-},{}],37:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /**
  * lodash 3.1.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8159,7 +8222,7 @@ function property(path) {
 
 module.exports = pluck;
 
-},{"lodash._baseget":38,"lodash._topath":39,"lodash.isarray":40,"lodash.map":41}],38:[function(require,module,exports){
+},{"lodash._baseget":40,"lodash._topath":41,"lodash.isarray":42,"lodash.map":43}],40:[function(require,module,exports){
 /**
  * lodash 3.7.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8235,7 +8298,7 @@ function isObject(value) {
 
 module.exports = baseGet;
 
-},{}],39:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 /**
  * lodash 3.8.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8284,9 +8347,9 @@ function toPath(value) {
 
 module.exports = toPath;
 
-},{"lodash.isarray":40}],40:[function(require,module,exports){
-arguments[4][36][0].apply(exports,arguments)
-},{"dup":36}],41:[function(require,module,exports){
+},{"lodash.isarray":42}],42:[function(require,module,exports){
+arguments[4][38][0].apply(exports,arguments)
+},{"dup":38}],43:[function(require,module,exports){
 /**
  * lodash 3.1.4 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8438,7 +8501,7 @@ function map(collection, iteratee, thisArg) {
 
 module.exports = map;
 
-},{"lodash._arraymap":42,"lodash._basecallback":43,"lodash._baseeach":48,"lodash.isarray":40}],42:[function(require,module,exports){
+},{"lodash._arraymap":44,"lodash._basecallback":45,"lodash._baseeach":50,"lodash.isarray":42}],44:[function(require,module,exports){
 /**
  * lodash 3.0.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8470,7 +8533,7 @@ function arrayMap(array, iteratee) {
 
 module.exports = arrayMap;
 
-},{}],43:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 /**
  * lodash 3.3.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -8894,7 +8957,7 @@ function property(path) {
 
 module.exports = baseCallback;
 
-},{"lodash._baseisequal":44,"lodash._bindcallback":46,"lodash.isarray":40,"lodash.pairs":47}],44:[function(require,module,exports){
+},{"lodash._baseisequal":46,"lodash._bindcallback":48,"lodash.isarray":42,"lodash.pairs":49}],46:[function(require,module,exports){
 /**
  * lodash 3.0.7 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -9238,7 +9301,7 @@ function isObject(value) {
 
 module.exports = baseIsEqual;
 
-},{"lodash.isarray":40,"lodash.istypedarray":45,"lodash.keys":49}],45:[function(require,module,exports){
+},{"lodash.isarray":42,"lodash.istypedarray":47,"lodash.keys":51}],47:[function(require,module,exports){
 /**
  * lodash 3.0.6 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -9388,9 +9451,9 @@ function isTypedArray(value) {
 
 module.exports = isTypedArray;
 
-},{}],46:[function(require,module,exports){
-arguments[4][35][0].apply(exports,arguments)
-},{"dup":35}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
+arguments[4][37][0].apply(exports,arguments)
+},{"dup":37}],49:[function(require,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -9470,15 +9533,15 @@ function pairs(object) {
 
 module.exports = pairs;
 
-},{"lodash.keys":49}],48:[function(require,module,exports){
-arguments[4][31][0].apply(exports,arguments)
-},{"dup":31,"lodash.keys":49}],49:[function(require,module,exports){
-arguments[4][32][0].apply(exports,arguments)
-},{"dup":32,"lodash._getnative":50,"lodash.isarguments":51,"lodash.isarray":40}],50:[function(require,module,exports){
+},{"lodash.keys":51}],50:[function(require,module,exports){
 arguments[4][33][0].apply(exports,arguments)
-},{"dup":33}],51:[function(require,module,exports){
+},{"dup":33,"lodash.keys":51}],51:[function(require,module,exports){
 arguments[4][34][0].apply(exports,arguments)
-},{"dup":34}],52:[function(require,module,exports){
+},{"dup":34,"lodash._getnative":52,"lodash.isarguments":53,"lodash.isarray":42}],52:[function(require,module,exports){
+arguments[4][35][0].apply(exports,arguments)
+},{"dup":35}],53:[function(require,module,exports){
+arguments[4][36][0].apply(exports,arguments)
+},{"dup":36}],54:[function(require,module,exports){
 var toSDP = require('./lib/tosdp');
 var toJSON = require('./lib/tojson');
 
@@ -9600,7 +9663,7 @@ exports.toCandidateJSON = toJSON.toCandidateJSON;
 exports.toMediaJSON = toJSON.toMediaJSON;
 exports.toSessionJSON = toJSON.toSessionJSON;
 
-},{"./lib/tojson":55,"./lib/tosdp":56}],53:[function(require,module,exports){
+},{"./lib/tojson":57,"./lib/tosdp":58}],55:[function(require,module,exports){
 exports.lines = function (sdp) {
     return sdp.split('\r\n').filter(function (line) {
         return line.length > 0;
@@ -9871,7 +9934,7 @@ exports.msid = function (line) {
     };
 };
 
-},{}],54:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 module.exports = {
     initiator: {
         incoming: {
@@ -9919,7 +9982,7 @@ module.exports = {
     }
 };
 
-},{}],55:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 var SENDERS = require('./senders');
 var parsers = require('./parsers');
 var idCounter = Math.random();
@@ -10143,7 +10206,7 @@ exports.toCandidateJSON = function (line) {
     return candidate;
 };
 
-},{"./parsers":53,"./senders":54}],56:[function(require,module,exports){
+},{"./parsers":55,"./senders":56}],58:[function(require,module,exports){
 var SENDERS = require('./senders');
 
 
@@ -10382,7 +10445,7 @@ exports.toCandidateSDP = function (candidate) {
     return 'a=candidate:' + sdp.join(' ');
 };
 
-},{"./senders":54}],57:[function(require,module,exports){
+},{"./senders":56}],59:[function(require,module,exports){
 // based on https://github.com/ESTOS/strophe.jingle/
 // adds wildemitter support
 var util = require('util');
@@ -10603,27 +10666,27 @@ TraceablePeerConnection.prototype.getStats = function () {
 
 module.exports = TraceablePeerConnection;
 
-},{"util":122,"webrtc-adapter":59,"wildemitter":117}],58:[function(require,module,exports){
-arguments[4][13][0].apply(exports,arguments)
-},{"dup":13}],59:[function(require,module,exports){
-arguments[4][14][0].apply(exports,arguments)
-},{"./chrome/chrome_shim":60,"./edge/edge_shim":62,"./firefox/firefox_shim":64,"./safari/safari_shim":66,"./utils":67,"dup":14}],60:[function(require,module,exports){
+},{"util":124,"webrtc-adapter":61,"wildemitter":119}],60:[function(require,module,exports){
 arguments[4][15][0].apply(exports,arguments)
-},{"../utils.js":67,"./getusermedia":61,"dup":15}],61:[function(require,module,exports){
+},{"dup":15}],61:[function(require,module,exports){
 arguments[4][16][0].apply(exports,arguments)
-},{"../utils.js":67,"dup":16}],62:[function(require,module,exports){
+},{"./chrome/chrome_shim":62,"./edge/edge_shim":64,"./firefox/firefox_shim":66,"./safari/safari_shim":68,"./utils":69,"dup":16}],62:[function(require,module,exports){
 arguments[4][17][0].apply(exports,arguments)
-},{"../utils":67,"./getusermedia":63,"dup":17,"sdp":58}],63:[function(require,module,exports){
+},{"../utils.js":69,"./getusermedia":63,"dup":17}],63:[function(require,module,exports){
 arguments[4][18][0].apply(exports,arguments)
-},{"dup":18}],64:[function(require,module,exports){
+},{"../utils.js":69,"dup":18}],64:[function(require,module,exports){
 arguments[4][19][0].apply(exports,arguments)
-},{"../utils":67,"./getusermedia":65,"dup":19}],65:[function(require,module,exports){
+},{"../utils":69,"./getusermedia":65,"dup":19,"sdp":60}],65:[function(require,module,exports){
 arguments[4][20][0].apply(exports,arguments)
-},{"../utils":67,"dup":20}],66:[function(require,module,exports){
+},{"dup":20}],66:[function(require,module,exports){
 arguments[4][21][0].apply(exports,arguments)
-},{"dup":21}],67:[function(require,module,exports){
+},{"../utils":69,"./getusermedia":67,"dup":21}],67:[function(require,module,exports){
 arguments[4][22][0].apply(exports,arguments)
-},{"dup":22}],68:[function(require,module,exports){
+},{"../utils":69,"dup":22}],68:[function(require,module,exports){
+arguments[4][23][0].apply(exports,arguments)
+},{"dup":23}],69:[function(require,module,exports){
+arguments[4][24][0].apply(exports,arguments)
+},{"dup":24}],70:[function(require,module,exports){
 var util = require('util');
 var each = require('lodash.foreach');
 var pluck = require('lodash.pluck');
@@ -11514,11 +11577,11 @@ PeerConnection.prototype.getStats = function (cb) {
 
 module.exports = PeerConnection;
 
-},{"lodash.foreach":29,"lodash.pluck":37,"sdp-jingle-json":52,"traceablepeerconnection":57,"util":122,"webrtc-adapter":59,"wildemitter":117}],69:[function(require,module,exports){
+},{"lodash.foreach":31,"lodash.pluck":39,"sdp-jingle-json":54,"traceablepeerconnection":59,"util":124,"webrtc-adapter":61,"wildemitter":119}],71:[function(require,module,exports){
 
 module.exports = require('./lib/');
 
-},{"./lib/":70}],70:[function(require,module,exports){
+},{"./lib/":72}],72:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -11607,7 +11670,7 @@ exports.connect = lookup;
 exports.Manager = require('./manager');
 exports.Socket = require('./socket');
 
-},{"./manager":71,"./socket":73,"./url":74,"debug":78,"socket.io-parser":111}],71:[function(require,module,exports){
+},{"./manager":73,"./socket":75,"./url":76,"debug":80,"socket.io-parser":113}],73:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -12112,7 +12175,7 @@ Manager.prototype.onreconnect = function(){
   this.emitAll('reconnect', attempt);
 };
 
-},{"./on":72,"./socket":73,"./url":74,"backo2":75,"component-bind":76,"component-emitter":77,"debug":78,"engine.io-client":79,"indexof":107,"object-component":108,"socket.io-parser":111}],72:[function(require,module,exports){
+},{"./on":74,"./socket":75,"./url":76,"backo2":77,"component-bind":78,"component-emitter":79,"debug":80,"engine.io-client":81,"indexof":109,"object-component":110,"socket.io-parser":113}],74:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -12138,7 +12201,7 @@ function on(obj, ev, fn) {
   };
 }
 
-},{}],73:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -12525,7 +12588,7 @@ Socket.prototype.disconnect = function(){
   return this;
 };
 
-},{"./on":72,"component-bind":76,"component-emitter":77,"debug":78,"has-binary":105,"socket.io-parser":111,"to-array":115}],74:[function(require,module,exports){
+},{"./on":74,"component-bind":78,"component-emitter":79,"debug":80,"has-binary":107,"socket.io-parser":113,"to-array":117}],76:[function(require,module,exports){
 (function (global){
 
 /**
@@ -12602,7 +12665,7 @@ function url(uri, loc){
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"debug":78,"parseuri":109}],75:[function(require,module,exports){
+},{"debug":80,"parseuri":111}],77:[function(require,module,exports){
 
 /**
  * Expose `Backoff`.
@@ -12689,7 +12752,7 @@ Backoff.prototype.setJitter = function(jitter){
 };
 
 
-},{}],76:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 /**
  * Slice reference.
  */
@@ -12714,7 +12777,7 @@ module.exports = function(obj, fn){
   }
 };
 
-},{}],77:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -12880,7 +12943,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],78:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 
 /**
  * Expose `debug()` as the module.
@@ -13019,11 +13082,11 @@ try {
   if (window.localStorage) debug.enable(localStorage.debug);
 } catch(e){}
 
-},{}],79:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 
 module.exports =  require('./lib/');
 
-},{"./lib/":80}],80:[function(require,module,exports){
+},{"./lib/":82}],82:[function(require,module,exports){
 
 module.exports = require('./socket');
 
@@ -13035,7 +13098,7 @@ module.exports = require('./socket');
  */
 module.exports.parser = require('engine.io-parser');
 
-},{"./socket":81,"engine.io-parser":93}],81:[function(require,module,exports){
+},{"./socket":83,"engine.io-parser":95}],83:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -13744,7 +13807,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./transport":82,"./transports":83,"component-emitter":77,"debug":90,"engine.io-parser":93,"indexof":107,"parsejson":102,"parseqs":103,"parseuri":104}],82:[function(require,module,exports){
+},{"./transport":84,"./transports":85,"component-emitter":79,"debug":92,"engine.io-parser":95,"indexof":109,"parsejson":104,"parseqs":105,"parseuri":106}],84:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -13905,7 +13968,7 @@ Transport.prototype.onClose = function () {
   this.emit('close');
 };
 
-},{"component-emitter":77,"engine.io-parser":93}],83:[function(require,module,exports){
+},{"component-emitter":79,"engine.io-parser":95}],85:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies
@@ -13962,7 +14025,7 @@ function polling(opts){
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling-jsonp":84,"./polling-xhr":85,"./websocket":87,"xmlhttprequest":88}],84:[function(require,module,exports){
+},{"./polling-jsonp":86,"./polling-xhr":87,"./websocket":89,"xmlhttprequest":90}],86:[function(require,module,exports){
 (function (global){
 
 /**
@@ -14199,7 +14262,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":86,"component-inherit":89}],85:[function(require,module,exports){
+},{"./polling":88,"component-inherit":91}],87:[function(require,module,exports){
 (function (global){
 /**
  * Module requirements.
@@ -14587,7 +14650,7 @@ function unloadHandler() {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":86,"component-emitter":77,"component-inherit":89,"debug":90,"xmlhttprequest":88}],86:[function(require,module,exports){
+},{"./polling":88,"component-emitter":79,"component-inherit":91,"debug":92,"xmlhttprequest":90}],88:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -14834,7 +14897,7 @@ Polling.prototype.uri = function(){
   return schema + '://' + this.hostname + port + this.path + query;
 };
 
-},{"../transport":82,"component-inherit":89,"debug":90,"engine.io-parser":93,"parseqs":103,"xmlhttprequest":88}],87:[function(require,module,exports){
+},{"../transport":84,"component-inherit":91,"debug":92,"engine.io-parser":95,"parseqs":105,"xmlhttprequest":90}],89:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -15074,7 +15137,7 @@ WS.prototype.check = function(){
   return !!WebSocket && !('__initialize' in WebSocket && this.name === WS.prototype.name);
 };
 
-},{"../transport":82,"component-inherit":89,"debug":90,"engine.io-parser":93,"parseqs":103,"ws":118}],88:[function(require,module,exports){
+},{"../transport":84,"component-inherit":91,"debug":92,"engine.io-parser":95,"parseqs":105,"ws":120}],90:[function(require,module,exports){
 // browser shim for xmlhttprequest module
 var hasCORS = require('has-cors');
 
@@ -15112,7 +15175,7 @@ module.exports = function(opts) {
   }
 }
 
-},{"has-cors":100}],89:[function(require,module,exports){
+},{"has-cors":102}],91:[function(require,module,exports){
 
 module.exports = function(a, b){
   var fn = function(){};
@@ -15120,7 +15183,7 @@ module.exports = function(a, b){
   a.prototype = new fn;
   a.prototype.constructor = a;
 };
-},{}],90:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 
 /**
  * This is the web browser implementation of `debug()`.
@@ -15269,7 +15332,7 @@ function load() {
 
 exports.enable(load());
 
-},{"./debug":91}],91:[function(require,module,exports){
+},{"./debug":93}],93:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -15468,7 +15531,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":92}],92:[function(require,module,exports){
+},{"ms":94}],94:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -15581,7 +15644,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],93:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -16179,7 +16242,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./keys":94,"after":95,"arraybuffer.slice":96,"base64-arraybuffer":97,"blob":98,"has-binary":105,"utf8":99}],94:[function(require,module,exports){
+},{"./keys":96,"after":97,"arraybuffer.slice":98,"base64-arraybuffer":99,"blob":100,"has-binary":107,"utf8":101}],96:[function(require,module,exports){
 
 /**
  * Gets the keys for an object.
@@ -16200,7 +16263,7 @@ module.exports = Object.keys || function keys (obj){
   return arr;
 };
 
-},{}],95:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 module.exports = after
 
 function after(count, callback, err_cb) {
@@ -16230,7 +16293,7 @@ function after(count, callback, err_cb) {
 
 function noop() {}
 
-},{}],96:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 /**
  * An abstraction for slicing an arraybuffer even when
  * ArrayBuffer.prototype.slice is not supported
@@ -16261,7 +16324,7 @@ module.exports = function(arraybuffer, start, end) {
   return result.buffer;
 };
 
-},{}],97:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 /*
  * base64-arraybuffer
  * https://github.com/niklasvh/base64-arraybuffer
@@ -16322,7 +16385,7 @@ module.exports = function(arraybuffer, start, end) {
   };
 })("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
 
-},{}],98:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 (function (global){
 /**
  * Create a blob builder even when vendor prefixes exist
@@ -16422,7 +16485,7 @@ module.exports = (function() {
 })();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],99:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/utf8js v2.0.0 by @mathias */
 ;(function(root) {
@@ -16670,7 +16733,7 @@ module.exports = (function() {
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],100:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -16695,7 +16758,7 @@ try {
   module.exports = false;
 }
 
-},{"global":101}],101:[function(require,module,exports){
+},{"global":103}],103:[function(require,module,exports){
 
 /**
  * Returns `this`. Execute this without a "context" (i.e. without it being
@@ -16705,7 +16768,7 @@ try {
 
 module.exports = (function () { return this; })();
 
-},{}],102:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 (function (global){
 /**
  * JSON parse.
@@ -16740,7 +16803,7 @@ module.exports = function parsejson(data) {
   }
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],103:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 /**
  * Compiles a querystring
  * Returns string representation of the object
@@ -16779,7 +16842,7 @@ exports.decode = function(qs){
   return qry;
 };
 
-},{}],104:[function(require,module,exports){
+},{}],106:[function(require,module,exports){
 /**
  * Parses an URI
  *
@@ -16820,7 +16883,7 @@ module.exports = function parseuri(str) {
     return uri;
 };
 
-},{}],105:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 (function (global){
 
 /*
@@ -16882,12 +16945,12 @@ function hasBinary(data) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"isarray":106}],106:[function(require,module,exports){
+},{"isarray":108}],108:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],107:[function(require,module,exports){
+},{}],109:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -16898,7 +16961,7 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
-},{}],108:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 
 /**
  * HOP ref.
@@ -16983,7 +17046,7 @@ exports.length = function(obj){
 exports.isEmpty = function(obj){
   return 0 == exports.length(obj);
 };
-},{}],109:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 /**
  * Parses an URI
  *
@@ -17010,7 +17073,7 @@ module.exports = function parseuri(str) {
   return uri;
 };
 
-},{}],110:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 (function (global){
 /*global Blob,File*/
 
@@ -17155,7 +17218,7 @@ exports.removeBlobs = function(data, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./is-buffer":112,"isarray":113}],111:[function(require,module,exports){
+},{"./is-buffer":114,"isarray":115}],113:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -17557,7 +17620,7 @@ function error(data){
   };
 }
 
-},{"./binary":110,"./is-buffer":112,"component-emitter":77,"debug":78,"isarray":113,"json3":114}],112:[function(require,module,exports){
+},{"./binary":112,"./is-buffer":114,"component-emitter":79,"debug":80,"isarray":115,"json3":116}],114:[function(require,module,exports){
 (function (global){
 
 module.exports = isBuf;
@@ -17574,9 +17637,9 @@ function isBuf(obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],113:[function(require,module,exports){
-arguments[4][106][0].apply(exports,arguments)
-},{"dup":106}],114:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
+arguments[4][108][0].apply(exports,arguments)
+},{"dup":108}],116:[function(require,module,exports){
 /*! JSON v3.2.6 | http://bestiejs.github.io/json3 | Copyright 2012-2013, Kit Cambridge | http://kit.mit-license.org */
 ;(function (window) {
   // Convenience aliases.
@@ -18439,7 +18502,7 @@ arguments[4][106][0].apply(exports,arguments)
   }
 }(this));
 
-},{}],115:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 module.exports = toArray
 
 function toArray(list, index) {
@@ -18454,7 +18517,7 @@ function toArray(list, index) {
     return array
 }
 
-},{}],116:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 var version;
@@ -18501,7 +18564,7 @@ module.exports = {
     getUserMedia: getUserMedia
 };
 
-},{}],117:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based
 on @visionmedia's Emitter from UI Kit.
@@ -18656,7 +18719,7 @@ WildEmitter.mixin = function (constructor) {
 
 WildEmitter.mixin(WildEmitter);
 
-},{}],118:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -18701,7 +18764,7 @@ function ws(uri, protocols, opts) {
 
 if (WebSocket) ws.prototype = WebSocket.prototype;
 
-},{}],119:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -18726,7 +18789,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],120:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -18819,14 +18882,14 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],121:[function(require,module,exports){
+},{}],123:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],122:[function(require,module,exports){
+},{}],124:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -19416,4 +19479,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":121,"_process":120,"inherits":119}]},{},[6]);
+},{"./support/isBuffer":123,"_process":122,"inherits":121}]},{},[8]);
