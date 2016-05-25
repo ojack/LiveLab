@@ -11,33 +11,13 @@ function PeerMediaContainer(id, video, webrtc, dashboard){
 	if(id!="local"){
 		this.videoDiv.appendChild(video);
 		this.video = video;
-	  /*   var d = document.createElement('div');
-	    d.className = 'videoContainer';
-	    d.id = 'container_' + webrtc.getDomId(peerObj.peer);
-	     d.appendChild(peerObj.video);*/
-
 	    video.id = 'video_' + id;
-	   
 	    video.volume = 0.0;
 	    this.createPeerWindow();
 	 }
 	 
     this.createAudioSelector();
 	this.createVolumeControl();
-	
-	
-   // video.oncanplay = getOuts;
- /*   video.onclick = function () {
-        showWindow.document.getElementById('showVideo').src = document.getElementById('video_' + peer.id).src;
-    };
-    
-
-
-    var vol = document.createElement('div');
-    vol.id = 'volume_' + peer.id;
-    vol.className = 'volume_bar';
-    d.appendChild(vol);
-*/
 }
 
 PeerMediaContainer.prototype.createAccordion = function(name){
@@ -160,6 +140,7 @@ PeerMediaContainer.prototype.createPeerWindow = function(){
     var isFirefox = typeof InstallTrigger !== 'undefined';
      var isChrome = !!window.chrome && !!window.chrome.webstore;
     peerFullCheck.onchange = function () {
+      if(this.hasOwnProperty('peerWindow')){
         peerWindow.focus();
         if (peerFullCheck.checked == true) {
             if (isFirefox == true) {
@@ -176,7 +157,8 @@ PeerMediaContainer.prototype.createPeerWindow = function(){
                 peerWindow.document.getElementById('showVideo').webkitExitFullscreen();
             }
         }
-    }
+      }
+    }.bind(this);
 
     peerFull.appendChild(peerFullCheck);
     var fullText = document.createTextNode("Full");

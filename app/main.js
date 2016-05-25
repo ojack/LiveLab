@@ -1,6 +1,7 @@
 
 var SimpleWebRTC = require('./libs/simplewebrtc');
 var LiveLabOsc = require('./LiveLabOsc');
+var ChatWindow = require('./ChatWindow');
 //var MicGainController = require('mediastream-gain'); // where is this used?
 var PeerMediaContainer = require('./PeerMediaContainer');
 var SessionControl = require('./SessionControl');
@@ -15,10 +16,11 @@ var USE_OSC = true;
 var peers = {};
 
 window.onload = start;
-// had to change start function to control device enumeration
+
 function start() {
+    /*get room from URL*/
      room = location.search && location.search.split('?')[1];
-    
+    chatlog = new ChatWindow(document.body);
      if(room) {
         initWebRTC();
         setRoom(room);

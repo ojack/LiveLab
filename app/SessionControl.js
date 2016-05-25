@@ -59,7 +59,9 @@ SessionControl.prototype.createControlUI = function(container){
 }
 
 SessionControl.prototype.setVideo = function(video){
-	this.showWindow.document.getElementById('showVideo').src = video.src;
+    if(this.hasOwnProperty("showVideo")){
+	   this.showWindow.document.getElementById('showVideo').src = video.src;
+    }
 }
 
 module.exports = SessionControl;
