@@ -10,7 +10,7 @@ var BASE_SOCKET_URL = "wss://localhost";
 var BASE_SOCKET_PORT = 8000;
 var USE_OSC = true;
  
- var webrtc, chatlog, oscChannels, room, localMedia, dashboard, sessionControl;
+ var webrtc, chatWindow, oscChannels, room, localMedia, dashboard, sessionControl;
 
 /*Global object containing data about all connected peers*/
 var peers = {};
@@ -20,7 +20,7 @@ window.onload = start;
 function start() {
     /*get room from URL*/
      room = location.search && location.search.split('?')[1];
-    chatlog = new ChatWindow(document.body);
+  
      if(room) {
         initWebRTC();
         setRoom(room);
@@ -103,6 +103,7 @@ function initWebRTC(){
     webrtc.on('readyToCall', function () {
         // you can name it anything
         if (room) webrtc.joinRoom(room);
+        chatWindow = new ChatWindow(document.body, webrtc);
         localMedia.addVideoControls();
         sessionControl = new SessionControl(localMedia.video, document.body);
         localMedia.video.addEventListener("click", function(e){
@@ -112,11 +113,8 @@ function initWebRTC(){
     });
 
     webrtc.on('channelMessage', function (peer, label, data) {
-       /* if (data.type == 'volume') {
-            showVolume(document.getElementById('volume_' + peer.id), data.volume);
-        } else*/ if(data.type=="chat"){
-            chatlog.innerHTML += "</br>"+peer.id + ": " + data.payload; 
-            console.log(data);
+        if(data.type=="chat"){
+            chatWindow.appendToChatLog(peer.id, data.payload);
         }  else if(data.type=="osc"){
                 oscChannels.receivedRemoteStream(data, peer.id, label);
                

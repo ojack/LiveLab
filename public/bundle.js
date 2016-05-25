@@ -1,13 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-function ChatWindow(container){
-	/*<div id="chat-window">
-            <div id="chatlog"></div>
-            <form id="sendChat">
-                <input type="text" id="chat"/>
-                <button type="submit">Send</buttom>
-            </form>
-        </div>*/
-       this.createChatDivs(container);
+function ChatWindow(container, webrtc){
+    this.webrtc = webrtc;
+    this.createChatDivs(container);
 }
 
 ChatWindow.prototype.createChatDivs = function(container){
@@ -17,8 +11,31 @@ ChatWindow.prototype.createChatDivs = function(container){
 	chatLog.id = "chatLog";
 	chatWindow.appendChild(chatLog);
 	var chatInput = document.createElement('div');
-	
-	
+    var i =  document.createElement("input"); //input element, text
+    i.setAttribute('type',"text");
+     i.setAttribute('id', "chat-input");
+     chatInput.appendChild(i);
+    var sendBtn = document.createElement("BUTTON");
+    var t = document.createTextNode("send");       // Create a text node
+    sendBtn.appendChild(t);  
+    sendBtn.setAttribute("type", "button")
+    chatInput.appendChild(sendBtn);
+    sendBtn.onclick = this.addLocalMessage.bind(this);
+    chatWindow.appendChild(chatInput);
+    container.appendChild(chatWindow);
+    this.input = i;
+}
+
+ChatWindow.prototype.appendToChatLog = function(label, text){
+	chatLog.innerHTML += "<span id='chat-label'>" + label + ": </span>";
+	chatLog.innerHTML += text + "<br>";
+}
+
+ChatWindow.prototype.addLocalMessage = function(e){
+	console.log(this.input.value);
+	this.appendToChatLog("me", this.input.value);
+	this.webrtc.sendDirectlyToAll("simplewebrtc", "chat", this.input.value) ;
+	this.input.value = "";
 }
 
 module.exports = ChatWindow;
@@ -1456,7 +1473,7 @@ var BASE_SOCKET_URL = "wss://localhost";
 var BASE_SOCKET_PORT = 8000;
 var USE_OSC = true;
  
- var webrtc, chatlog, oscChannels, room, localMedia, dashboard, sessionControl;
+ var webrtc, chatWindow, oscChannels, room, localMedia, dashboard, sessionControl;
 
 /*Global object containing data about all connected peers*/
 var peers = {};
@@ -1466,7 +1483,7 @@ window.onload = start;
 function start() {
     /*get room from URL*/
      room = location.search && location.search.split('?')[1];
-    chatlog = new ChatWindow(document.body);
+  
      if(room) {
         initWebRTC();
         setRoom(room);
@@ -1549,6 +1566,7 @@ function initWebRTC(){
     webrtc.on('readyToCall', function () {
         // you can name it anything
         if (room) webrtc.joinRoom(room);
+        chatWindow = new ChatWindow(document.body, webrtc);
         localMedia.addVideoControls();
         sessionControl = new SessionControl(localMedia.video, document.body);
         localMedia.video.addEventListener("click", function(e){
@@ -1558,11 +1576,8 @@ function initWebRTC(){
     });
 
     webrtc.on('channelMessage', function (peer, label, data) {
-       /* if (data.type == 'volume') {
-            showVolume(document.getElementById('volume_' + peer.id), data.volume);
-        } else*/ if(data.type=="chat"){
-            chatlog.innerHTML += "</br>"+peer.id + ": " + data.payload; 
-            console.log(data);
+        if(data.type=="chat"){
+            chatWindow.appendToChatLog(peer.id, data.payload);
         }  else if(data.type=="osc"){
                 oscChannels.receivedRemoteStream(data, peer.id, label);
                
