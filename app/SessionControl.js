@@ -1,9 +1,13 @@
-function SessionControl(localVideo, container){
+var MixerWindow = require('./MixerWindow');
+
+function SessionControl(localVideo, container, peers){
 	this.video = localVideo;
 	this.createControlUI(container);
+    this.peers = peers;
 }
 
 SessionControl.prototype.createControlUI = function(container){
+   
 	var sessionDiv = document.createElement('div');
 	sessionDiv.id = "sessionControl";
      sessionDiv.className = "toolbar-element hide";
@@ -57,10 +61,24 @@ SessionControl.prototype.createControlUI = function(container){
     sessionDiv.appendChild(showFull);
     container.appendChild(sessionDiv);
     this.div = sessionDiv;
+
+     var showMixerButton = document.createElement('input');
+    showMixerButton.type = 'button';
+    showMixerButton.value = 'mixer';
+   
+   
+    showMixerButton.onclick = function () {
+        this.mixerWindow = new MixerWindow(this.video, this.peers);
+    
+      
+    }.bind(this);
+
+    sessionDiv.appendChild(showMixerButton);
 }
 
 SessionControl.prototype.setVideo = function(video){
-    if(this.hasOwnProperty("showVideo")){
+    console.log("show window");
+    if(this.hasOwnProperty("showWindow")){
 	   this.showWindow.document.getElementById('showVideo').src = video.src;
     }
 }

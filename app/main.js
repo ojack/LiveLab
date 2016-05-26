@@ -105,7 +105,7 @@ function initWebRTC(){
         if (room) webrtc.joinRoom(room);
         chatWindow = new ChatWindow(document.body, webrtc);
         localMedia.addVideoControls();
-        sessionControl = new SessionControl(localMedia.video, document.body);
+        sessionControl = new SessionControl(localMedia.video, document.body, peers);
         addToolbarButton("Chat", chatWindow);
         addToolbarButton("Session Control", sessionControl);
         localMedia.video.addEventListener("click", function(e){
