@@ -5,9 +5,10 @@
         <link rel="stylesheet" href="css/main.css">
     </head>
     <body>
-        <h1 id="title">Start a room</h1>
+       
 
         <form id="createRoom">
+             <h1>Start a room</h1>
             <input id="sessionInput"/>
             <button type="submit">Create it!</button>
         </form>
@@ -15,31 +16,7 @@
         <script src="osc-browser.js"></script>
         <script src="bundle.js"></script>
 
-     <!--
-
-            // echo cancellation
-            var echoCheck = document.getElementById('echoCheck');
-
-            var echoOff = {
-              audio: {optional: [ {googAutoGainControl: false}, {googAutoGainControl2: false}, {googEchoCancellation: false}, {googEchoCancellation2: false}, {googNoiseSuppression: false}, {googNoiseSuppression2: false}, {googHighpassFilter: false}, {googTypingNoiseDetection: false}, {googAudioMirroring: false}]}
-            };
-
-            var echoOn = {
-              audio: {optional: [ {googAutoGainControl: true}, {googAutoGainControl2: true}, {googEchoCancellation: true}, {googEchoCancellation2: true}, {googNoiseSuppression: true}, {googNoiseSuppression2: true}, {googHighpassFilter: true}, {googTypingNoiseDetection: true}, {googAudioMirroring: true}]}
-            };
-
-            function echoCancel(constraints) {
-              navigator.mediaDevices.getUserMedia(constraints);
-            }
-
-            function echo() {
-                if (echoCheck.checked == true) {
-                  echoCancel(echoOn)
-                } else {
-                  echoCancel(echoOff)
-                }
-            }
-    -->
+    
         </script>
 
     </body>

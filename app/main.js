@@ -10,7 +10,7 @@ var BASE_SOCKET_URL = "wss://localhost";
 var BASE_SOCKET_PORT = 8000;
 var USE_OSC = true;
  
- var webrtc, chatWindow, oscChannels, room, localMedia, dashboard, sessionControl;
+ var webrtc, chatWindow, oscChannels, room, localMedia, dashboard, sessionControl, toolbar;
 
 /*Global object containing data about all connected peers*/
 var peers = {};
@@ -106,6 +106,8 @@ function initWebRTC(){
         chatWindow = new ChatWindow(document.body, webrtc);
         localMedia.addVideoControls();
         sessionControl = new SessionControl(localMedia.video, document.body);
+        addToolbarButton("Chat", chatWindow);
+        addToolbarButton("Session Control", sessionControl);
         localMedia.video.addEventListener("click", function(e){
             console.log("setting video ", e.target);
             sessionControl.setVideo(e.target);
@@ -146,8 +148,41 @@ function initWebRTC(){
 
 function setRoom(name) {
     document.body.removeChild(document.getElementById("createRoom"));
-    document.getElementById("title").innerHTML = name;
+   // document.getElementById("title").innerHTML = name;
+    toolbar = document.createElement('div');
+    toolbar.className = "toolbar";
+    var title = document.createElement('div');
+    title.innerHTML = name;
+    title.id = "title";
+    toolbar.appendChild(title);
+    document.body.appendChild(toolbar);
+   
   //  $('h1').text(name);
    // $('#subTitle').text(name + " || link: "+ location.href);
    // $('body').addClass('active');
+}
+
+function addToolbarButton(name, element){
+    var b = document.createElement('input');
+    b.className = "toolbar-button";
+    b.type = 'button';
+    b.value = name;
+    toolbar.appendChild(b);
+    b.onclick = element.toggle.bind(element);
+     /*   if(e.target.className.indexOf("active") > 0){
+             e.target.className.replace(/\bactive\b/,'');
+         } else {
+            e.target.className += " active";
+         }
+       
+    }*/
+  
+  /*  b.onclick = function(){
+        console.log("clicked element", element);
+        if(element.div.className == "toolbar-element show"){
+            element.div.className = "toolbar-element hide";
+        } else { 
+            element.div.className = "toolbar-element show"
+        }
+    }*/
 }

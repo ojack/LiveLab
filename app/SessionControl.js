@@ -6,7 +6,7 @@ function SessionControl(localVideo, container){
 SessionControl.prototype.createControlUI = function(container){
 	var sessionDiv = document.createElement('div');
 	sessionDiv.id = "sessionControl";
-
+     sessionDiv.className = "toolbar-element hide";
     // peer window section
    /* var showWin = document.createElement('div');
     showWin.className = 'showWindow';*/
@@ -33,34 +33,43 @@ SessionControl.prototype.createControlUI = function(container){
     var isFirefox = typeof InstallTrigger !== 'undefined';
      var isChrome = !!window.chrome && !!window.chrome.webstore;
     showFullCheck.onchange = function () {
-        showWindow.focus();
+        this.showWindow.focus();
         if (showFullCheck.checked == true) {
             if (isFirefox == true) {
-                showWindow.document.getElementById('showVideo').mozRequestFullScreen();
+                this.showWindow.document.getElementById('showVideo').mozRequestFullScreen();
             }
             if (isChrome == true) {
-                showWindow.document.getElementById('showVideo').webkitRequestFullScreen();
+                this.showWindow.document.getElementById('showVideo').webkitRequestFullScreen();
             }
         } else {
             if (isFirefox == true) {
-                showWindow.document.getElementById('showVideo').mozCancelFullscreen();
+                this.showWindow.document.getElementById('showVideo').mozCancelFullscreen();
             }
             if (isChrome == true) {
-                showWindow.document.getElementById('showVideo').webkitExitFullscreen();
+                this.showWindow.document.getElementById('showVideo').webkitExitFullscreen();
             }
         }
-    }
+    }.bind(this);
 
     showFull.appendChild(showFullCheck);
     var fullText = document.createTextNode("Full");
     showFull.appendChild(fullText);
     sessionDiv.appendChild(showFull);
     container.appendChild(sessionDiv);
+    this.div = sessionDiv;
 }
 
 SessionControl.prototype.setVideo = function(video){
     if(this.hasOwnProperty("showVideo")){
 	   this.showWindow.document.getElementById('showVideo').src = video.src;
+    }
+}
+
+SessionControl.prototype.toggle = function(){
+    if(this.div.className == "toolbar-element show"){
+        this.div.className = "toolbar-element hide";
+    }else {
+        this.div.className = "toolbar-element show";
     }
 }
 

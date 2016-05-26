@@ -6,6 +6,7 @@ function ChatWindow(container, webrtc){
 ChatWindow.prototype.createChatDivs = function(container){
 	var chatWindow = document.createElement('div');
 	chatWindow.id = "chatWindow";
+    chatWindow.className = "toolbar-element hide";
 	var chatLog = document.createElement('div');
 	chatLog.id = "chatLog";
 	chatWindow.appendChild(chatLog);
@@ -23,11 +24,22 @@ ChatWindow.prototype.createChatDivs = function(container){
     chatWindow.appendChild(chatInput);
     container.appendChild(chatWindow);
     this.input = i;
+    this.div = chatWindow;
 }
+
+ChatWindow.prototype.toggle = function(){
+    if(this.div.className == "toolbar-element show"){
+        this.div.className = "toolbar-element hide";
+    }else {
+        this.div.className = "toolbar-element show";
+    }
+}
+
 
 ChatWindow.prototype.appendToChatLog = function(label, text){
 	chatLog.innerHTML += "<span id='chat-label'>" + label + ": </span>";
 	chatLog.innerHTML += text + "<br>";
+    this.div.className = "toolbar-element show";
 }
 
 ChatWindow.prototype.addLocalMessage = function(e){

@@ -7,6 +7,7 @@ function ChatWindow(container, webrtc){
 ChatWindow.prototype.createChatDivs = function(container){
 	var chatWindow = document.createElement('div');
 	chatWindow.id = "chatWindow";
+    chatWindow.className = "toolbar-element hide";
 	var chatLog = document.createElement('div');
 	chatLog.id = "chatLog";
 	chatWindow.appendChild(chatLog);
@@ -24,11 +25,22 @@ ChatWindow.prototype.createChatDivs = function(container){
     chatWindow.appendChild(chatInput);
     container.appendChild(chatWindow);
     this.input = i;
+    this.div = chatWindow;
 }
+
+ChatWindow.prototype.toggle = function(){
+    if(this.div.className == "toolbar-element show"){
+        this.div.className = "toolbar-element hide";
+    }else {
+        this.div.className = "toolbar-element show";
+    }
+}
+
 
 ChatWindow.prototype.appendToChatLog = function(label, text){
 	chatLog.innerHTML += "<span id='chat-label'>" + label + ": </span>";
 	chatLog.innerHTML += text + "<br>";
+    this.div.className = "toolbar-element show";
 }
 
 ChatWindow.prototype.addLocalMessage = function(e){
@@ -247,7 +259,8 @@ function PeerMediaContainer(id, video, webrtc, dashboard){
 PeerMediaContainer.prototype.createAccordion = function(name){
 	this.mediaContainer = document.createElement('div');
 	this.mediaContainer.className = "mediaContainer";
-	var peerHeader = document.createElement('h4');
+	var peerHeader = document.createElement('div');
+  peerHeader.className = "peer-header";
 	peerHeader.innerHTML = name;
 	this.mediaContainer.appendChild(peerHeader);
 	this.videoDiv = addAccordionItem("video", this.mediaContainer);
@@ -356,9 +369,7 @@ PeerMediaContainer.prototype.createPeerWindow = function(){
     peerWin.appendChild(peerWinButton);
     this.videoDiv.appendChild(peerWin);
 
-    var peerFull = document.createElement('div');
-    peerFull.className = 'peerFull';
-    // peerFull.id = 'peerFull_' + peer.id;
+   
     var peerFullCheck = document.createElement('input');
     peerFullCheck.type = 'checkbox';
     var isFirefox = typeof InstallTrigger !== 'undefined';
@@ -384,10 +395,10 @@ PeerMediaContainer.prototype.createPeerWindow = function(){
       }
     }.bind(this);
 
-    peerFull.appendChild(peerFullCheck);
+    peerWin.appendChild(peerFullCheck);
     var fullText = document.createTextNode("Full");
-    peerFull.appendChild(fullText);
-    this.videoDiv.appendChild(peerFull);
+    peerWin.appendChild(fullText);
+    
 }
 
 function addAccordionItem(name, container){
@@ -459,7 +470,7 @@ function SessionControl(localVideo, container){
 SessionControl.prototype.createControlUI = function(container){
 	var sessionDiv = document.createElement('div');
 	sessionDiv.id = "sessionControl";
-
+     sessionDiv.className = "toolbar-element hide";
     // peer window section
    /* var showWin = document.createElement('div');
     showWin.className = 'showWindow';*/
@@ -486,34 +497,43 @@ SessionControl.prototype.createControlUI = function(container){
     var isFirefox = typeof InstallTrigger !== 'undefined';
      var isChrome = !!window.chrome && !!window.chrome.webstore;
     showFullCheck.onchange = function () {
-        showWindow.focus();
+        this.showWindow.focus();
         if (showFullCheck.checked == true) {
             if (isFirefox == true) {
-                showWindow.document.getElementById('showVideo').mozRequestFullScreen();
+                this.showWindow.document.getElementById('showVideo').mozRequestFullScreen();
             }
             if (isChrome == true) {
-                showWindow.document.getElementById('showVideo').webkitRequestFullScreen();
+                this.showWindow.document.getElementById('showVideo').webkitRequestFullScreen();
             }
         } else {
             if (isFirefox == true) {
-                showWindow.document.getElementById('showVideo').mozCancelFullscreen();
+                this.showWindow.document.getElementById('showVideo').mozCancelFullscreen();
             }
             if (isChrome == true) {
-                showWindow.document.getElementById('showVideo').webkitExitFullscreen();
+                this.showWindow.document.getElementById('showVideo').webkitExitFullscreen();
             }
         }
-    }
+    }.bind(this);
 
     showFull.appendChild(showFullCheck);
     var fullText = document.createTextNode("Full");
     showFull.appendChild(fullText);
     sessionDiv.appendChild(showFull);
     container.appendChild(sessionDiv);
+    this.div = sessionDiv;
 }
 
 SessionControl.prototype.setVideo = function(video){
     if(this.hasOwnProperty("showVideo")){
 	   this.showWindow.document.getElementById('showVideo').src = video.src;
+    }
+}
+
+SessionControl.prototype.toggle = function(){
+    if(this.div.className == "toolbar-element show"){
+        this.div.className = "toolbar-element hide";
+    }else {
+        this.div.className = "toolbar-element show";
     }
 }
 
@@ -1473,7 +1493,7 @@ var BASE_SOCKET_URL = "wss://localhost";
 var BASE_SOCKET_PORT = 8000;
 var USE_OSC = true;
  
- var webrtc, chatWindow, oscChannels, room, localMedia, dashboard, sessionControl;
+ var webrtc, chatWindow, oscChannels, room, localMedia, dashboard, sessionControl, toolbar;
 
 /*Global object containing data about all connected peers*/
 var peers = {};
@@ -1569,6 +1589,8 @@ function initWebRTC(){
         chatWindow = new ChatWindow(document.body, webrtc);
         localMedia.addVideoControls();
         sessionControl = new SessionControl(localMedia.video, document.body);
+        addToolbarButton("Chat", chatWindow);
+        addToolbarButton("Session Control", sessionControl);
         localMedia.video.addEventListener("click", function(e){
             console.log("setting video ", e.target);
             sessionControl.setVideo(e.target);
@@ -1609,10 +1631,43 @@ function initWebRTC(){
 
 function setRoom(name) {
     document.body.removeChild(document.getElementById("createRoom"));
-    document.getElementById("title").innerHTML = name;
+   // document.getElementById("title").innerHTML = name;
+    toolbar = document.createElement('div');
+    toolbar.className = "toolbar";
+    var title = document.createElement('div');
+    title.innerHTML = name;
+    title.id = "title";
+    toolbar.appendChild(title);
+    document.body.appendChild(toolbar);
+   
   //  $('h1').text(name);
    // $('#subTitle').text(name + " || link: "+ location.href);
    // $('body').addClass('active');
+}
+
+function addToolbarButton(name, element){
+    var b = document.createElement('input');
+    b.className = "toolbar-button";
+    b.type = 'button';
+    b.value = name;
+    toolbar.appendChild(b);
+    b.onclick = element.toggle.bind(element);
+     /*   if(e.target.className.indexOf("active") > 0){
+             e.target.className.replace(/\bactive\b/,'');
+         } else {
+            e.target.className += " active";
+         }
+       
+    }*/
+  
+  /*  b.onclick = function(){
+        console.log("clicked element", element);
+        if(element.div.className == "toolbar-element show"){
+            element.div.className = "toolbar-element hide";
+        } else { 
+            element.div.className = "toolbar-element show"
+        }
+    }*/
 }
 
 },{"./ChatWindow":1,"./LiveLabOsc":2,"./PeerMediaContainer":3,"./SessionControl":4,"./libs/simplewebrtc":6}],10:[function(require,module,exports){

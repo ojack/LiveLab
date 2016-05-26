@@ -23,7 +23,8 @@ function PeerMediaContainer(id, video, webrtc, dashboard){
 PeerMediaContainer.prototype.createAccordion = function(name){
 	this.mediaContainer = document.createElement('div');
 	this.mediaContainer.className = "mediaContainer";
-	var peerHeader = document.createElement('h4');
+	var peerHeader = document.createElement('div');
+  peerHeader.className = "peer-header";
 	peerHeader.innerHTML = name;
 	this.mediaContainer.appendChild(peerHeader);
 	this.videoDiv = addAccordionItem("video", this.mediaContainer);
@@ -132,9 +133,7 @@ PeerMediaContainer.prototype.createPeerWindow = function(){
     peerWin.appendChild(peerWinButton);
     this.videoDiv.appendChild(peerWin);
 
-    var peerFull = document.createElement('div');
-    peerFull.className = 'peerFull';
-    // peerFull.id = 'peerFull_' + peer.id;
+   
     var peerFullCheck = document.createElement('input');
     peerFullCheck.type = 'checkbox';
     var isFirefox = typeof InstallTrigger !== 'undefined';
@@ -160,10 +159,10 @@ PeerMediaContainer.prototype.createPeerWindow = function(){
       }
     }.bind(this);
 
-    peerFull.appendChild(peerFullCheck);
+    peerWin.appendChild(peerFullCheck);
     var fullText = document.createTextNode("Full");
-    peerFull.appendChild(fullText);
-    this.videoDiv.appendChild(peerFull);
+    peerWin.appendChild(fullText);
+    
 }
 
 function addAccordionItem(name, container){
