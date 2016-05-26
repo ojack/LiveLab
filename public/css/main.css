@@ -2812,6 +2812,7 @@ h4 {
   margin: 2px;
   top: 0px;
   background-color: #444;
+  vertical-align: top;
 }
 .mediaContainer video {
   /* position: absolute;*/
