@@ -19,8 +19,9 @@ window.onload = start;
 
 function start() {
     /*get room from URL*/
-     room = location.search && location.search.split('?')[1];
-  
+    room = location.search && location.search.split('?')[1];
+    toolbar = document.createElement('div');
+    toolbar.className = "toolbar";
      if(room) {
         initWebRTC();
         setRoom(room);
@@ -149,8 +150,7 @@ function initWebRTC(){
 function setRoom(name) {
     document.body.removeChild(document.getElementById("createRoom"));
    // document.getElementById("title").innerHTML = name;
-    toolbar = document.createElement('div');
-    toolbar.className = "toolbar";
+   
     var title = document.createElement('div');
     title.innerHTML = name;
     title.id = "title";

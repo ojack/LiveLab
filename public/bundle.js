@@ -236,19 +236,24 @@ module.exports = LiveLabOsc;
 },{}],3:[function(require,module,exports){
 function MixerWindow(video, peers){
      var ip = window.location.host;
-      showMixer = window.open("https://" + ip + "/mixer.html", 'Mixer', 'popup');
+      showMixer = window.open("https://" + ip + "/mixer.html", 'Mixer_'+Math.random()*200, 'popup');
 
+      //force relaod because page keeps strange cache
+      showMixer.location.reload();
        showMixer.onload = function(){
             console.log(video);
             console.log(peers);
+            /*attach javascript*/
 
-             showMixer.document.getElementById('video1').src = video.src;
+            /*attach local video to video element in mixer*/
+             //showMixer.document.getElementById('video0').src = video.src;
+            createVideoDiv(video.src, showMixer.document, 0);
              var numVids = 0;
              for (peer in peers){
                 console.log(peers[peer].peerContainer.video);
                 //if(numVids < 1) {
                     // showMixer.document.getElementById('video2').src = peers[peer].peerContainer.video.src;
-                    createVideoDiv(peers[peer].peerContainer.video.src, showMixer.document);
+                    createVideoDiv(peers[peer].peerContainer.video.src, showMixer.document, numVids+1);
                // }
                 numVids++;
              }
@@ -261,9 +266,10 @@ MixerWindow.prototype.createChatDivs = function(){
 
 }
 
-function createVideoDiv(src, parent){
+function createVideoDiv(src, parent, index){
     var vid =  parent.createElement('video');
     vid.src = src;
+    vid.id = "video"+index;
     vid.autoplay = true;
     vid.muted = true;
     parent.body.appendChild(vid);
@@ -1558,8 +1564,9 @@ window.onload = start;
 
 function start() {
     /*get room from URL*/
-     room = location.search && location.search.split('?')[1];
-  
+    room = location.search && location.search.split('?')[1];
+    toolbar = document.createElement('div');
+    toolbar.className = "toolbar";
      if(room) {
         initWebRTC();
         setRoom(room);
@@ -1688,8 +1695,7 @@ function initWebRTC(){
 function setRoom(name) {
     document.body.removeChild(document.getElementById("createRoom"));
    // document.getElementById("title").innerHTML = name;
-    toolbar = document.createElement('div');
-    toolbar.className = "toolbar";
+   
     var title = document.createElement('div');
     title.innerHTML = name;
     title.id = "title";
