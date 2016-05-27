@@ -1,0 +1,30 @@
+<!-- <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN"> -->
+
+<html>
+
+<head>
+<title>LiveLab: mixer</title>
+</head>
+<body bgcolor="black">
+
+	<style>
+        video::-webkit-media-controls {
+            display:none !important;
+        }
+        html, body {
+            font-family: "Lucida Console", Monaco, monospace;
+        }
+    </style>
+
+
+<script type="text/javascript" src="./libs/seriously.js"></script>
+<script type="text/javascript" src="./libs/effects/seriously.blend.js"></script>
+ <script src="./libs/effects/seriously.vignette.js"></script>
+    <script src="./libs/effects/seriously.hue-saturation.js"></script>
+    <script src="./libs/effects/seriously.split.js"></script>
+<!--force reload javascript (rather than caching)-->
+ <script src="mixer.js?ver<%=DateTime.Now.Ticks.ToString()%>" type="text/javascript"></script>
+
+</body>
+
+</html>

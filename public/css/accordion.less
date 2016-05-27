@@ -1,0 +1,20 @@
+/* Container */
+.fr-accordion {
+}
+
+/* Accordion header */
+.fr-accordion--is-ready .fr-accordion__header {
+  cursor: pointer;
+}
+
+/* Accordion panel */
+.fr-accordion--is-ready .fr-accordion__panel {
+  overflow: hidden;
+}
+.fr-accordion__panel[aria-hidden="true"] {
+  visibility: hidden;
+  height: 0;
+}
+.fr-accordion__panel[aria-hidden="false"] {
+  visibility: visible;
+}
