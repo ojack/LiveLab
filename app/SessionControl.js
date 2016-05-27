@@ -18,7 +18,7 @@ SessionControl.prototype.createControlUI = function(container){
     showWinButton.type = 'button';
     showWinButton.value = 'window';
     var showWindow;
-    var ip = window.location.host;
+    var ip =window.location.host + window.location.pathname;
     showWinButton.onclick = function () {
       showWindow = window.open("https://" + ip + "/show.html", 'Show', 'popup');
        showWindow.onload = function(){

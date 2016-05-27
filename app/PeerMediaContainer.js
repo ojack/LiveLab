@@ -119,7 +119,7 @@ PeerMediaContainer.prototype.createPeerWindow = function(){
     peerWinButton.type = 'button';
     peerWinButton.value = 'window';
     var peerWindow;
-    var ip = window.location.host;
+    var ip =window.location.host + window.location.pathname;
     peerWinButton.onclick = function () {
       peerWindow = window.open("https://" + ip + "/show.html", 'Win_' + this.id, 'popup');
        peerWindow.onload = function(){

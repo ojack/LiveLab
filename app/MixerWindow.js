@@ -1,5 +1,5 @@
 function MixerWindow(video, peers){
-     var ip = window.location.host;
+     var ip = window.location.host + window.location.pathname;
       showMixer = window.open("https://" + ip + "/mixer.html", 'Mixer_'+Math.random()*200, 'popup');
 
       //force relaod because page keeps strange cache

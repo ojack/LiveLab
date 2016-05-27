@@ -244,7 +244,7 @@ module.exports = LiveLabOsc;
 
 },{}],3:[function(require,module,exports){
 function MixerWindow(video, peers){
-     var ip = window.location.host;
+     var ip = window.location.host + window.location.pathname;
       showMixer = window.open("https://" + ip + "/mixer.html", 'Mixer_'+Math.random()*200, 'popup');
 
       //force relaod because page keeps strange cache
@@ -408,7 +408,7 @@ PeerMediaContainer.prototype.createPeerWindow = function(){
     peerWinButton.type = 'button';
     peerWinButton.value = 'window';
     var peerWindow;
-    var ip = window.location.host;
+    var ip =window.location.host + window.location.pathname;
     peerWinButton.onclick = function () {
       peerWindow = window.open("https://" + ip + "/show.html", 'Win_' + this.id, 'popup');
        peerWindow.onload = function(){
@@ -535,7 +535,7 @@ SessionControl.prototype.createControlUI = function(container){
     showWinButton.type = 'button';
     showWinButton.value = 'window';
     var showWindow;
-    var ip = window.location.host;
+    var ip =window.location.host + window.location.pathname;
     showWinButton.onclick = function () {
       showWindow = window.open("https://" + ip + "/show.html", 'Show', 'popup');
        showWindow.onload = function(){
