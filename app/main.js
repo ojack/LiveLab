@@ -10,10 +10,8 @@ var SessionControl = require('./SessionControl');
 var BASE_SOCKET_URL = "wss://localhost";
 var BASE_SOCKET_PORT = 8000;
 var LOCAL_SERVER;
-console.log("HI");
-console.log(window.location);
-var s = window.location.href.substring(0, window.location.href.lastIndexOf("/"));
-console.log(s);
+
+
 if(window.location.host.indexOf("localhost") >= 0){
     LOCAL_SERVER = true;
 } else {
@@ -83,15 +81,15 @@ function initWebRTC(){
         media: {
           audio: {
             optional: [
-            {googAutoGainControl: false}, 
-            {googAutoGainControl2: false}, 
-            {googEchoCancellation: false},
-            {googEchoCancellation2: false},
-            {googNoiseSuppression: false},
-            {googNoiseSuppression2: false},
-            {googHighpassFilter: false},
-            {googTypingNoiseDetection: false},
-            {googAudioMirroring: false}
+           {googAutoGainControl: true}, 
+            {googAutoGainControl2: true}, 
+            {googEchoCancellation: true},
+            {googEchoCancellation2: true},
+            {googNoiseSuppression: true},
+            {googNoiseSuppression2: true},
+            {googHighpassFilter: true},
+            {googTypingNoiseDetection: true},
+            {googAudioMirroring: true}
             ]
           },
           video: {
