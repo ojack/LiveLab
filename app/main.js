@@ -6,10 +6,16 @@ var ChatWindow = require('./ChatWindow');
 var PeerMediaContainer = require('./PeerMediaContainer');
 var SessionControl = require('./SessionControl');
 
+//osc broadcast parameters, only available if running on localhost
 var BASE_SOCKET_URL = "wss://localhost";
 var BASE_SOCKET_PORT = 8000;
-var USE_OSC = true;
- 
+var LOCAL_SERVER;
+if(window.location.host.indexOf("localhost") >= 0){
+    LOCAL_SERVER = true;
+} else {
+    LOCAL_SERVER = false;
+}
+
  var webrtc, chatWindow, oscChannels, room, localMedia, dashboard, sessionControl, toolbar;
 
 /*Global object containing data about all connected peers*/
@@ -91,7 +97,7 @@ function initWebRTC(){
         }
      });
     
-    if(USE_OSC){
+    if(LOCAL_SERVER){
         var osc_config = {
             "socket_port": BASE_SOCKET_PORT,
             "socket_url": BASE_SOCKET_URL
@@ -99,6 +105,8 @@ function initWebRTC(){
 
         oscChannels = new LiveLabOsc(osc_config.socket_port, webrtc, localMedia.dataDiv, osc_config.socket_url, peers);
         //localMedia.initOsc(webrtc, osc_config, peers);
+    } else {
+          oscChannels = new LiveLabOsc(null, webrtc, localMedia.dataDiv, null, peers);
     }
 
     webrtc.on('readyToCall', function () {

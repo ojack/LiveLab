@@ -59,21 +59,28 @@ var streams = {}; //object containing local streams being broadcast, indexed by 
 //var peers = {}; //object containing peer streams, indexed by peer-id and label
 
 function LiveLabOsc(port_loc, webrtc, container, base_url, peers){
-     //connect to server via websockets
-     var url = base_url + ":" + port_loc;
-    this.ws = new WebSocket(url);
-    this.ws.onmessage =  function(event){
-        console.log(event.data);
-        var info = JSON.parse(event.data);
-        if(info.type == "new channel"){
-            this.createChannel(parseInt(info.port), parseInt(info.udpPort));
-        }
-    }.bind(this);
-    this.container = container;
-    this.base_url = base_url;
-    this.initBroadcastUI();
+      this.container = container;
     this.webrtc = webrtc;
     this.peers = peers;
+    if(port_loc==null){
+        this.local_server = false;
+    } else {
+        this.local_server = true;
+     //connect to server via websockets
+         var url = base_url + ":" + port_loc;
+        this.ws = new WebSocket(url);
+        this.ws.onmessage =  function(event){
+            console.log(event.data);
+            var info = JSON.parse(event.data);
+            if(info.type == "new channel"){
+                this.createChannel(parseInt(info.port), parseInt(info.udpPort));
+            }
+        }.bind(this);
+        
+        this.base_url = base_url;
+        this.initBroadcastUI();
+    }
+  
 }
 
 //open new socket connection to receive  UDP stream
@@ -207,24 +214,26 @@ LiveLabOsc.prototype.receivedRemoteStream = function(data, peer_id, label){
         dataDiv.appendChild(newStream);
         this.peers[peer_id].dataStreams[label] = {};
         this.peers[peer_id].dataStreams[label].div = streamInput;
-        streamLabel.onclick = function(e){
-           
-           var inputDiv = document.createElement('div');
-            var stream_name = addInputField("forward remote stream " + label + " to local port", inputDiv);
+        if(this.local_server){
+            streamLabel.onclick = function(e){
+               
+               var inputDiv = document.createElement('div');
+                var stream_name = addInputField("forward remote stream " + label + " to local port", inputDiv);
 
-             var sendBtn = document.createElement("BUTTON");
-            var t = document.createTextNode("done");       // Create a text node
-            sendBtn.appendChild(t);  
-            sendBtn.setAttribute("type", "button");
-            inputDiv.appendChild(sendBtn);
-            newStream.appendChild(inputDiv);
-            sendBtn.onclick = function(e){
-                console.log("broadcasting to local port "+ stream_name.value);
-                this.peers[peer_id].dataStreams[label].port = parseInt(stream_name.value);
-                newSpan.innerHTML = label + " ::  " + stream_name.value + " : ";
-                newStream.removeChild(inputDiv);
+                 var sendBtn = document.createElement("BUTTON");
+                var t = document.createTextNode("done");       // Create a text node
+                sendBtn.appendChild(t);  
+                sendBtn.setAttribute("type", "button");
+                inputDiv.appendChild(sendBtn);
+                newStream.appendChild(inputDiv);
+                sendBtn.onclick = function(e){
+                    console.log("broadcasting to local port "+ stream_name.value);
+                    this.peers[peer_id].dataStreams[label].port = parseInt(stream_name.value);
+                    newSpan.innerHTML = label + " ::  " + stream_name.value + " : ";
+                    newStream.removeChild(inputDiv);
+                }.bind(this);
             }.bind(this);
-        }.bind(this);
+        }
     }
     //peers[peer_id].div.innerHTML = JSON.stringify(data.payload);
 
@@ -1551,10 +1560,16 @@ var ChatWindow = require('./ChatWindow');
 var PeerMediaContainer = require('./PeerMediaContainer');
 var SessionControl = require('./SessionControl');
 
+//osc broadcast parameters, only available if running on localhost
 var BASE_SOCKET_URL = "wss://localhost";
 var BASE_SOCKET_PORT = 8000;
-var USE_OSC = true;
- 
+var LOCAL_SERVER;
+if(window.location.host.indexOf("localhost") >= 0){
+    LOCAL_SERVER = true;
+} else {
+    LOCAL_SERVER = false;
+}
+
  var webrtc, chatWindow, oscChannels, room, localMedia, dashboard, sessionControl, toolbar;
 
 /*Global object containing data about all connected peers*/
@@ -1636,7 +1651,7 @@ function initWebRTC(){
         }
      });
     
-    if(USE_OSC){
+    if(LOCAL_SERVER){
         var osc_config = {
             "socket_port": BASE_SOCKET_PORT,
             "socket_url": BASE_SOCKET_URL
@@ -1644,6 +1659,8 @@ function initWebRTC(){
 
         oscChannels = new LiveLabOsc(osc_config.socket_port, webrtc, localMedia.dataDiv, osc_config.socket_url, peers);
         //localMedia.initOsc(webrtc, osc_config, peers);
+    } else {
+          oscChannels = new LiveLabOsc(null, webrtc, localMedia.dataDiv, null, peers);
     }
 
     webrtc.on('readyToCall', function () {
