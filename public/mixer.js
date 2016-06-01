@@ -39,7 +39,7 @@ function initSeriously(){
     var blend = seriously.effect('blend');
     blend.bottom = reformat0;
     blend.top = reformat1;
-    blend.mode = 'difference';
+    blend.mode = 'multiply';
     // now do the same for the target canvas
     target = seriously.target('#mixerCanvas');
 
