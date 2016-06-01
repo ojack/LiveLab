@@ -123,6 +123,7 @@ wss.on("connection", function (ws) {
     });
 });
 
+
 //create a new socket<-->UDP connection
 function addSocketUDPConnection(socketPort, udpPort, name){
     var socketServer = https.createServer(options).listen(socketPort);
@@ -132,7 +133,7 @@ function addSocketUDPConnection(socketPort, udpPort, name){
 
     console.log("adding udp port at "+ udpPort);
     var udpChannel = new osc.UDPPort({
-        localAddress: "127.0.0.1",
+        localAddress: "0.0.0.0",
         localPort: udpPort   
     });
 
