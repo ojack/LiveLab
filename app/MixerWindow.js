@@ -29,8 +29,8 @@ function MixerWindow(video, peers){
 
 MixerWindow.prototype.userEvent = function(type, data){
   //alert(data);
-  console.log("");
-   var event = new Event('osc');
+  console.log(data);
+   var event = new CustomEvent('osc', {detail: data.payload});
    this.showMixer.document.dispatchEvent(event);
 }
 

@@ -18,10 +18,12 @@ document.addEventListener('videoAdded', function(){
    
 });
 
-document.addEventListener('osc', function(){
+document.addEventListener('osc', function(e){
     //alert("MIXER EVENT");
+    console.log(e);
     blend.mode = 'multiply';
-    blend.update();
+    
+   // blend.update();
 });
 
 function initSeriously(){
