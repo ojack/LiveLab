@@ -13,5 +13,5 @@ Uses SimpleWebRTC as a sandbox signalling server, and osc.js for OSC parsing
 ###To develop:
 1. Clone git repository
 2. cd into folder and run <code>npm install</code>
-3. "npm run watch" (make sure the dev dependencies listed in package.json are installed). 
-
+3. install <code>npm install -g watching</code>
+4. "npm run watch" (make sure the dev dependencies listed in package.json are installed).
