@@ -23,13 +23,29 @@ function MixerWindow(video, peers){
              }
              var event = new Event('videoAdded');
              showMixer.document.dispatchEvent(event);
+           
              this.showMixer = showMixer;
        }.bind(this);
 }
 
+MixerWindow.prototype.addSource = function(videoSrc, label){
+
+}
+
+MixerWindow.prototype.initSeriously = function(){
+
+}
+
 MixerWindow.prototype.userEvent = function(type, data){
   //alert(data);
-  console.log(data);
+ 
+   var event = new CustomEvent('osc', {detail: data.payload});
+   this.showMixer.document.dispatchEvent(event);
+}
+
+MixerWindow.prototype.setSourceEvent = function(type, data){
+  //alert(data);
+ 
    var event = new CustomEvent('osc', {detail: data.payload});
    this.showMixer.document.dispatchEvent(event);
 }

@@ -22,7 +22,7 @@ document.addEventListener('osc', function(e){
     //alert("MIXER EVENT");
     console.log(e);
     blend.mode = 'multiply';
-    
+
    // blend.update();
 });
 
@@ -43,7 +43,7 @@ function initSeriously(){
     reformat1.source = '#video1';
     reformat1.mode = 'cover';
     reformat1.width = canvas.width;
-    reformat1.height = canvas.width;
+    reformat1.height = canvas.height;
 
     blend = seriously.effect('blend');
     blend.bottom = reformat0;
