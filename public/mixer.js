@@ -48,7 +48,9 @@ function initSeriously(){
     blend = seriously.effect('blend');
     blend.bottom = reformat0;
     blend.top = reformat1;
+
     blend.mode = 'lighten';
+
     // now do the same for the target canvas
     target = seriously.target('#mixerCanvas');
 
