@@ -106,8 +106,8 @@ wss.on("connection", function (ws) {
             }
         } else if(message.type=="subscribeStream"){
             //create osc client at specified port
-           // console.log("received data ");
-          //  console.log(message.payload);
+             console.log("received data ");
+             console.log(message.payload);
            // console.log(message.payload);
             var msg = oscMin.toBuffer(message.payload);
           //  console.log(msg);
@@ -132,7 +132,7 @@ function addSocketUDPConnection(socketPort, udpPort, name){
 
     console.log("adding udp port at "+ udpPort);
     var udpChannel = new osc.UDPPort({
-        localAddress: "127.0.0.1",
+        localAddress: "0.0.0.0",
         localPort: udpPort   
     });
 

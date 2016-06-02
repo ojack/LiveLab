@@ -1,7 +1,8 @@
 // TO DO: add events for adding and removing peers, forwarded from mixer window
 
 console.log("opened page");
-var seriously, source1, source2, canvas;
+var seriously, source1, source2, canvas, blend;
+
 
 document.addEventListener('videoAdded', function(){
    console.log("init vid");
@@ -15,6 +16,12 @@ document.addEventListener('videoAdded', function(){
     document.body.appendChild(canvas);
     initSeriously();
    
+});
+
+document.addEventListener('osc', function(){
+    //alert("MIXER EVENT");
+    blend.mode = 'multiply';
+    blend.update();
 });
 
 function initSeriously(){
@@ -36,10 +43,10 @@ function initSeriously(){
     reformat1.width = canvas.width;
     reformat1.height = canvas.width;
 
-    var blend = seriously.effect('blend');
+    blend = seriously.effect('blend');
     blend.bottom = reformat0;
     blend.top = reformat1;
-    blend.mode = 'difference';
+    blend.mode = 'lighten';
     // now do the same for the target canvas
     target = seriously.target('#mixerCanvas');
 

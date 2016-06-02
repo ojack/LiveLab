@@ -130,6 +130,7 @@ function initWebRTC(){
             chatWindow.appendToChatLog(peer.id, data.payload);
         }  else if(data.type=="osc"){
                 oscChannels.receivedRemoteStream(data, peer.id, label);
+                sessionControl.oscParameter(data);
                
         }
     });

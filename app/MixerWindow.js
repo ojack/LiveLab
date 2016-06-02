@@ -23,11 +23,15 @@ function MixerWindow(video, peers){
              }
              var event = new Event('videoAdded');
              showMixer.document.dispatchEvent(event);
+             this.showMixer = showMixer;
        }.bind(this);
 }
 
-MixerWindow.prototype.createChatDivs = function(){
-
+MixerWindow.prototype.userEvent = function(type, data){
+  //alert(data);
+  console.log("");
+   var event = new Event('osc');
+   this.showMixer.document.dispatchEvent(event);
 }
 
 function createVideoDiv(src, parent, index){

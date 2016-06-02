@@ -5,6 +5,13 @@ function SessionControl(localVideo, container, peers){
 	this.createControlUI(container);
     this.peers = peers;
 }
+SessionControl.prototype.oscParameter = function(data){
+    console.log(this.mixerWindow);
+    if(this.mixerWindow){
+         console.log("mixer");
+        this.mixerWindow.userEvent("osc", data);
+    }
+}
 
 SessionControl.prototype.createControlUI = function(container){
    
