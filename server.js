@@ -59,6 +59,10 @@ var getIPAddresses = function () {
     return ipAddresses;
 };
 
+// test cleanup.js
+// loads module and registers app specific cleanup callback...
+var cleanup = require('./cleanup').Cleanup(myCleanup);
+//var cleanup = require('./cleanup').Cleanup(); // will call noOp
 
 
 
@@ -77,7 +81,7 @@ wss.on("connection", function (ws) {
               /*PORT SCANNER IS NOT WORKING TO CORRECTLY IDENTIFY PORTS CREATED USING osc.UDPPort
               temporary fix is that previously open ports are stored in ports{} object*/
                 portscanner.checkPortStatus(parseInt(message.port), '127.0.0.1', function(error, status) {
-                 // Status is 'open' if currently in use or 'closed' if available 
+                 // Status is 'open' if currently in use or 'closed' if available
                    if(ports.hasOwnProperty(message.port)){
                         console.log('port in use');
                    } else {
@@ -118,8 +122,8 @@ wss.on("connection", function (ws) {
            // udp_client.send(JSON.stringify(message.payl))
 
         }
-  // flags.binary will be set if a binary data is received. 
-  // flags.masked will be set if the data was masked. 
+  // flags.binary will be set if a binary data is received.
+  // flags.masked will be set if the data was masked.
     });
 });
 
@@ -133,7 +137,7 @@ function addSocketUDPConnection(socketPort, udpPort, name){
     console.log("adding udp port at "+ udpPort);
     var udpChannel = new osc.UDPPort({
         localAddress: "127.0.0.1",
-        localPort: udpPort   
+        localPort: udpPort
     });
 
     udpChannel.on("ready", function () {
@@ -157,9 +161,36 @@ function addSocketUDPConnection(socketPort, udpPort, name){
         var socketOscPort = new osc.WebSocketPort({
             socket: ws
         });
-    
+
          var relay = new osc.Relay(udpChannel, socketOscPort, {
             raw: true
         });
     });
 }
+
+
+// defines app specific callback...
+function myCleanup() {
+  console.log('App specific cleanup code...');
+};
+
+// All of the following code is only needed for test demo
+
+// Prevents the program from closing instantly
+process.stdin.resume();
+
+// Emits an uncaught exception when called because module does not exist
+function error() {
+  console.log('error');
+  var x = require('');
+};
+
+// Try each of the following one at a time:
+
+// Uncomment the next line to test exiting on an uncaught exception
+//setTimeout(error,2000);
+
+// Uncomment the next line to test exiting normally
+//setTimeout(function(){process.exit(3)}, 2000);
+
+// Type Ctrl-C to test forced exit
