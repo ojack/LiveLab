@@ -28,27 +28,19 @@ function MixerWindow(video, peers){
        }.bind(this);
 }
 
-MixerWindow.prototype.addSource = function(videoSrc, label){
-
+MixerWindow.prototype.mixerEvent = function(type, data){
+   var event = new CustomEvent(type, {detail: data.payload});
+   this.showMixer.document.dispatchEvent(event);
 }
 
-MixerWindow.prototype.initSeriously = function(){
-
-}
-
-MixerWindow.prototype.userEvent = function(type, data){
+/*MixerWindow.prototype.userEvent = function(type, data){
   //alert(data);
  
    var event = new CustomEvent('osc', {detail: data.payload});
    this.showMixer.document.dispatchEvent(event);
-}
+}*/
 
-MixerWindow.prototype.setSourceEvent = function(type, data){
-  //alert(data);
- 
-   var event = new CustomEvent('osc', {detail: data.payload});
-   this.showMixer.document.dispatchEvent(event);
-}
+
 
 function createVideoDiv(src, parent, index){
     var vid =  parent.createElement('video');

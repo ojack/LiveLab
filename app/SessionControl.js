@@ -9,7 +9,8 @@ SessionControl.prototype.oscParameter = function(data){
     console.log(this.mixerWindow);
     if(this.mixerWindow){
          console.log("mixer");
-        this.mixerWindow.userEvent("osc", data);
+        //this.mixerWindow.userEvent("osc", data);
+        this.mixerWindow.mixerEvent("osc", data);
     }
 }
 
