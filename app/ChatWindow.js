@@ -11,10 +11,21 @@ ChatWindow.prototype.createChatDivs = function(container){
 	chatLog.id = "chatLog";
 	chatWindow.appendChild(chatLog);
 	var chatInput = document.createElement('div');
+    var self = this;
+    // add event listener so that pressing the enter key when the chat window
+    // is in focus will send the chat message
+    chatInput.addEventListener("keydown", function(event) {
+        // if enter key was pressed
+        if (event.which === 13) {
+            // send the composed message
+            self.addLocalMessage(event);
+        }
+    });
+
     var i =  document.createElement("input"); //input element, text
     i.setAttribute('type',"text");
-     i.setAttribute('id', "chat-input");
-     chatInput.appendChild(i);
+    i.setAttribute('id', "chat-input");
+    chatInput.appendChild(i);
     var sendBtn = document.createElement("BUTTON");
     var t = document.createTextNode("send");       // Create a text node
     sendBtn.appendChild(t);  
@@ -32,6 +43,9 @@ ChatWindow.prototype.toggle = function(){
         this.div.className = "toolbar-element hide";
     }else {
         this.div.className = "toolbar-element show";
+        // focus the chat bar element so that users don't have to click to be
+        // able to start typing
+        document.getElementById("chat-input").focus();
     }
 }
 
