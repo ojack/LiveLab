@@ -1,4 +1,4 @@
-
+var MediaStreamRecorder = require('msr');
 var SimpleWebRTC = require('./libs/simplewebrtc');
 var LiveLabOsc = require('./LiveLabOsc');
 var ChatWindow = require('./ChatWindow');
