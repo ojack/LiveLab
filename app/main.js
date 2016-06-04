@@ -116,7 +116,7 @@ function initWebRTC(){
         if (room) webrtc.joinRoom(room);
         chatWindow = new ChatWindow(document.body, webrtc);
         localMedia.addVideoControls();
-        sessionControl = new SessionControl(localMedia.video, document.body, peers);
+        sessionControl = new SessionControl(localMedia.video, document.body, peers, webrtc);
         addToolbarButton("Chat", chatWindow);
         addToolbarButton("Session Control", sessionControl);
         localMedia.video.addEventListener("click", function(e){
@@ -131,6 +131,9 @@ function initWebRTC(){
         }  else if(data.type=="osc"){
                 oscChannels.receivedRemoteStream(data, peer.id, label);
                
+        } else if(data.type=="code-lab"){
+            console.log(label, data);
+            sessionControl.remoteCodeChange(data.payload);
         }
     });
 
