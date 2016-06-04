@@ -1,3 +1,11 @@
+# generated files
+public/bundle.js
+public/css/main.css
+
+# vim files
+*.swp
+*.swo
+
 # Logs
 logs
 *.log

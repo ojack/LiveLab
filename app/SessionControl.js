@@ -1,9 +1,11 @@
 var MixerWindow = require('./MixerWindow');
+var CodeLab = require('./CodeLab');
 
-function SessionControl(localVideo, container, peers){
+function SessionControl(localVideo, container, peers, webrtc){
 	this.video = localVideo;
 	this.createControlUI(container);
     this.peers = peers;
+    this.webrtc = webrtc;
 }
 SessionControl.prototype.oscParameter = function(data){
     console.log(this.mixerWindow);
@@ -81,13 +83,29 @@ SessionControl.prototype.createControlUI = function(container){
       
     }.bind(this);
 
+
+     var showCodeLabButton = document.createElement('input');
+    showCodeLabButton.type = 'button';
+    showCodeLabButton.value = 'Code Lab';
+   
+   
+    showCodeLabButton.onclick = function () {
+        this.CodeLabWindow = new CodeLab(this.peers, this.webrtc);
+    }.bind(this);
     sessionDiv.appendChild(showMixerButton);
+    sessionDiv.appendChild(showCodeLabButton);
 }
 
 SessionControl.prototype.setVideo = function(video){
     console.log("show window");
     if(this.hasOwnProperty("showWindow")){
 	   this.showWindow.document.getElementById('showVideo').src = video.src;
+    }
+}
+
+SessionControl.prototype.remoteCodeChange = function(code){
+    if(this.CodeLabWindow){
+        this.CodeLabWindow.remoteCodeChange(code);
     }
 }
 
