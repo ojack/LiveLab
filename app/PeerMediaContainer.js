@@ -1,7 +1,10 @@
  /* peers[peer.id] = {peer: peer, video: video, dataStreams: {}};
         var newPeer = new PeerMediaContainer(peers[peer.id], webrtc, dashboard);*/
 
-
+// This class creates & encapsulates everything to do with media streaming from
+// a peer. It creates the divs necessary to display the media as well as
+// additional elements like volume controls 
+// Instantiated upon joining a WebRTC room, or a new peer connecting
 function PeerMediaContainer(id, video, webrtc, dashboard){
 	this.id = id;
     this.webrtc = webrtc;
@@ -19,12 +22,6 @@ function PeerMediaContainer(id, video, webrtc, dashboard){
 	 
     this.createAudioSelector();
 	this.createVolumeControl();
-}
-
-// function to escape any text that will be used to set innerHTML of DOM nodes,
-// preventing js injection
-function escapeText(text) {
-    return text.replace("<", "&lt;").replace(">", "&gt;").replace("/", "&#47;");
 }
 
 PeerMediaContainer.prototype.createAccordion = function(name){
@@ -45,17 +42,18 @@ PeerMediaContainer.prototype.createAccordion = function(name){
             // should we send each keystroke individually, or just send the
             // entire string after enter has been pressed?
             if (event.which === 13) {
-                console.log("new name is", peerHeader.value);
-                // self.webrtc.sendDirectlyToAll("sessionInfo", "nameChange", peerHeader.value) ; //name of data channel, type, information
+                self.webrtc.sendDirectlyToAll("nameChange", "sessionInfo", peerHeader.value);
                 this.blur();
             }
         }
     });
 
     peerHeader.className = "peer-header";
+    peerHeader.id = "header_" + this.id;
 	peerHeader.innerHTML = name;
 	this.mediaContainer.appendChild(peerHeader);
 	this.videoDiv = addAccordionItem("video", this.mediaContainer);
+    this.videoDiv.id = "video_" + this.id;
 	this.audioDiv = addAccordionItem("audio", this.mediaContainer);
 	this.dataDiv = addAccordionItem("data", this.mediaContainer);
 }

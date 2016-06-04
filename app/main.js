@@ -4,6 +4,7 @@ var LiveLabOsc = require('./LiveLabOsc');
 var ChatWindow = require('./ChatWindow');
 //var MicGainController = require('mediastream-gain'); // where is this used?
 var PeerMediaContainer = require('./PeerMediaContainer');
+var util = require("./util.js");
 var SessionControl = require('./SessionControl');
 
 //osc broadcast parameters, only available if running on localhost
@@ -59,45 +60,48 @@ function initWebRTC(){
     dashboard.setAttribute("id", "dashboard");
     document.body.appendChild(dashboard);
 
-   // localMedia = new LocalMediaContainer(dashboard);
-  localMedia = new PeerMediaContainer("local", null, webrtc, dashboard);
-     webrtc = new SimpleWebRTC({
-        // the id/element dom element that will hold "our" video
-        localVideoEl: localMedia.videoDiv,
-        localVideo: {
-                autoplay: true,
-                mirror: false,
-                muted: false
-            },
-        // the id/element dom element that will hold remote videos
-        remoteVideosEl: '',
-        // immediately ask for camera access
-        autoRequestMedia: true,
-        debug: false,
-        detectSpeakingEvents: true,
-        autoAdjustMic: false,
-        adjustPeerVolume: false,
-        peerVolumeWhenSpeaking: 1.0,
-        media: {
-          audio: {
-            optional: [
-           {googAutoGainControl: true}, 
-            {googAutoGainControl2: true}, 
-            {googEchoCancellation: true},
-            {googEchoCancellation2: true},
-            {googNoiseSuppression: true},
-            {googNoiseSuppression2: true},
-            {googHighpassFilter: true},
-            {googTypingNoiseDetection: true},
-            {googAudioMirroring: true}
-            ]
-          },
-          video: {
-            optional: [
-            ]
-          }
-        }
-     });
+    // first we initialize the webrtc client
+    webrtc = new SimpleWebRTC({
+       // the id/element dom element that will hold our video;
+       // it's ok to initialize this to "video_local" as we in all cases
+       // have the local window 
+       localVideoEl: "video_local",
+       localVideo: {
+               autoplay: true,
+               mirror: false,
+               muted: false
+           },
+       // the id/element dom element that will hold remote videos
+       remoteVideosEl: '',
+       // immediately ask for camera access
+       autoRequestMedia: true,
+       debug: false,
+       detectSpeakingEvents: true,
+       autoAdjustMic: false,
+       adjustPeerVolume: false,
+       peerVolumeWhenSpeaking: 1.0,
+       media: {
+         audio: {
+           optional: [
+          {googAutoGainControl: true}, 
+           {googAutoGainControl2: true}, 
+           {googEchoCancellation: true},
+           {googEchoCancellation2: true},
+           {googNoiseSuppression: true},
+           {googNoiseSuppression2: true},
+           {googHighpassFilter: true},
+           {googTypingNoiseDetection: true},
+           {googAudioMirroring: true}
+           ]
+         },
+         video: {
+           optional: [
+           ]
+         }
+       }
+    });
+    // then we create the divs to contain & display the media streams
+    localMedia = new PeerMediaContainer("local", null, webrtc, dashboard);
     
     if(LOCAL_SERVER){
         var osc_config = {
@@ -126,26 +130,40 @@ function initWebRTC(){
     });
 
     webrtc.on('channelMessage', function (peer, label, data) {
-        if(data.type=="chat"){
-            chatWindow.appendToChatLog(peer.id, data.payload);
-        }  else if(data.type=="osc"){
-                oscChannels.receivedRemoteStream(data, peer.id, label);
-        }  else if(data.type === "sessionInfo"){
+        if (data.type=="chat") {
+            var name = document.getElementById("header_" + peer.id).innerHTML;
+            console.log(name);
+            console.log(name);
+            console.log(name);
+            console.log(name);
+            console.log(name);
+            console.log(name);
+            console.log(name);
+            console.log(name);
+            console.log(name);
+            console.log(name);
+            console.log(name);
+            chatWindow.appendToChatLog(name, data.payload);
+        } else if (data.type=="osc") {
+            oscChannels.receivedRemoteStream(data, peer.id, label);
+        } else if (data.type === "sessionInfo"){
+            // one of the peers changed the name of their window
             if (label === "nameChange") {
-                // update the peer header of the peer that changed their name
+                // update the header of the peer that changed their name
+                document.getElementById("header_" + peer.id).innerHTML = util.escapeText(data.payload);
             }
         }
     });
 
      webrtc.on('videoAdded', function (video, peer) {
-        console.log('video added', peer);
-          /*add new peer to peer object*/
-       console.log(peer);
-        var newPeer = new PeerMediaContainer(peer.id, video, webrtc, dashboard);
-        peers[peer.id] = {peer: peer, peerContainer: newPeer, dataStreams: {}};
-        newPeer.video.addEventListener("click", function(e){
-            console.log("setting video ", e.target);
-            sessionControl.setVideo(e.target);
+         console.log('video added', peer);
+         /*add new peer to peer object*/
+         console.log(peer);
+         var newPeer = new PeerMediaContainer(peer.id, video, webrtc, dashboard);
+         peers[peer.id] = {peer: peer, peerContainer: newPeer, dataStreams: {}};
+         newPeer.video.addEventListener("click", function(e){
+             console.log("setting video ", e.target);
+             sessionControl.setVideo(e.target);
         });
      });
 
@@ -169,10 +187,6 @@ function setRoom(name) {
     title.id = "title";
     toolbar.appendChild(title);
     document.body.appendChild(toolbar);
-   
-  //  $('h1').text(name);
-   // $('#subTitle').text(name + " || link: "+ location.href);
-   // $('body').addClass('active');
 }
 
 function addToolbarButton(name, element){
@@ -182,20 +196,4 @@ function addToolbarButton(name, element){
     b.value = name;
     toolbar.appendChild(b);
     b.onclick = element.toggle.bind(element);
-     /*   if(e.target.className.indexOf("active") > 0){
-             e.target.className.replace(/\bactive\b/,'');
-         } else {
-            e.target.className += " active";
-         }
-       
-    }*/
-  
-  /*  b.onclick = function(){
-        console.log("clicked element", element);
-        if(element.div.className == "toolbar-element show"){
-            element.div.className = "toolbar-element hide";
-        } else { 
-            element.div.className = "toolbar-element show"
-        }
-    }*/
 }
