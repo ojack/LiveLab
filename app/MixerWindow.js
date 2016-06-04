@@ -1,23 +1,32 @@
-require('./libs/dat.gui.js');
+var NUM_INPUTS = 2;
 
 
 function MixerWindow(video, peers){
      var ip = window.location.host + window.location.pathname;
-     this.createControls(ip);
-      showMixer = window.open("https://" + ip + "/mixer.html", 'Mixer_'+Math.random()*200, 'popup');
-      this.peers = peers;
+     this.createControls(ip, peers);
+      showMixer = window.open("https://" + ip + "mixer.html", 'Mixer_'+Math.random()*200, 'popup');
+     
+      this.video = video;
+      this.sourceOptions = [];
+      this.sourceOptions[0] = {text: "local", src: video.src}
+      
+      for (peer in peers){
+          this.sourceOptions.push({text: peers[peer].peer.id, src: peers[peer].peerContainer.video});
+      }
+      console.log(this.sourceOptions);
+       this.peers = peers;
       //force relaod because page keeps strange cache
       showMixer.location.reload();
        showMixer.onload = function(){
-            console.log(video);
-            console.log(peers);
+           // console.log(video);
+           // console.log(peers);
             /*attach javascript*/
 
             /*attach local video to video element in mixer*/
              //showMixer.document.getElementById('video0').src = video.src;
-            createVideoDiv(video.src, showMixer.document, 0);
+            //createVideoDiv(video.src, showMixer.document, 0);
              var numVids = 0;
-             for (peer in peers){
+          /*   for (peer in peers){
                 console.log(peers[peer].peerContainer.video);
                 //if(numVids < 1) {
                     // showMixer.document.getElementById('video2').src = peers[peer].peerContainer.video.src;
@@ -27,7 +36,7 @@ function MixerWindow(video, peers){
                 numVids++;
              }
              var event = new Event('videoAdded');
-             showMixer.document.dispatchEvent(event);
+             showMixer.document.dispatchEvent(event);*/
            
              this.showMixer = showMixer;
        }.bind(this);
@@ -45,25 +54,37 @@ MixerWindow.prototype.mixerEvent = function(type, data){
    this.showMixer.document.dispatchEvent(event);
 }*/
 
-MixerWindow.prototype.createControls = function(ip){
+MixerWindow.prototype.createControls = function(ip, peers){
   var strWindowFeatures = "height=800,width=400,left=0,toolbar=no,menubar=no,top=0";
     var controls = window.open(
-      "https://" + ip + "/controls.html", 
+      "https://" + ip + "control.html", 
       'Mixer Controls', 
       strWindowFeatures);
 
       controls.onload = function(){
       this.controls = controls;
-        for (peer in this.peers){
-          createSourceControl(peers[peer], controls.document);
+    
+        for (var i = 0; i < NUM_INPUTS; i++){
+          this.createSourceControl(controls.document, i);
         }
+          
+          
+        
     }.bind(this);
 }
 
-function createSourceControl(peer, parent){
-  var controlDiv = parent.createElement('div');
-  
+MixerWindow.prototype.createSourceControl = function(parent, index){
+//  var controlDiv = parent.createElement('div');
+ 
+  var controlDiv = addAccordionItem("layer "+index, parent.body);
+  createDropdown("source: ", controlDiv, this.sourceOptions, function(e){
+    console.log(e.target.value);
+
+  }.bind(this));
+ // controlDiv.innerHTML = JSON.stringify(peer.peer);
+  //parent.body.appendChild(controlDiv);
 }
+
 function createVideoDiv(src, parent, index){
     var vid =  parent.createElement('video');
     vid.src = src;
@@ -71,6 +92,46 @@ function createVideoDiv(src, parent, index){
     vid.autoplay = true;
     vid.muted = true;
     parent.body.appendChild(vid);
+}
+
+function createDropdown(name, parent, options, callback){
+    var dropDiv = document.createElement('div');
+      var dropLabel = document.createElement('label');
+      dropLabel.innerHTML = name;
+      dropDiv.appendChild(dropLabel);
+      var dropSelector = document.createElement('select');
+      dropDiv.appendChild(dropSelector);
+      for(var i = 0; i < options.length; i++){
+         var option = document.createElement('option');
+          option.value = i;
+          option.text = options[i].text;
+          dropSelector.appendChild(option);
+      }
+     parent.appendChild(dropDiv);
+    dropSelector.addEventListener('change', callback);
+    return dropSelector;
+}
+
+function addAccordionItem(name, container){
+  var newSection = document.createElement('div');
+  newSection.className = "accordion-section closed";
+  var divHeader = document.createElement('div');
+  divHeader.innerHTML = name;
+  divHeader.className = "accordion-header";
+  divHeader.onclick = function(e){
+    console.log(e.target.parentElement);
+    if(e.target.parentElement.className=="accordion-section open"){
+      e.target.parentElement.className = "accordion-section closed";
+    } else {
+      e.target.parentElement.className = "accordion-section open";
+    }
+  }
+  newSection.appendChild(divHeader);
+  container.appendChild(newSection);
+  var contentDiv = document.createElement("div");
+  contentDiv.className = "accordion-content "+ name;
+  newSection.appendChild(contentDiv);
+  return contentDiv;
 }
 
 module.exports = MixerWindow;
