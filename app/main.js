@@ -130,7 +130,10 @@ function initWebRTC(){
             chatWindow.appendToChatLog(peer.id, data.payload);
         }  else if(data.type=="osc"){
                 oscChannels.receivedRemoteStream(data, peer.id, label);
-               
+        }  else if(data.type === "sessionInfo"){
+            if (label === "nameChange") {
+                // update the peer header of the peer that changed their name
+            }
         }
     });
 
