@@ -1,7 +1,11 @@
+require('./libs/dat.gui.js');
+
+
 function MixerWindow(video, peers){
      var ip = window.location.host + window.location.pathname;
+     this.createControls(ip);
       showMixer = window.open("https://" + ip + "/mixer.html", 'Mixer_'+Math.random()*200, 'popup');
-
+      this.peers = peers;
       //force relaod because page keeps strange cache
       showMixer.location.reload();
        showMixer.onload = function(){
@@ -18,6 +22,7 @@ function MixerWindow(video, peers){
                 //if(numVids < 1) {
                     // showMixer.document.getElementById('video2').src = peers[peer].peerContainer.video.src;
                     createVideoDiv(peers[peer].peerContainer.video.src, showMixer.document, numVids+1);
+
                // }
                 numVids++;
              }
@@ -40,8 +45,25 @@ MixerWindow.prototype.mixerEvent = function(type, data){
    this.showMixer.document.dispatchEvent(event);
 }*/
 
+MixerWindow.prototype.createControls = function(ip){
+  var strWindowFeatures = "height=800,width=400,left=0,toolbar=no,menubar=no,top=0";
+    var controls = window.open(
+      "https://" + ip + "/controls.html", 
+      'Mixer Controls', 
+      strWindowFeatures);
 
+      controls.onload = function(){
+      this.controls = controls;
+        for (peer in this.peers){
+          createSourceControl(peers[peer], controls.document);
+        }
+    }.bind(this);
+}
 
+function createSourceControl(peer, parent){
+  var controlDiv = parent.createElement('div');
+  
+}
 function createVideoDiv(src, parent, index){
     var vid =  parent.createElement('video');
     vid.src = src;
