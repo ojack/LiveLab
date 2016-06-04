@@ -68,7 +68,7 @@ MixerWindow.prototype.mixerEvent = function(type, data){
 
 MixerWindow.prototype.createControls = function(ip, peers){
   var strWindowFeatures = "height=800,width=400,left=0,toolbar=no,menubar=no,top=0";
-    var controls = window.open(
+  var controls = window.open(
       "https://" + ip + "control.html", 
       'Mixer Controls', 
       strWindowFeatures);
@@ -79,10 +79,8 @@ MixerWindow.prototype.createControls = function(ip, peers){
         for (var i = 0; i < NUM_INPUTS; i++){
           this.createSourceControl(controls.document, i);
         }
-          
-          
         
-    }.bind(this);
+   }.bind(this);
 }
 
 MixerWindow.prototype.createSourceControl = function(parent, index){
@@ -98,6 +96,10 @@ MixerWindow.prototype.createSourceControl = function(parent, index){
   this.mediaDivs[index].controlDiv = drop;
  // controlDiv.innerHTML = JSON.stringify(peer.peer);
   //parent.body.appendChild(controlDiv);
+}
+
+MixerWindow.prototype.createBlendControl = function(parent){
+
 }
 
 // function createVideoDiv(src, parent, index){

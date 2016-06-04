@@ -1,14 +1,18 @@
  /* peers[peer.id] = {peer: peer, video: video, dataStreams: {}};
         var newPeer = new PeerMediaContainer(peers[peer.id], webrtc, dashboard);*/
 
-
+// This class creates & encapsulates everything to do with media streaming from
+// a peer. It creates the divs necessary to display the media as well as
+// additional elements like volume controls 
+// Instantiated upon joining a WebRTC room, or a new peer connecting
 function PeerMediaContainer(id, video, webrtc, dashboard){
 	this.id = id;
+    this.webrtc = webrtc;
 	this.createAccordion(id);
 	this.dashboard = dashboard;
 	dashboard.appendChild(this.mediaContainer);
 	this.videoDiv.parentElement.className = "accordion-section open";
-	if(id!="local"){
+	if (id!="local") {
 		this.videoDiv.appendChild(video);
 		this.video = video;
 	    video.id = 'video_' + id;
@@ -23,17 +27,38 @@ function PeerMediaContainer(id, video, webrtc, dashboard){
 PeerMediaContainer.prototype.createAccordion = function(name){
 	this.mediaContainer = document.createElement('div');
 	this.mediaContainer.className = "mediaContainer";
-	var peerHeader = document.createElement('div');
-  peerHeader.className = "peer-header";
+    // if local, we want to be able to edit the name of our window
+    if (this.id === "local") {
+        var peerHeader = document.createElement('input');
+        peerHeader.value = "local";
+    } else {
+        var peerHeader = document.createElement('div');
+    }
+    var self = this;
+
+    peerHeader.addEventListener("keydown", function(event) {
+        if (self.id === "local") {
+            // pregunta: if enter key was pressed
+            // should we send each keystroke individually, or just send the
+            // entire string after enter has been pressed?
+            if (event.which === 13) {
+                self.webrtc.sendDirectlyToAll("nameChange", "sessionInfo", peerHeader.value);
+                this.blur();
+            }
+        }
+    });
+
+    peerHeader.className = "peer-header";
+    peerHeader.id = "header_" + this.id;
 	peerHeader.innerHTML = name;
 	this.mediaContainer.appendChild(peerHeader);
 	this.videoDiv = addAccordionItem("video", this.mediaContainer);
+    this.videoDiv.id = "video_" + this.id;
 	this.audioDiv = addAccordionItem("audio", this.mediaContainer);
 	this.dataDiv = addAccordionItem("data", this.mediaContainer);
 }
 
 PeerMediaContainer.prototype.createAudioSelector = function(){
-
     //show available audio output devices
      navigator.mediaDevices.enumerateDevices()
     .then(function(deviceInfos){
