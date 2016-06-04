@@ -1,0 +1,846 @@
+.CodeMirror {
+  font-family: MavenPro-Medium;
+  line-height: 1.3em;
+  border: none;
+}
+
+.CodeMirror-scroll {
+  width: 100%;
+  height: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.CodeMirror-gutter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  height: 100%;
+  min-width: 2em;
+  background-color: #f7f7f7;
+  border-right: 1px solid #eee;
+}
+
+.CodeMirror-gutter-text {
+  padding: .4em .2em .4em .4em;
+  color: #aaa;
+  text-align: right;
+  white-space: pre !important;
+}
+
+.CodeMirror-lines {
+  padding: .4em;
+}
+
+.CodeMirror pre {
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  word-wrap: normal;
+  white-space: pre;
+  background: transparent;
+  border-width: 0;
+  -webkit-border-radius: 0;
+     -moz-border-radius: 0;
+       -o-border-radius: 0;
+          border-radius: 0;
+}
+
+.CodeMirror-wrap pre {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.CodeMirror-wrap .CodeMirror-scroll {
+  overflow-x: hidden;
+}
+
+.CodeMirror-scroll {
+  width: 100%;
+  height: 300px;
+}
+
+.CodeMirror textarea {
+  outline: none !important;
+}
+
+.CodeMirror pre.CodeMirror-cursor {
+  position: absolute;
+  z-index: 2;
+  width: 0;
+  border-right: none;
+  border-left: 1px solid black;
+  visibility: hidden;
+}
+
+.CodeMirror-focused pre.CodeMirror-cursor {
+  visibility: visible;
+}
+
+span.CodeMirror-selected {
+  background: #d9d9d9;
+}
+
+.CodeMirror-focused span.CodeMirror-selected {
+  background: #d2dcf8;
+}
+
+.CodeMirror-searching {
+  background: #ffa;
+}
+
+/* Default theme */
+
+.cm-s-default span.cm-keyword {
+  color: #708;
+}
+
+.cm-s-default span.cm-atom {
+  color: #219;
+}
+
+.cm-s-default span.cm-number {
+  color: #164;
+}
+
+.cm-s-default span.cm-def {
+  color: #00f;
+}
+
+.cm-s-default span.cm-variable {
+  color: black;
+}
+
+.cm-s-default span.cm-variable-2 {
+  color: #05a;
+}
+
+.cm-s-default span.cm-variable-3 {
+  color: #085;
+}
+
+.cm-s-default span.cm-property {
+  color: black;
+}
+
+.cm-s-default span.cm-operator {
+  color: black;
+}
+
+.cm-s-default span.cm-comment {
+  color: #a50;
+}
+
+.cm-s-default span.cm-string {
+  color: #a11;
+}
+
+.cm-s-default span.cm-string-2 {
+  color: #f50;
+}
+
+.cm-s-default span.cm-meta {
+  color: #555;
+}
+
+.cm-s-default span.cm-error {
+  color: #f00;
+}
+
+.cm-s-default span.cm-qualifier {
+  color: #555;
+}
+
+.cm-s-default span.cm-builtin {
+  color: #30a;
+}
+
+.cm-s-default span.cm-bracket {
+  color: #cc7;
+}
+
+.cm-s-default span.cm-tag {
+  color: #170;
+}
+
+.cm-s-default span.cm-attribute {
+  color: #00c;
+}
+
+.cm-s-default span.cm-header {
+  color: #a0a;
+}
+
+.cm-s-default span.cm-quote {
+  color: #090;
+}
+
+.cm-s-default span.cm-hr {
+  color: #999;
+}
+
+.cm-s-default span.cm-link {
+  color: #00c;
+}
+
+span.cm-header,
+span.cm-strong {
+  font-weight: bold;
+}
+
+span.cm-em {
+  font-style: italic;
+}
+
+span.cm-emstrong {
+  font-style: italic;
+  font-weight: bold;
+}
+
+span.cm-link {
+  text-decoration: underline;
+}
+
+div.CodeMirror span.CodeMirror-matchingbracket {
+  color: #0f0;
+}
+
+div.CodeMirror span.CodeMirror-nonmatchingbracket {
+  color: #f22;
+}
+body {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0 auto;
+  overflow: hidden;
+  font: 12px/22px verdana, arial, sans-serif;
+  color: #333;
+  background: #fff;
+}
+
+@font-face {
+  font-family: MavenPro-Medium;
+  src: url("fonts/MavenPro-Medium.eot") /* EOT file for IE */
+  ;
+}
+
+@font-face {
+  font-family: MavenPro-Medium;
+  src: url("fonts/MavenPro-Medium.ttf") /* TTF file for CSS3 browsers */
+  ;
+}
+
+h3 {
+  margin: 0 0 8px 0;
+  font-size: 22px;
+  font-weight: normal;
+  line-height: 26px;
+  color: #3a6d8c;
+}
+
+img {
+  border: 0;
+}
+
+h1 {
+  font-weight: normal;
+  letter-spacing: -1px;
+  color: #666;
+}
+
+h1 span {
+  font-weight: bold;
+  color: #444;
+}
+
+#dangerSignText {
+  color: #000000;
+  text-decoration: none;
+}
+
+#dangerSign:hover {
+  background: #000000;
+}
+
+#errorMessageText {
+  text-decoration: none;
+}
+
+#errorMessage:hover {
+  background: #000000;
+}
+
+.verticalMiddleOfScreen {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 3;
+  display: block;
+  width: 100%;
+  height: 1px;
+  overflow: visible;
+  color: white;
+  text-align: center;
+  background-color: transparent;
+  visibility: visible;
+}
+
+.fakeAnimationContent {
+  position: absolute;
+  top: -1.1em;
+  left: 50%;
+  width: 3em;
+  height: 2em;
+  padding-top: 0;
+  margin-left: -1.5em;
+  font-family: Verdana, Geneva, Arial, sans-serif;
+  background-color: transparent;
+  visibility: visible;
+}
+
+.top {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  padding: 5px;
+  text-align: center;
+}
+
+.bottom {
+  position: absolute;
+  right: 5px;
+  bottom: 0;
+  padding: 5px;
+}
+
+.menubar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  width: 100%;
+  background-color: black;
+}
+
+#startingCurtainScreen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+}
+
+#miao {
+  position: fixed;
+  top: 30px;
+  left: 0;
+  width: 100%;
+  font-size: 3em;
+}
+
+#code {
+  z-index: 1;
+}
+
+#toMove {
+  font-size: 30em;
+}
+
+#justForFakeCursor {
+  font-size: 30em;
+}
+
+#loading {
+  font-size: 3em;
+  color: red;
+}
+
+#threeJsCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -2;
+}
+
+#backgroundCanvasOrDiv {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -3;
+}
+/* Loosely based on the Midnight Textmate theme */
+
+/*this is what we want the div to look like*/
+
+div.fullscreen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cm-tab:after {
+  position: relative;
+  left: -0.6em;
+  display: -moz-inline-block;
+  display: -webkit-inline-block;
+  display: inline-block;
+  width: 0;
+  overflow: visible;
+  color: #FF0000;
+}
+
+.cm-s-night {
+  color: white;
+  background: transparent;
+}
+
+.cm-s-night span.CodeMirror-selected {
+  background: #a8f !important;
+}
+
+.cm-s-night .CodeMirror-gutter {
+  background: #0a001f;
+  border-right: 1px solid #aaa;
+}
+
+.cm-s-night .CodeMirror-gutter-text {
+  color: #f8f8f8;
+}
+
+.cm-s-night .CodeMirror-cursor {
+  border-left: 2px solid black !important;
+}
+
+.cm-s-night span {
+  color: #ffdd00;
+  background: yellow;
+}
+
+.cm-s-night span.cm-comment {
+  color: #6900a1;
+}
+
+.cm-s-night span.cm-atom {
+  color: #845dc4;
+}
+
+.cm-s-night span.cm-number,
+.cm-s-night span.cm-attribute {
+  color: #ff0000;
+}
+
+.cm-s-night span.cm-keyword {
+  color: #599eff;
+}
+
+.cm-s-night span.cm-punctuation {
+  color: #009900;
+}
+
+.cm-s-night span.cm-string {
+  color: #599eff;
+}
+
+.cm-s-night span.cm-string-2 {
+  color: #599eff;
+}
+
+.cm-s-night span.cm-meta {
+  color: #7678e2;
+}
+
+.cm-s-night span.cm-operator {
+  color: #009900;
+}
+
+.cm-s-night span.cm-variable {
+  color: #0000ff;
+}
+
+.cm-s-night span.cm-variable-2,
+.cm-s-night span.cm-tag {
+  color: #99b2ff;
+}
+
+.cm-s-night span.cm-variable-3,
+.cm-s-night span.cm-def {
+  color: white;
+}
+
+.cm-s-night span.cm-error {
+  color: #9d1e15;
+}
+
+.cm-s-night span.cm-bracket {
+  color: #8da6ce;
+}
+
+.cm-s-night span.cm-comment {
+  color: #6900a1;
+}
+
+.cm-s-night span.cm-builtin,
+.cm-s-night span.cm-special {
+  color: #ff9e59;
+}
+
+.cm-s-night span.cm-link {
+  color: #845dc4;
+  cursor: pointer;
+}
+/*
+ * SimpleModal Basic Modal Dialog
+ * http://www.ericmmartin.com/projects/simplemodal/
+ * http://code.google.com/p/simplemodal/
+ *
+ * Copyright (c) 2010 Eric Martin - http://ericmmartin.com
+ *
+ * Licensed under the MIT license:
+ *   http://www.opensource.org/licenses/mit-license.php
+ *
+ * Revision: $Id: basic.css 257 2010-07-27 23:06:56Z emartin24 $
+ */
+
+#soundSystemIsMangledMessage {
+  display: none;
+}
+
+#aboutWindow {
+  display: none;
+}
+
+#noWebGLMessage {
+  display: none;
+}
+
+#exampleNeedsWebgl {
+  display: none;
+}
+
+#noAudioMessage {
+  display: none;
+}
+
+#noCanvasMessage {
+  display: none;
+}
+
+/* Overlay */
+
+#simplemodal-overlay {
+  cursor: wait;
+  background-color: #000;
+}
+
+/* Container */
+
+#simplemodal-container {
+  width: 300px;
+  padding: 12px;
+  color: #bbb;
+  background-color: #333;
+  border: 4px solid #444;
+}
+
+#simplemodal-container .simplemodal-data {
+  padding: 8px;
+}
+
+#simplemodal-container code {
+  display: block;
+  padding: 4px 6px 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #bbb;
+  background: #141414;
+  border-left: 3px solid #65B43D;
+}
+
+#simplemodal-container a {
+  color: #ddd;
+}
+
+#simplemodal-container a.modalCloseImg {
+  position: absolute;
+  top: -15px;
+  right: -16px;
+  z-index: 3200;
+  display: inline;
+  width: 25px;
+  height: 29px;
+  cursor: pointer;
+  background: url(images/simpleModal/x.png) no-repeat;
+}
+
+#simplemodal-container h3 {
+  color: #fff;
+}
+
+#container {
+  width: 800px;
+  padding-top: 20px;
+  margin: 0 auto;
+}
+
+#container a:link a:visited {
+  color: #888;
+  text-decoration: none;
+}
+
+#container a:hover {
+  color: #333;
+  text-decoration: underline;
+}
+/**
+Stylesheet for SooperFish by www.SooperThemes.com
+Author: Jurriaan Roelofs
+*/
+
+/* Configuration of menu width */
+
+/* Just to see where the bottom of the page shows through
+body {
+background-color:#ffff00;
+}
+*/
+
+html body ul.sf-menu ul,
+html body ul.sf-menu ul li {
+  width: 170px;
+}
+
+html body ul.sf-menu ul ul {
+  margin: 0 0 0 170px;
+}
+
+/* Theming the menu */
+
+ul#nav {
+  float: left;
+  height: 30px;
+  font-weight: bold;
+  background-color: black;
+}
+
+ul#nav ul {
+  font-weight: normal;
+  text-transform: none;
+}
+
+ul#nav li a,
+ul#nav li span {
+  padding: 4px 15px;
+  font-family: MavenPro-Medium;
+  color: white;
+  text-decoration: none;
+}
+
+/*
+ul#nav ul li a,
+ul#nav ul li span {
+opacity:0.7;
+text-transform:lowercase;
+}
+*/
+
+ul#nav ul ul {
+  margin-top: -1px;
+}
+
+/* any item when hovered:*/
+
+ul#nav li a:hover,
+ul#nav li a:focus,
+ul#nav li span:hover,
+ul#nav li span:focus {
+  color: black;
+  background-color: white;
+}
+
+ul#nav li li {
+  /* unfortunately setting a left or right margin causes mahiem*/
+
+  border-top-style: dotted;
+  border-width: thin 0 0px 0px;
+}
+
+li.sf-open:hover {
+  background-color: #0000ff;
+  background-color: orange;
+}
+
+li.sf-open span,
+li.sf-open li,
+li.sf-open ul {
+  background-color: black;
+}
+
+span div.sf-arrow {
+  top: 14px;
+  right: 2px;
+}
+
+ul ul span div.sf-arrow {
+  top: 12px;
+  right: 12px;
+}
+/**
+Stylesheet for SooperFish by www.SooperThemes.com
+Author: Jurriaan Roelofs
+*/
+
+/* Configuration of menu width */
+
+html body ul.sf-menu ul,
+html body ul.sf-menu ul li {
+  width: 180px;
+}
+
+html body ul.sf-menu ul ul {
+  margin: 0 0 0 180px;
+}
+
+/* Framework for proper showing/hiding/positioning */
+
+/* DO NOT EDIT FROM HERE */
+
+ul.sf-menu,
+ul.sf-menu * {
+  padding: 0;
+  margin: 0;
+}
+
+ul.sf-menu {
+  position: relative;
+  display: block;
+}
+
+ul.sf-menu li {
+  position: relative;
+  display: block;
+  float: left;
+  list-style: none;
+}
+
+ul.sf-menu li:hover {
+  visibility: inherit;
+  /* fixes IE7 'sticky bug' */
+
+}
+
+ul.sf-menu a,
+ul.sf-menu span {
+  position: relative;
+  display: block;
+}
+
+ul.sf-menu ul {
+  position: absolute;
+  top: auto;
+  left: 0;
+  left: -999999px;
+  width: 150px;
+}
+
+ul.sf-menu ul a,
+ul.sf-menu ul span {
+  zoom: 1;
+  /* IE6/7 fix */
+
+}
+
+ul.sf-menu ul li {
+  float: left;
+  /* Must always be floated otherwise there will be a rogue 1px margin-bottom in IE6/7 */
+
+  width: 150px;
+}
+
+ul.sf-menu ul ul {
+  top: 0;
+  margin: 0 0 0 150px;
+}
+
+ul.sf-menu li:hover ul,
+ul.sf-menu li:focus ul,
+ul.sf-menu li.sf-hover ul {
+  /*first level*/
+
+  left: auto;
+}
+
+ul.sf-menu li:hover ul ul,
+ul.sf-menu li:focus ul ul,
+ul.sf-menu li.sf-hover ul ul {
+  left: -999999px;
+}
+
+ul.sf-menu ul li:hover ul,
+ul.sf-menu ul li:focus ul,
+ul.sf-menu ul li.sf-hover ul {
+  /*second level*/
+
+  left: auto;
+}
+
+ul.sf-menu ul li:hover ul ul,
+ul.sf-menu ul li:focus ul ul,
+ul.sf-menu ul li.sf-hover ul ul {
+  left: -999999px;
+}
+
+ul.sf-menu ul ul li:hover ul,
+ul.sf-menu ul ul li:focus ul,
+ul.sf-menu ul ul li.sf-hover ul {
+  /*third level*/
+
+  left: auto;
+}
+
+ul.sf-menu ul ul li:hover ul ul,
+ul.sf-menu ul ul li:focus ul ul,
+ul.sf-menu ul ul li.sf-hover ul ul {
+  left: -999999px;
+}
+
+ul.sf-menu ul ul ul li:hover ul,
+ul.sf-menu ul ul ul li:focus ul,
+ul.sf-menu ul ul ul li.sf-hover ul {
+  /*fourth level*/
+
+  left: auto;
+}
+
+ul.sf-menu ul ul ul li:hover ul ul,
+ul.sf-menu ul ul ul li:focus ul ul,
+ul.sf-menu ul ul ul li.sf-hover ul ul {
+  left: -999999px;
+}
+
+/* autoArrows CSS */
+
+div.sf-arrow {
+  position: absolute;
+  top: 8px;
+  right: 0;
+  display: block;
+  width: 7px;
+  height: 7px;
+  overflow: hidden;
+  font-size: 1px;
+  background: url(images/arrows-white.png) no-repeat 0 0;
+}
+
+ul ul div.sf-arrow {
+  top: 7px;
+  right: 12px;
+  background-position: 0 100%;
+}
