@@ -9,7 +9,7 @@ function SessionControl(localVideo, container, peers, webrtc){
 }
 
 SessionControl.prototype.createControlUI = function(container){
-   
+
 	var sessionDiv = document.createElement('div');
 	sessionDiv.id = "sessionControl";
      sessionDiv.className = "toolbar-element hide";
@@ -28,7 +28,7 @@ SessionControl.prototype.createControlUI = function(container){
        		 showWindow.document.getElementById('showVideo').src = this.video.src;
        }.bind(this);
         // console.log(showWindow);
-    
+
    		this.showWindow = showWindow;
     }.bind(this);
     sessionDiv.appendChild(showWinButton);
@@ -67,20 +67,20 @@ SessionControl.prototype.createControlUI = function(container){
      var showMixerButton = document.createElement('input');
     showMixerButton.type = 'button';
     showMixerButton.value = 'mixer';
-   
-   
+
+
     showMixerButton.onclick = function () {
         this.mixerWindow = new MixerWindow(this.video, this.peers);
-    
-      
+
+
     }.bind(this);
 
 
      var showCodeLabButton = document.createElement('input');
     showCodeLabButton.type = 'button';
     showCodeLabButton.value = 'Code Lab';
-   
-   
+
+
     showCodeLabButton.onclick = function () {
         this.CodeLabWindow = new CodeLab(this.peers, this.webrtc);
     }.bind(this);
@@ -98,6 +98,12 @@ SessionControl.prototype.setVideo = function(video){
 SessionControl.prototype.remoteCodeChange = function(code){
     if(this.CodeLabWindow){
         this.CodeLabWindow.remoteCodeChange(code);
+    }
+}
+
+SessionControl.prototype.variableChange = function(code){
+    if(this.CodeLabWindow){
+        this.CodeLabWindow.variableChange(code);
     }
 }
 

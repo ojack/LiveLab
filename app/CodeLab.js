@@ -5,7 +5,7 @@ function CodeLab(peers, webrtc){
       //force relaod because page keeps strange cache
       codeLab.location.reload();
        codeLab.onload = function(){
-            
+
             // showMixer.document.dispatchEvent(event);
        }.bind(this);
        /*listen for local code lab change and broadcast to remote connections */
@@ -23,5 +23,10 @@ CodeLab.prototype.remoteCodeChange = function(code){
    this.codeLab.document.dispatchEvent(event);
 }
 
+CodeLab.prototype.variableChange = function(variable){
+  console.log("dispatching code event");
+   var event = new CustomEvent("variableChange", {detail: variable});
+   this.codeLab.document.dispatchEvent(event);
+}
 
 module.exports = CodeLab;
