@@ -3,9 +3,9 @@ var CodeLab = require('./CodeLab');
 
 function SessionControl(localVideo, container, peers, webrtc){
 	this.video = localVideo;
-	this.createControlUI(container);
     this.peers = peers;
     this.webrtc = webrtc;
+    this.createControlUI(container);
 }
 SessionControl.prototype.oscParameter = function(data){
     console.log(this.mixerWindow);
@@ -78,7 +78,7 @@ SessionControl.prototype.createControlUI = function(container){
    
    
     showMixerButton.onclick = function () {
-        this.mixerWindow = new MixerWindow(this.video, this.peers);
+        this.mixerWindow = new MixerWindow(this.video, this.peers, this.webrtc);
     
       
     }.bind(this);

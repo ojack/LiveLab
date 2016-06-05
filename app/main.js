@@ -102,7 +102,8 @@ function initWebRTC(){
     });
     // then we create the divs to contain & display the media streams
     localMedia = new PeerMediaContainer("local", null, webrtc, dashboard);
-    
+    console.log(webrtc);
+
     if(LOCAL_SERVER){
         var osc_config = {
             "socket_port": BASE_SOCKET_PORT,
@@ -127,6 +128,7 @@ function initWebRTC(){
             console.log("setting video ", e.target);
             sessionControl.setVideo(e.target);
         });
+
     });
 
     webrtc.on('channelMessage', function (peer, label, data) {
@@ -135,7 +137,7 @@ function initWebRTC(){
             chatWindow.appendToChatLog(name, data.payload);
         } else if (data.type=="osc") {
             oscChannels.receivedRemoteStream(data, peer.id, label);
-            sessionControl.oscParameter(data);
+            sessionControl.oscParameter(data.payload);
         } else if (data.type === "sessionInfo"){
             // one of the peers changed the name of their window
             if (label === "nameChange") {
@@ -158,6 +160,7 @@ function initWebRTC(){
              console.log("setting video ", e.target);
              sessionControl.setVideo(e.target);
         });
+         console.log(webrtc.getPeers());
      });
 
 

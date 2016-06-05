@@ -289,25 +289,75 @@ module.exports = LiveLabOsc;
 
 },{}],4:[function(require,module,exports){
 var NUM_INPUTS = 2;
+var blendOptions = ["normal", "lighten", "darken", "multiply", "average", "add", "subtract", "divide", "difference", "negation", "exclusion", "screen", "lineardodge", "phoenix", "linearburn", "hue", "saturation", "color", "luminosity", "darkercolor", "lightercolor", "overlay", "softlight", "hardlight", "colordodge", "colorburn", "linearlight", "vividlight", "pinlight", "hardmix", "reflect", "glow"];
 
 
-function MixerWindow(video, peers){
+
+/* 
+id is stream id, NOT peer id
+(NOT IMPLEMENTED) Mixer state array contains information about all elements in mixer.
+schema:
+{
+  sources: { 
+      id: { 
+        "type":
+        "target" : 
+      }
+  
+  },
+  transforms: {
+    [
+      "source":
+      "target":
+      "type":
+      "params"
+    ]
+  },
+  effects: {
+    [
+      "type:"
+      "top":
+      "bottom":
+      "effect":
+    ]
+  }
+
+}
+*/
+
+var mixerState = [];
+
+
+function MixerWindow(video, peers, webrtc){
      var ip = window.location.host + window.location.pathname;
     
       showMixer = window.open("https://" + ip + "mixer.html", 'Mixer_'+Math.random()*200, 'popup');
      
       this.video = video;
+      this.mixerState = {};
+      this.mixerState.sources = {};
+      this.mixerState.effects = {};
+
       this.sourceOptions = [];
       this.sourceOptions[0] = {text: "local", src: video.src}
-      
+      console.log("LOCAL STREAM", webrtc.webrtc.localStreams[0]);
+      var str = webrtc.webrtc.localStreams[0];
+      this.mixerState.sources[str.id] = {src: video.src, stream: str, peer_id: "local"};
+      this.blendOptions = blendOptions.map(function(str){
+        return {text: str, value: str}
+      });
       this.mediaDivs = [];
       for (var i = 0; i < NUM_INPUTS; i++){
           this.mediaDivs[i] = {};
       }
       for (peer in peers){
+          var src = peers[peer].peerContainer.video.src;
           this.sourceOptions.push({text: peers[peer].peer.id, src: peers[peer].peerContainer.video.src});
+          console.log("PEER ", peers[peer].peer.stream);
+          this.mixerState.sources[peers[peer].peer.stream.id] = {src: peers[peer].peerContainer.video.src, peer_id: peers[peer].peer.id, stream: peers[peer].peer.stream};
       }
 
+      console.log("STATE", this.mixerState);
        this.createControls(ip, peers);
       console.log(this.sourceOptions);
        this.peers = peers;
@@ -337,7 +387,7 @@ function MixerWindow(video, peers){
                // }
                 numVids++;
              }*/
-             var event = new Event('videoAdded');
+             var event = new Event('sourcesAdded');
              showMixer.document.dispatchEvent(event);
            
              this.showMixer = showMixer;
@@ -345,7 +395,7 @@ function MixerWindow(video, peers){
 }
 
 MixerWindow.prototype.mixerEvent = function(type, data){
-   var event = new CustomEvent(type, {detail: data.payload});
+   var event = new CustomEvent(type, {detail: data});
    this.showMixer.document.dispatchEvent(event);
 }
 
@@ -369,18 +419,24 @@ MixerWindow.prototype.createControls = function(ip, peers){
         for (var i = 0; i < NUM_INPUTS; i++){
           this.createSourceControl(controls.document, i);
         }
-        
+         this.createBlendControl(controls.document);
    }.bind(this);
+  
 }
 
 MixerWindow.prototype.createSourceControl = function(parent, index){
 //  var controlDiv = parent.createElement('div');
  
   var controlDiv = addAccordionItem("layer "+index, parent.body);
-  var drop = createDropdown("source: ", controlDiv, index, this.sourceOptions, function(e, i){
+  var sourceOptions = [];
+  for(key in this.mixerState.sources){
+    var obj = this.mixerState.sources[key];
+    sourceOptions.push({text: obj.peer_id, value: key});
+  }
+  var drop = createDropdown("source: ", controlDiv, index, sourceOptions, function(e, i){
     console.log(e.target.value);
-    console.log(this.sourceOptions[e.target.value]);
-   this.mediaDivs[i].outputDiv.src = this.sourceOptions[e.target.value].src;
+    console.log(this.mixerState.sources[e.target.value]);
+   this.mediaDivs[i].outputDiv.src = this.mixerState.sources[e.target.value].src;
 
   }.bind(this));
   this.mediaDivs[index].controlDiv = drop;
@@ -389,7 +445,14 @@ MixerWindow.prototype.createSourceControl = function(parent, index){
 }
 
 MixerWindow.prototype.createBlendControl = function(parent){
+  var blendContainer = addAccordionItem("blend", parent.body);
+   var drop = createDropdown("blend: ", blendContainer , 0, this.blendOptions, function(e, i){
+    console.log(e.target.value);
+    
+    this.mixerEvent("blend", e.target.value);
+   //this.mediaDivs[i].outputDiv.src = this.sourceOptions[e.target.value].src;
 
+  }.bind(this));
 }
 
 // function createVideoDiv(src, parent, index){
@@ -420,7 +483,7 @@ function createDropdown(name, parent, index, options, callback){
       dropDiv.appendChild(dropSelector);
       for(var i = 0; i < options.length; i++){
          var option = document.createElement('option');
-          option.value = i;
+          option.value = options[i].value;
           option.text = options[i].text;
           dropSelector.appendChild(option);
       }
@@ -714,9 +777,9 @@ var CodeLab = require('./CodeLab');
 
 function SessionControl(localVideo, container, peers, webrtc){
 	this.video = localVideo;
-	this.createControlUI(container);
     this.peers = peers;
     this.webrtc = webrtc;
+    this.createControlUI(container);
 }
 SessionControl.prototype.oscParameter = function(data){
     console.log(this.mixerWindow);
@@ -789,7 +852,7 @@ SessionControl.prototype.createControlUI = function(container){
    
    
     showMixerButton.onclick = function () {
-        this.mixerWindow = new MixerWindow(this.video, this.peers);
+        this.mixerWindow = new MixerWindow(this.video, this.peers, this.webrtc);
     
       
     }.bind(this);
@@ -1876,7 +1939,8 @@ function initWebRTC(){
     });
     // then we create the divs to contain & display the media streams
     localMedia = new PeerMediaContainer("local", null, webrtc, dashboard);
-    
+    console.log(webrtc);
+
     if(LOCAL_SERVER){
         var osc_config = {
             "socket_port": BASE_SOCKET_PORT,
@@ -1901,6 +1965,7 @@ function initWebRTC(){
             console.log("setting video ", e.target);
             sessionControl.setVideo(e.target);
         });
+
     });
 
     webrtc.on('channelMessage', function (peer, label, data) {
@@ -1909,7 +1974,7 @@ function initWebRTC(){
             chatWindow.appendToChatLog(name, data.payload);
         } else if (data.type=="osc") {
             oscChannels.receivedRemoteStream(data, peer.id, label);
-            sessionControl.oscParameter(data);
+            sessionControl.oscParameter(data.payload);
         } else if (data.type === "sessionInfo"){
             // one of the peers changed the name of their window
             if (label === "nameChange") {
@@ -1932,6 +1997,7 @@ function initWebRTC(){
              console.log("setting video ", e.target);
              sessionControl.setVideo(e.target);
         });
+         console.log(webrtc.getPeers());
      });
 
 

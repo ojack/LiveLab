@@ -4,7 +4,7 @@ console.log("opened page");
 var seriously, source1, source2, canvas, blend;
 
 
-document.addEventListener('videoAdded', function(){
+document.addEventListener('sourcesAdded', function(){
    console.log("init vid");
     canvas = document.createElement('canvas');
     canvas.id = "mixerCanvas";
@@ -22,6 +22,14 @@ document.addEventListener('osc', function(e){
     //alert("MIXER EVENT");
     console.log(e);
     blend.mode = 'multiply';
+
+   // blend.update();
+});
+
+document.addEventListener('blend', function(e){
+    //alert("MIXER EVENT");
+    console.log(e.detail);
+    blend.mode = e.detail;
 
    // blend.update();
 });
