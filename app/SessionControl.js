@@ -78,6 +78,7 @@ SessionControl.prototype.createControlUI = function(container){
    
    
     showMixerButton.onclick = function () {
+        console.log(this.webrtc);
         this.mixerWindow = new MixerWindow(this.video, this.peers, this.webrtc);
     
       
