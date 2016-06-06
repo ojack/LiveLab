@@ -1,4 +1,5 @@
-
+var MediaStreamRecorder = require('msr');
+var SimpleWebRTC = require('./libs/simplewebrtc'); 
 var SimpleWebRTC = require('./libs/simplewebrtc');
 var LiveLabOsc = require('./LiveLabOsc');
 var ChatWindow = require('./ChatWindow');
@@ -172,6 +173,7 @@ function initWebRTC(){
             chatWindow.appendToChatLog(name, data.payload);
         } else if (data.type=="osc") {
             oscChannels.receivedRemoteStream(data, peer.id, label);
+            sessionControl.oscParameter(data.payload);
         } else if (data.type === "sessionInfo"){
             // one of the peers changed the name of their window
             if (label === "nameChange") {

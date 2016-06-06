@@ -110,8 +110,8 @@ wss.on("connection", function (ws) {
             }
         } else if(message.type=="subscribeStream"){
             //create osc client at specified port
-           // console.log("received data ");
-          //  console.log(message.payload);
+             console.log("received data ");
+             console.log(message.payload);
            // console.log(message.payload);
             var msg = oscMin.toBuffer(message.payload);
           //  console.log(msg);
