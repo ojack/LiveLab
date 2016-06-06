@@ -30,7 +30,12 @@ PeerMediaContainer.prototype.createAccordion = function(name){
     // if local, we want to be able to edit the name of our window
     if (this.id === "local") {
         var peerHeader = document.createElement('input');
-        peerHeader.value = "local";
+        var savedNick = localStorage.getItem("livelab-localNick");
+        if (savedNick !== null) {
+            peerHeader.value = savedNick;
+        } else {
+            peerHeader.value = "local";
+        }
     } else {
         var peerHeader = document.createElement('div');
     }
@@ -42,6 +47,7 @@ PeerMediaContainer.prototype.createAccordion = function(name){
             // should we send each keystroke individually, or just send the
             // entire string after enter has been pressed?
             if (event.which === 13) {
+                localStorage.setItem("livelab-localNick", peerHeader.value);
                 for (var i = 0; i < window.stateInfo.peers.length; i++) {
                     var existingPeer = window.stateInfo.peers[i];
                     if (existingPeer.id === window.localId) {
@@ -50,7 +56,6 @@ PeerMediaContainer.prototype.createAccordion = function(name){
                     }
                 }
                 self.webrtc.sendDirectlyToAll("nameChange", "sessionInfo", peerHeader.value);
-                self.webrtc.sendDirectlyToAll("shareState", "sessionInfo", 123123);
                 this.blur();
             }
         }

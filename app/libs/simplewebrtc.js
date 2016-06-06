@@ -1,4 +1,5 @@
 var WebRTC = require('./webrtc');
+var util = require('./../util');
 var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
 var attachMediaStream = require('attachmediastream');
@@ -325,6 +326,19 @@ SimpleWebRTC.prototype.joinRoom = function (name, cb) {
     this.roomName = name;
     this.connection.emit('join', name, function (err, roomDescription) {
         console.log('join CB', err, roomDescription);
+        var nick = localStorage.getItem("livelab-localNick");
+        // we don't have any nick saved in local storage - just use the
+        // localId as nick
+        if (nick === null) {
+            nick = window.localId;
+        }
+        // if amount of clients given by roomDescription is 0, then we have
+        // joined an empty room
+        window.hasStateInfo = (Object.keys(roomDescription.clients).length) === 0;
+        if (window.hasStateInfo) {
+            window.stateInfo.peers.push({id: window.localId, nick: nick});
+        }
+
         if (err) {
             self.emit('error', err);
         } else {
