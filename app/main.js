@@ -168,7 +168,6 @@ function initWebRTC(){
     });
 
     webrtc.on('channelMessage', function (peer, label, data) {
-        console.log("message", data);
         if (data.type=="chat") {
             var name = document.getElementById("header_" + peer.id).innerHTML;
             chatWindow.appendToChatLog(name, data.payload);
@@ -199,6 +198,7 @@ function initWebRTC(){
             sessionControl.remoteCodeChange(data.payload);
         } else if(data.type=="mixer"){
             console.log("MIXER", label, data);
+            sessionControl.remoteMixerEvent(label, data.payload);
         }
     });
 

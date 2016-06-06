@@ -58,7 +58,7 @@ function MixerWindow(video, peers, webrtc){
      var ip = window.location.host + window.location.pathname;
       this.createControls(ip, peers);
       showMixer = window.open("https://" + ip + "mixer.html", 'Mixer_'+Math.random()*200, 'popup');
-     
+      this.webrtc = webrtc;
       this.video = video;
       this.mixerState = {};
       this.mixerState.effects = [];
@@ -98,7 +98,15 @@ function MixerWindow(video, peers, webrtc){
 MixerWindow.prototype.mixerEvent = function(type, data){
    var event = new CustomEvent(type, {detail: data});
    this.showMixer.document.dispatchEvent(event);
+   console.log("rtc", this.webrtc);
    this.webrtc.sendDirectlyToAll(type, "mixer", data);
+   //
+}
+
+MixerWindow.prototype.remoteMixerEvent = function(type, data){
+  
+   var event = new CustomEvent(type, {detail: data});
+   this.showMixer.document.dispatchEvent(event);
    //
 }
 
@@ -152,9 +160,10 @@ MixerWindow.prototype.createBlendControl = function(parent, index){
   var index = this.mixerState.effects.length;
   this.mixerState.effects.push({type: "blend", top: 1, bottom: 0, mode: "multiply"});
    var drop = createDropdown("blend: ", blendContainer , 0, blendOpts, function(e, i){
-    console.log(e.target.value);
+  
     this.mixerState.effects[index].mode = e.target.value;
   //  this.updateState();
+    console.log("CHANGE BLEND", e.target.value);
    this.mixerEvent("blend", e.target.value);
   }.bind(this));
 }
