@@ -6,8 +6,12 @@ var blendOptions = ["normal", "lighten", "darken", "multiply", "average", "add",
 /* 
 id is MediaStream id, NOT peer id
 Mixer state array contains information about all elements in mixer. mixer.js as well as gui should be able to initialize and update all parts based on state information. state is shared between peers when updated
+
+
+
 schema:
 {
+  
   sources: { 
       id: { 
         "div":
