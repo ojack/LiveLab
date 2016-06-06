@@ -135,8 +135,8 @@ MixerWindow.prototype.createSourceControl = function(parent, index){
     console.log(e.target.value);
     console.log(this.streams[e.target.value]);
      this.mixerState.sources[i].src = this.streams[e.target.value].src;
-     this.updateState();
- //  this.mixerState.sources[i].outputDiv.src = this.streams[e.target.value].src;
+    // this.updateState();
+   this.mixerState.sources[i].outputDiv.src = this.streams[e.target.value].src;
 
   }.bind(this));
   this.mixerState.sources[index].controlDiv = drop;
@@ -152,8 +152,8 @@ MixerWindow.prototype.createBlendControl = function(parent){
    var drop = createDropdown("blend: ", blendContainer , 0, blendOpts, function(e, i){
     console.log(e.target.value);
     this.mixerState.effects[index].mode = e.target.value;
-    this.updateState();
-   // this.mixerEvent("blend", e.target.value);
+  //  this.updateState();
+   this.mixerEvent("blend", e.target.value);
   }.bind(this));
 }
 

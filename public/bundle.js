@@ -425,8 +425,8 @@ MixerWindow.prototype.createSourceControl = function(parent, index){
     console.log(e.target.value);
     console.log(this.streams[e.target.value]);
      this.mixerState.sources[i].src = this.streams[e.target.value].src;
-     this.updateState();
- //  this.mixerState.sources[i].outputDiv.src = this.streams[e.target.value].src;
+    // this.updateState();
+   this.mixerState.sources[i].outputDiv.src = this.streams[e.target.value].src;
 
   }.bind(this));
   this.mixerState.sources[index].controlDiv = drop;
@@ -442,8 +442,8 @@ MixerWindow.prototype.createBlendControl = function(parent){
    var drop = createDropdown("blend: ", blendContainer , 0, blendOpts, function(e, i){
     console.log(e.target.value);
     this.mixerState.effects[index].mode = e.target.value;
-    this.updateState();
-   // this.mixerEvent("blend", e.target.value);
+  //  this.updateState();
+   this.mixerEvent("blend", e.target.value);
   }.bind(this));
 }
 
@@ -768,9 +768,17 @@ var CodeLab = require('./CodeLab');
 
 function SessionControl(localVideo, container, peers, webrtc){
 	this.video = localVideo;
-	this.createControlUI(container);
     this.peers = peers;
     this.webrtc = webrtc;
+    this.createControlUI(container);
+}
+SessionControl.prototype.oscParameter = function(data){
+    console.log(this.mixerWindow);
+    if(this.mixerWindow){
+         console.log("mixer");
+        //this.mixerWindow.userEvent("osc", data);
+        this.mixerWindow.mixerEvent("osc", data);
+    }
 }
 
 SessionControl.prototype.createControlUI = function(container){
@@ -835,7 +843,8 @@ SessionControl.prototype.createControlUI = function(container){
    
    
     showMixerButton.onclick = function () {
-        this.mixerWindow = new MixerWindow(this.video, this.peers);
+        console.log(this.webrtc);
+        this.mixerWindow = new MixerWindow(this.video, this.peers, this.webrtc);
     
       
     }.bind(this);
