@@ -42,7 +42,15 @@ PeerMediaContainer.prototype.createAccordion = function(name){
             // should we send each keystroke individually, or just send the
             // entire string after enter has been pressed?
             if (event.which === 13) {
+                for (var i = 0; i < window.stateInfo.peers.length; i++) {
+                    var existingPeer = window.stateInfo.peers[i];
+                    if (existingPeer.id === window.localId) {
+                        existingPeer.nick = peerHeader.value;
+                        break;
+                    }
+                }
                 self.webrtc.sendDirectlyToAll("nameChange", "sessionInfo", peerHeader.value);
+                self.webrtc.sendDirectlyToAll("shareState", "sessionInfo", 123123);
                 this.blur();
             }
         }
