@@ -168,6 +168,7 @@ function initWebRTC(){
     });
 
     webrtc.on('channelMessage', function (peer, label, data) {
+        console.log("message", data);
         if (data.type=="chat") {
             var name = document.getElementById("header_" + peer.id).innerHTML;
             chatWindow.appendToChatLog(name, data.payload);
@@ -186,7 +187,8 @@ function initWebRTC(){
                 // reflect the changes in the browser
                 window.stateInfo.peers.forEach(function(existingPeer) {
                     if (existingPeer.id !== localId) {
-                        if (Object.keys(existingPeer.nick).length !== 0) {
+
+                        if (exitingPeer.nick && Object.keys(existingPeer.nick).length !== 0) {
                             document.getElementById("header_" + existingPeer.id).innerHTML = util.escapeText(existingPeer.nick);
                         }
                     }
@@ -195,6 +197,8 @@ function initWebRTC(){
         } else if(data.type=="code-lab"){
             console.log(label, data);
             sessionControl.remoteCodeChange(data.payload);
+        } else if(data.type=="mixer"){
+            console.log("MIXER", label, data);
         }
     });
 

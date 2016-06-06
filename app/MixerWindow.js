@@ -1,4 +1,4 @@
-var NUM_INPUTS = 3;
+var NUM_INPUTS = 2;
 var blendOptions = ["normal", "lighten", "darken", "multiply", "average", "add", "subtract", "divide", "difference", "negation", "exclusion", "screen", "lineardodge", "phoenix", "linearburn", "hue", "saturation", "color", "luminosity", "darkercolor", "lightercolor", "overlay", "softlight", "hardlight", "colordodge", "colorburn", "linearlight", "vividlight", "pinlight", "hardmix", "reflect", "glow"];
 
 
@@ -98,6 +98,8 @@ function MixerWindow(video, peers, webrtc){
 MixerWindow.prototype.mixerEvent = function(type, data){
    var event = new CustomEvent(type, {detail: data});
    this.showMixer.document.dispatchEvent(event);
+   this.webrtc.sendDirectlyToAll(type, "mixer", data);
+   //
 }
 
 MixerWindow.prototype.updateState = function(){
@@ -142,7 +144,7 @@ MixerWindow.prototype.createSourceControl = function(parent, index){
   this.mixerState.sources[index].controlDiv = drop;
 }
 
-MixerWindow.prototype.createBlendControl = function(parent){
+MixerWindow.prototype.createBlendControl = function(parent, index){
   var blendOpts = blendOptions.map(function(str){
         return {text: str, value: str}
       });
