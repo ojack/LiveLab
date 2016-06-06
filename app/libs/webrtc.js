@@ -156,4 +156,11 @@ WebRTC.prototype.sendDirectlyToAll = function (channel, message, payload) {
     });
 };
 
+WebRTC.prototype.sendDirectly = function (peerId, channel, message, payload) {
+    var peer = this.getPeers(peerId)[0];
+    if (peer.enableDataChannels) {
+        peer.sendDirectly(channel, message, payload);
+    }
+}
+
 module.exports = WebRTC;
