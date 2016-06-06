@@ -110,6 +110,13 @@ SessionControl.prototype.remoteCodeChange = function(code){
     }
 }
 
+SessionControl.prototype.remoteMixerEvent = function(type, data){
+    console.log("SESSION MIX");
+    if(this.mixerWindow){
+        this.mixerWindow.remoteMixerEvent(type, data);
+    }
+}
+
 SessionControl.prototype.toggle = function(){
     if(this.div.className == "toolbar-element show"){
         this.div.className = "toolbar-element hide";
