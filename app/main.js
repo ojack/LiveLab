@@ -95,6 +95,7 @@ function initWebRTC(){
                mirror: false,
                muted: false
            },
+       nick: localStorage.getItem("livelab-localNick") || window.localId,
        // the id/element dom element that will hold remote videos
        remoteVideosEl: '',
        // immediately ask for camera access
