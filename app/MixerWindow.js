@@ -1,55 +1,6 @@
-var NUM_INPUTS = 2;
+var NUM_INPUTS = 3;
 var blendOptions = ["normal", "lighten", "darken", "multiply", "average", "add", "subtract", "divide", "difference", "negation", "exclusion", "screen", "lineardodge", "phoenix", "linearburn", "hue", "saturation", "color", "luminosity", "darkercolor", "lightercolor", "overlay", "softlight", "hardlight", "colordodge", "colorburn", "linearlight", "vividlight", "pinlight", "hardmix", "reflect", "glow"];
 
-
-
-/* 
-id is MediaStream id, NOT peer id
-Mixer state array contains information about all elements in mixer. mixer.js as well as gui should be able to initialize and update all parts based on state information. state is shared between peers when updated
-
-
-
-schema:
-{
-  
-  sources: { 
-      id: { 
-        "div":
-        "src":
-      }
-  },
-  streams:
-  transforms: {
-    [
-      "source":
-      "target":
-      "type":
-      "params"
-    ]
-  },
-  effects: {
-    [
-      "type:"
-      "top":
-      "bottom":
-      "effect":
-    ]
-  }
-
-}
-
-schema: {
-  sources: [
-  ],
-  steps: [
-    {
-      "category":   ,
-      "type:"
-    }
-
-  ]
-}
-*/
 
 var mixerState = {};
 
@@ -66,7 +17,7 @@ function MixerWindow(video, peers, webrtc){
       console.log("LOCAL STREAM", webrtc.webrtc.localStreams[0]);
       var str = webrtc.webrtc.localStreams[0];
       this.streams[str.id] = {src: video.src, stream: str, peer_id: "local"};
-     
+     this.mixerState.streams = this.streams;
       this.mixerState.sources = [];
       for (var i = 0; i < NUM_INPUTS; i++){
           this.mixerState.sources[i] = {};
@@ -103,6 +54,7 @@ MixerWindow.prototype.mixerEvent = function(type, data){
    //
 }
 
+/*forward remote event to local mixer window */
 MixerWindow.prototype.remoteMixerEvent = function(type, data){
   
    var event = new CustomEvent(type, {detail: data});
@@ -129,7 +81,8 @@ MixerWindow.prototype.createControls = function(ip, peers){
         for (var i = 0; i < NUM_INPUTS; i++){
           this.createSourceControl(controls.document, i);
         }
-         this.createBlendControl(controls.document);
+         this.createBlendControl(controls.document, 0, {top: 1, bottom: 0});
+         this.createBlendControl(controls.document, 1, {top: 2, bottom: "blend"});
    }.bind(this);
   
 }
@@ -144,27 +97,24 @@ MixerWindow.prototype.createSourceControl = function(parent, index){
   var drop = createDropdown("stream: ", controlDiv, index, sourceOptions, function(e, i){
     console.log(e.target.value);
     console.log(this.streams[e.target.value]);
-     this.mixerState.sources[i].src = this.streams[e.target.value].src;
-    // this.updateState();
-   this.mixerState.sources[i].outputDiv.src = this.streams[e.target.value].src;
-
+    this.mixerEvent('source', {source: i, stream: e.target.value})
   }.bind(this));
   this.mixerState.sources[index].controlDiv = drop;
 }
 
-MixerWindow.prototype.createBlendControl = function(parent, index){
+MixerWindow.prototype.createBlendControl = function(parent, index, sources){
   var blendOpts = blendOptions.map(function(str){
         return {text: str, value: str}
       });
   var blendContainer = addAccordionItem("blend", parent.body);
   var index = this.mixerState.effects.length;
-  this.mixerState.effects.push({type: "blend", top: 1, bottom: 0, mode: "multiply"});
+  this.mixerState.effects.push({type: "blend", top: sources.top, bottom: sources.bottom, mode: "multiply"});
    var drop = createDropdown("blend: ", blendContainer , 0, blendOpts, function(e, i){
   
     this.mixerState.effects[index].mode = e.target.value;
   //  this.updateState();
     console.log("CHANGE BLEND", e.target.value);
-   this.mixerEvent("blend", e.target.value);
+   this.mixerEvent("blend", {effect: index, mode: e.target.value});
   }.bind(this));
 }
 
