@@ -144,9 +144,10 @@ MixerWindow.prototype.createSourceControl = function(parent, index){
   var drop = createDropdown("stream: ", controlDiv, index, sourceOptions, function(e, i){
     console.log(e.target.value);
     console.log(this.streams[e.target.value]);
-     this.mixerState.sources[i].src = this.streams[e.target.value].src;
+    this.mixerEvent('source', {source: i, stream: e.target.value})
+    /* this.mixerState.sources[i].src = this.streams[e.target.value].src;
     // this.updateState();
-   this.mixerState.sources[i].outputDiv.src = this.streams[e.target.value].src;
+   this.mixerState.sources[i].outputDiv.src = this.streams[e.target.value].src;*/
 
   }.bind(this));
   this.mixerState.sources[index].controlDiv = drop;
