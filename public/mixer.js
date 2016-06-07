@@ -1,7 +1,7 @@
 // TO DO: add events for adding and removing peers, forwarded from mixer window
 
 console.log("opened page");
-var seriously, sources, canvas, blend, effects;
+var seriously, sources, canvas, blend, effects, streams;
 var previousState = {};
 
 document.addEventListener('sourcesAdded', function(e){
@@ -29,9 +29,17 @@ document.addEventListener('osc', function(e){
 document.addEventListener('blend', function(e){
     //alert("MIXER EVENT");
     console.log(e.detail);
-    blend.mode = e.detail;
+    effects[e.detail.effect].mode = e.detail.mode;
 
    // blend.update();
+});
+
+document.addEventListener('source', function(e){
+  console.log(e.detail);
+   console.log(streams);
+   sources[e.detail.source].div.src = streams[e.detail.stream].src;
+
+  // this.mixerState.sources[i].outputDiv.src = this.streams[e.target.value].src;*/
 });
 
 document.addEventListener('updateState', function(e){
@@ -54,6 +62,7 @@ function initEffectsFromState(state){
    console.log("init seriously");
       sources = [];
       effects = [];
+      streams = state.streams;
       console.log(state);
       for(var i = 0; i < state.sources.length; i++){
         var source = seriously.source("#"+state.sources[i].outputDiv.id);
@@ -65,30 +74,35 @@ function initEffectsFromState(state){
         reformat.width = canvas.width;
         reformat.height = canvas.height;
         reformat.source = source;
-        var obj = {src: source, reformat: reformat};
+        var obj = {src: source, reformat: reformat, div: state.sources[i].outputDiv};
         sources.push(obj);
       }
     //  var blend;
     console.log(sources);
+    console.log(state.effects);
       for(var i = 0; i < state.effects.length; i++){
         effect = seriously.effect(state.effects[i].type);
         for(prop in state.effects[i]){
             if(prop == "bottom" || prop == "top"){
              //  effect[bottom] = sources[0].reformat;
-             
+            
              var hey = state.effects[i][prop];
-             console.log(hey);
-             console.log(sources[hey]);
-           //  console.log(effect[hey]);
-              //  console.log(sources[st
-              //  console.log(sources[state.effects[i]][prop].reformat);
+              console.log(hey);
+
+             if(hey=="blend"){
+              
+              effect[prop] = effects[0];
+             } else {
+                
               effect[prop] = sources[hey].reformat;
+             }
+            
 
             } else {
                 effect[prop] = state.effects[i][prop];
             }
         }
-        blend = effect;
+       
         console.log(effect);
         effects.push(effect);
       
@@ -101,7 +115,7 @@ function initEffectsFromState(state){
     // connect any node as the source of the target. we only have one.
     if(effects.length > 0){
         console.log("adding source", blend);
-        target.source = effects[0];
+        target.source = effects[effects.length-1];
        //target.source = effects[state.effects.length-1];
     } else {
         target.source = sources[0];
