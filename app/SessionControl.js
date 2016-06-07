@@ -75,6 +75,7 @@ SessionControl.prototype.createControlUI = function(container){
      var showMixerButton = document.createElement('input');
     showMixerButton.type = 'button';
     showMixerButton.value = 'mixer';
+    showMixerButton.className = "mixer-button";
    
    
     showMixerButton.onclick = function () {

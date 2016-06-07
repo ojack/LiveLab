@@ -30,6 +30,7 @@ ChatWindow.prototype.createChatDivs = function(container){
     i.setAttribute('id', "chat-input");
     chatInput.appendChild(i);
     var sendBtn = document.createElement("BUTTON");
+    sendBtn.setAttribute("id", "send");
     var t = document.createTextNode("send");       // Create a text node
     sendBtn.appendChild(t);  
     sendBtn.setAttribute("type", "button")
