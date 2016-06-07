@@ -17,6 +17,7 @@ gulp.task("watch-less", function() {
 });
 
 gulp.task("default", function() {
+    gulp.start("less");
     gulp.start("watch-less");
 });
 
