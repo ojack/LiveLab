@@ -75,9 +75,11 @@ SessionControl.prototype.createControlUI = function(container){
      var showMixerButton = document.createElement('input');
     showMixerButton.type = 'button';
     showMixerButton.value = 'mixer';
+    showMixerButton.className = "mixer-button";
    
    
     showMixerButton.onclick = function () {
+        console.log(this.webrtc);
         this.mixerWindow = new MixerWindow(this.video, this.peers, this.webrtc);
     
       
@@ -106,6 +108,13 @@ SessionControl.prototype.setVideo = function(video){
 SessionControl.prototype.remoteCodeChange = function(code){
     if(this.CodeLabWindow){
         this.CodeLabWindow.remoteCodeChange(code);
+    }
+}
+
+SessionControl.prototype.remoteMixerEvent = function(type, data){
+    console.log("SESSION MIX");
+    if(this.mixerWindow){
+        this.mixerWindow.remoteMixerEvent(type, data);
     }
 }
 

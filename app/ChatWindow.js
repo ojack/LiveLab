@@ -1,4 +1,5 @@
 var util = require("./util");
+var Autolinker = require("autolinker");
 
 function ChatWindow(container, webrtc){
     this.webrtc = webrtc;
@@ -29,6 +30,7 @@ ChatWindow.prototype.createChatDivs = function(container){
     i.setAttribute('id', "chat-input");
     chatInput.appendChild(i);
     var sendBtn = document.createElement("BUTTON");
+    sendBtn.setAttribute("id", "send");
     var t = document.createTextNode("send");       // Create a text node
     sendBtn.appendChild(t);  
     sendBtn.setAttribute("type", "button")
@@ -54,7 +56,7 @@ ChatWindow.prototype.toggle = function(){
 
 ChatWindow.prototype.appendToChatLog = function(label, text){
 	chatLog.innerHTML += "<span id='chat-label'>" + label + ": </span>";
-	chatLog.innerHTML += util.escapeText(text) + "<br>";
+	chatLog.innerHTML += Autolinker.link(text) + "<br>";
     this.div.className = "toolbar-element show";
 }
 

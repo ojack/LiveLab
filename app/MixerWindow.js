@@ -4,17 +4,21 @@ var blendOptions = ["normal", "lighten", "darken", "multiply", "average", "add",
 
 
 /* 
-id is stream id, NOT peer id
-(NOT IMPLEMENTED) Mixer state array contains information about all elements in mixer.
+id is MediaStream id, NOT peer id
+Mixer state array contains information about all elements in mixer. mixer.js as well as gui should be able to initialize and update all parts based on state information. state is shared between peers when updated
+
+
+
 schema:
 {
+  
   sources: { 
       id: { 
-        "type":
-        "target" : 
+        "div":
+        "src":
       }
-  
   },
+  streams:
   transforms: {
     [
       "source":
@@ -33,71 +37,58 @@ schema:
   }
 
 }
+
+schema: {
+  sources: [
+  ],
+  steps: [
+    {
+      "category":   ,
+      "type:"
+    }
+
+  ]
+}
 */
 
-var mixerState = [];
+var mixerState = {};
 
 
 function MixerWindow(video, peers, webrtc){
      var ip = window.location.host + window.location.pathname;
-    
+      this.createControls(ip, peers);
       showMixer = window.open("https://" + ip + "mixer.html", 'Mixer_'+Math.random()*200, 'popup');
-     
+      this.webrtc = webrtc;
       this.video = video;
       this.mixerState = {};
-      this.mixerState.sources = {};
-      this.mixerState.effects = {};
-
-      this.sourceOptions = [];
-      this.sourceOptions[0] = {text: "local", src: video.src}
+      this.mixerState.effects = [];
+      this.streams = {};
       console.log("LOCAL STREAM", webrtc.webrtc.localStreams[0]);
       var str = webrtc.webrtc.localStreams[0];
-      this.mixerState.sources[str.id] = {src: video.src, stream: str, peer_id: "local"};
-      this.blendOptions = blendOptions.map(function(str){
-        return {text: str, value: str}
-      });
-      this.mediaDivs = [];
+      this.streams[str.id] = {src: video.src, stream: str, peer_id: "local"};
+     
+      this.mixerState.sources = [];
       for (var i = 0; i < NUM_INPUTS; i++){
-          this.mediaDivs[i] = {};
+          this.mixerState.sources[i] = {};
       }
       for (peer in peers){
           var src = peers[peer].peerContainer.video.src;
-          this.sourceOptions.push({text: peers[peer].peer.id, src: peers[peer].peerContainer.video.src});
-          console.log("PEER ", peers[peer].peer.stream);
-          this.mixerState.sources[peers[peer].peer.stream.id] = {src: peers[peer].peerContainer.video.src, peer_id: peers[peer].peer.id, stream: peers[peer].peer.stream};
+          
+          this.streams[peers[peer].peer.stream.id] = {src: peers[peer].peerContainer.video.src, peer_id: peers[peer].peer.id, stream: peers[peer].peer.stream};
       }
 
-      console.log("STATE", this.mixerState);
-       this.createControls(ip, peers);
-      console.log(this.sourceOptions);
+       
        this.peers = peers;
       //force relaod because page keeps strange cache
       showMixer.location.reload();
        showMixer.onload = function(){
             for(var i = 0; i < NUM_INPUTS; i++){
               var videoDiv = createVideoDiv(showMixer.document, i, video);
-              this.mediaDivs[i].outputDiv = videoDiv;
+              this.mixerState.sources[i].outputDiv = videoDiv;
+              this.mixerState.sources[i].src = videoDiv.src;
             }
-
-           // console.log(video);
-           // console.log(peers);
-            /*attach javascript*/
-
-            /*attach local video to video element in mixer*/
-             //showMixer.document.getElementById('video0').src = video.src;
-            //createVideoDiv(video.src, showMixer.document, 0);
-
              var numVids = 0;
-          /*   for (peer in peers){
-                console.log(peers[peer].peerContainer.video);
-                //if(numVids < 1) {
-                    // showMixer.document.getElementById('video2').src = peers[peer].peerContainer.video.src;
-                    createVideoDiv(peers[peer].peerContainer.video.src, showMixer.document, numVids+1);
-
-               // }
-                numVids++;
-             }*/
-             var event = new Event('sourcesAdded');
+             var event = new CustomEvent('sourcesAdded', {detail: this.mixerState});
              showMixer.document.dispatchEvent(event);
            
              this.showMixer = showMixer;
@@ -107,14 +98,23 @@ function MixerWindow(video, peers, webrtc){
 MixerWindow.prototype.mixerEvent = function(type, data){
    var event = new CustomEvent(type, {detail: data});
    this.showMixer.document.dispatchEvent(event);
+   console.log("rtc", this.webrtc);
+   this.webrtc.sendDirectlyToAll(type, "mixer", data);
+   //
 }
 
-/*MixerWindow.prototype.userEvent = function(type, data){
-  //alert(data);
- 
-   var event = new CustomEvent('osc', {detail: data.payload});
+MixerWindow.prototype.remoteMixerEvent = function(type, data){
+  
+   var event = new CustomEvent(type, {detail: data});
    this.showMixer.document.dispatchEvent(event);
-}*/
+   //
+}
+
+MixerWindow.prototype.updateState = function(){
+  console.log(this.mixerState);
+  var event = new CustomEvent("updateState", {detail: this.mixerState});
+  this.showMixer.document.dispatchEvent(event);
+}
 
 MixerWindow.prototype.createControls = function(ip, peers){
   var strWindowFeatures = "height=800,width=400,left=0,toolbar=no,menubar=no,top=0";
@@ -135,49 +135,43 @@ MixerWindow.prototype.createControls = function(ip, peers){
 }
 
 MixerWindow.prototype.createSourceControl = function(parent, index){
-//  var controlDiv = parent.createElement('div');
- 
-  var controlDiv = addAccordionItem("layer "+index, parent.body);
+  var controlDiv = addAccordionItem("source"+index, parent.body);
   var sourceOptions = [];
-  for(key in this.mixerState.sources){
-    var obj = this.mixerState.sources[key];
+  for(key in this.streams){
+    var obj = this.streams[key];
     sourceOptions.push({text: obj.peer_id, value: key});
   }
-  var drop = createDropdown("source: ", controlDiv, index, sourceOptions, function(e, i){
+  var drop = createDropdown("stream: ", controlDiv, index, sourceOptions, function(e, i){
     console.log(e.target.value);
-    console.log(this.mixerState.sources[e.target.value]);
-   this.mediaDivs[i].outputDiv.src = this.mixerState.sources[e.target.value].src;
+    console.log(this.streams[e.target.value]);
+     this.mixerState.sources[i].src = this.streams[e.target.value].src;
+    // this.updateState();
+   this.mixerState.sources[i].outputDiv.src = this.streams[e.target.value].src;
 
   }.bind(this));
-  this.mediaDivs[index].controlDiv = drop;
- // controlDiv.innerHTML = JSON.stringify(peer.peer);
-  //parent.body.appendChild(controlDiv);
+  this.mixerState.sources[index].controlDiv = drop;
 }
 
-MixerWindow.prototype.createBlendControl = function(parent){
+MixerWindow.prototype.createBlendControl = function(parent, index){
+  var blendOpts = blendOptions.map(function(str){
+        return {text: str, value: str}
+      });
   var blendContainer = addAccordionItem("blend", parent.body);
-   var drop = createDropdown("blend: ", blendContainer , 0, this.blendOptions, function(e, i){
-    console.log(e.target.value);
-    
-    this.mixerEvent("blend", e.target.value);
-   //this.mediaDivs[i].outputDiv.src = this.sourceOptions[e.target.value].src;
-
+  var index = this.mixerState.effects.length;
+  this.mixerState.effects.push({type: "blend", top: 1, bottom: 0, mode: "multiply"});
+   var drop = createDropdown("blend: ", blendContainer , 0, blendOpts, function(e, i){
+  
+    this.mixerState.effects[index].mode = e.target.value;
+  //  this.updateState();
+    console.log("CHANGE BLEND", e.target.value);
+   this.mixerEvent("blend", e.target.value);
   }.bind(this));
 }
-
-// function createVideoDiv(src, parent, index){
-//     var vid =  parent.createElement('video');
-//     vid.src = src;
-//     vid.id = "video"+index;
-//     vid.autoplay = true;
-//     vid.muted = true;
-//     parent.body.appendChild(vid);
-// }
 
 function createVideoDiv(parent, index, video){
     var vid =  parent.createElement('video');
     vid.src = video.src;
-    vid.id = "video"+index;
+    vid.id = "source"+index;
     vid.autoplay = true;
     vid.muted = true;
     parent.body.appendChild(vid);

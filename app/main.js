@@ -24,7 +24,7 @@ var webrtc, chatWindow, oscChannels, room, localMedia, dashboard, sessionControl
 /*Global object containing data about all connected peers*/
 var peers = {};
 // state variable used to determine if this client has received
-var hasStateInfo = false;
+window.hasStateInfo = false;
 window.localId = "";
 
 // structure of state info object:
@@ -68,22 +68,22 @@ function initWebRTC(){
     dashboard.setAttribute("id", "dashboard");
     document.body.appendChild(dashboard);
 
-    // start a timer to update the state variable in the event that we join a
-    // room with no prior state
-    setTimeout(function() {
-        // nobody has shared the state information with us - assume that we're
-        // the first peer of the room, and that there is no prior state to be
-        // shared
-        if (!hasStateInfo) {
-            hasStateInfo = true;
-            // add this client's id & nick to the state info
-            var nick = document.getElementById("header_local").value == "local" ? localId : 
-                       document.getElementById("header_local").value;
-            window.stateInfo.peers.push({id: localId, nick: nick});
-        }
-        // otherwise don't do anything -- we've already synced with someone in
-        // the room
-    }, 5500);
+    // // start a timer to update the state variable in the event that we join a
+    // // room with no prior state
+    // setTimeout(function() {
+    //     // nobody has shared the state information with us - assume that we're
+    //     // the first peer of the room, and that there is no prior state to be
+    //     // shared
+    //     if (!window.hasStateInfo) {
+    //         window.hasStateInfo = true;
+    //         // add this client's id & nick to the state info
+    //         var nick = document.getElementById("header_local").value == "local" ? localId : 
+    //                    document.getElementById("header_local").value;
+    //         window.stateInfo.peers.push({id: localId, nick: nick});
+    //     }
+    //     // otherwise don't do anything -- we've already synced with someone in
+    //     // the room
+    // }, 5500);
     // first we initialize the webrtc client
     webrtc = new SimpleWebRTC({
        // the id/element dom element that will hold our video;
@@ -95,6 +95,7 @@ function initWebRTC(){
                mirror: false,
                muted: false
            },
+       nick: localStorage.getItem("livelab-localNick") || window.localId,
        // the id/element dom element that will hold remote videos
        remoteVideosEl: '',
        // immediately ask for camera access
@@ -134,27 +135,12 @@ function initWebRTC(){
         }; 
 
         oscChannels = new LiveLabOsc(osc_config.socket_port, webrtc, localMedia.dataDiv, osc_config.socket_url, peers);
-        //localMedia.initOsc(webrtc, osc_config, peers);
     } else {
           oscChannels = new LiveLabOsc(null, webrtc, localMedia.dataDiv, null, peers);
     }
 
-    /*
-     * sendDirectlyToAll(requestInfo,
-     *      sessionInfo,
-     *      JSON.stringify({requester_id: asd, supplier_id: dsji}]
-     * )
-     *
-     *
-     *      sendDirectlyToAll(shareInfo, 
-     *          sessionInfo, 
-     *          JSON.stringify({recipient_id: asd, peers: [{peer_id: asd,
-     *          peer_name: asdkj}, {peer_id: 2, peer_name: 2manj}]
-     *     )
-     */
     webrtc.on('readyToCall', function () {
-        // you can name it anything
-        localId = webrtc.connection.connection.id;
+        window.localId = webrtc.connection.connection.id;
         if (room) webrtc.joinRoom(room);
         chatWindow = new ChatWindow(document.body, webrtc);
         localMedia.addVideoControls();
@@ -179,22 +165,22 @@ function initWebRTC(){
             if (label === "nameChange") {
                 // update the header of the peer that changed their name
                 document.getElementById("header_" + peer.id).innerHTML = util.escapeText(data.payload);
-            } else if (label === "shareState" && !hasStateInfo) {
+            } else if (label === "shareState" && !window.hasStateInfo) {
                 // update the state of this client to reflect the state of the room
                 window.stateInfo = JSON.parse(data.payload);
-                hasStateInfo = true;
+                window.hasStateInfo = true;
                 // reflect the changes in the browser
                 window.stateInfo.peers.forEach(function(existingPeer) {
-                    if (existingPeer.id !== localId) {
-                        if (Object.keys(existingPeer.nick).length !== 0) {
-                            document.getElementById("header_" + existingPeer.id).innerHTML = util.escapeText(existingPeer.nick);
-                        }
+                    if (existingPeer.id !== localId && existingPeer.nick) {
+                        document.getElementById("header_" + existingPeer.id).innerHTML = util.escapeText(existingPeer.nick);
                     }
                 });
             }
         } else if(data.type=="code-lab"){
-            console.log(label, data);
             sessionControl.remoteCodeChange(data.payload);
+        } else if(data.type=="mixer"){
+            console.log("MIXER", label, data);
+            sessionControl.remoteMixerEvent(label, data.payload);
         }
     });
 
@@ -208,7 +194,7 @@ function initWebRTC(){
              sessionControl.setVideo(e.target);
         });
 
-         if (hasStateInfo) {
+         if (window.hasStateInfo) {
              // check to see if the new peer resides inside the peers list of
              // the window.stateInfo object. if not: add it
              var peerExists = false;
@@ -226,7 +212,7 @@ function initWebRTC(){
              // TODO: preferably only send it to the connected peer
              setTimeout(function() {
                  webrtc.sendDirectly(peer.id, "shareState", "sessionInfo", JSON.stringify(window.stateInfo));
-             }, 1000);
+             }, 2500);
          } else {
              // don't do shit
          }
