@@ -1,4 +1,5 @@
 var util = require("./util");
+var Autolinker = require("autolinker");
 
 function ChatWindow(container, webrtc){
     this.webrtc = webrtc;
@@ -54,7 +55,7 @@ ChatWindow.prototype.toggle = function(){
 
 ChatWindow.prototype.appendToChatLog = function(label, text){
 	chatLog.innerHTML += "<span id='chat-label'>" + label + ": </span>";
-	chatLog.innerHTML += util.escapeText(text) + "<br>";
+	chatLog.innerHTML += Autolinker.link(text) + "<br>";
     this.div.className = "toolbar-element show";
 }
 
