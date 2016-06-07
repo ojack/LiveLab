@@ -22,4 +22,5 @@ Jesse Ricke ([CultureHub](http://www.culturehub.org/))
 Olivia Jack
 
 #####MediaLab-Prado Collaborators:
+Alexander Cobleigh ([@cblgh](https://www.twitter.com/cblgh))
 

@@ -1,6 +1,5 @@
 var MediaStreamRecorder = require('msr');
 var SimpleWebRTC = require('./libs/simplewebrtc'); 
-var SimpleWebRTC = require('./libs/simplewebrtc');
 var LiveLabOsc = require('./LiveLabOsc');
 var ChatWindow = require('./ChatWindow');
 //var MicGainController = require('mediastream-gain'); // where is this used?
