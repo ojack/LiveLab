@@ -66,7 +66,7 @@ function MixerWindow(video, peers, webrtc){
       console.log("LOCAL STREAM", webrtc.webrtc.localStreams[0]);
       var str = webrtc.webrtc.localStreams[0];
       this.streams[str.id] = {src: video.src, stream: str, peer_id: "local"};
-     
+     this.mixerState.streams = this.streams;
       this.mixerState.sources = [];
       for (var i = 0; i < NUM_INPUTS; i++){
           this.mixerState.sources[i] = {};
@@ -103,6 +103,7 @@ MixerWindow.prototype.mixerEvent = function(type, data){
    //
 }
 
+/*forward remote event to local mixer window */
 MixerWindow.prototype.remoteMixerEvent = function(type, data){
   
    var event = new CustomEvent(type, {detail: data});
@@ -145,10 +146,6 @@ MixerWindow.prototype.createSourceControl = function(parent, index){
     console.log(e.target.value);
     console.log(this.streams[e.target.value]);
     this.mixerEvent('source', {source: i, stream: e.target.value})
-    /* this.mixerState.sources[i].src = this.streams[e.target.value].src;
-    // this.updateState();
-   this.mixerState.sources[i].outputDiv.src = this.streams[e.target.value].src;*/
-
   }.bind(this));
   this.mixerState.sources[index].controlDiv = drop;
 }

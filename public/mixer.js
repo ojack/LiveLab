@@ -1,7 +1,7 @@
 // TO DO: add events for adding and removing peers, forwarded from mixer window
 
 console.log("opened page");
-var seriously, sources, canvas, blend, effects;
+var seriously, sources, canvas, blend, effects, streams;
 var previousState = {};
 
 document.addEventListener('sourcesAdded', function(e){
@@ -34,6 +34,14 @@ document.addEventListener('blend', function(e){
    // blend.update();
 });
 
+document.addEventListener('source', function(e){
+  console.log(e.detail);
+   console.log(streams);
+   sources[e.detail.source].div.src = streams[e.detail.stream].src;
+
+  // this.mixerState.sources[i].outputDiv.src = this.streams[e.target.value].src;*/
+});
+
 document.addEventListener('updateState', function(e){
     //alert("MIXER EVENT");
     console.log(e.detail);
@@ -54,6 +62,7 @@ function initEffectsFromState(state){
    console.log("init seriously");
       sources = [];
       effects = [];
+      streams = state.streams;
       console.log(state);
       for(var i = 0; i < state.sources.length; i++){
         var source = seriously.source("#"+state.sources[i].outputDiv.id);
@@ -65,7 +74,7 @@ function initEffectsFromState(state){
         reformat.width = canvas.width;
         reformat.height = canvas.height;
         reformat.source = source;
-        var obj = {src: source, reformat: reformat};
+        var obj = {src: source, reformat: reformat, div: state.sources[i].outputDiv};
         sources.push(obj);
       }
     //  var blend;
