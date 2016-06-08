@@ -11,13 +11,14 @@
 @import "./less/font-awesome.less";
 @import "accordion.less";
 
-html, body {
+body {
     background-color: #000;
     color: @font-color;
    /* font-family: "Lucida Console", Monaco, monospace;*/
     font-size: "11px";
     display: inline;
-    margin: 2px;
+    // margin: 2px;
+    margin: 0;
    font-family: "Courier New", Courier, monospace;
 }
 
@@ -143,8 +144,35 @@ h4 {
     background-color: rgba(255, 255, 255, 0.9);
 }
 
-.mixer-button {
-    margin-right: 5px;
+/* INTERACTIVOS EXHIBIT START */
+#people {
+    width: 100%;
+    min-height: 75%;
+    height: 175px;
+    background-color: pink;
+    display: table;
+    table-layout: fixed;
+}
+.person {
+    text-align: center;
+    display: table-cell;
+    width: 100%;
+    height: 100%;
+    background-color: green;
+}
+#recording {
+    width: 100%;
+    height: 478px;
+    background-color: purple;
+}
+video#bgvid { 
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+/* INTERACTIVOS EXHIBIT END */
+.toolbar-padding {
+    margin-left: 5px;
 }
 
 .toolbar-button{

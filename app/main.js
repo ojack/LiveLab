@@ -6,6 +6,7 @@ var ChatWindow = require('./ChatWindow');
 var PeerMediaContainer = require('./PeerMediaContainer');
 var util = require("./util.js");
 var SessionControl = require('./SessionControl');
+var getScreenMedia = require("getscreenmedia");
 
 //osc broadcast parameters, only available if running on localhost
 var BASE_SOCKET_URL = "wss://localhost";
@@ -17,7 +18,6 @@ if(window.location.host.indexOf("localhost") >= 0){
 } else {
     LOCAL_SERVER = false;
 }
-
 var webrtc, chatWindow, oscChannels, room, localMedia, dashboard, sessionControl, toolbar;
 
 /*Global object containing data about all connected peers*/
@@ -67,22 +67,6 @@ function initWebRTC(){
     dashboard.setAttribute("id", "dashboard");
     document.body.appendChild(dashboard);
 
-    // // start a timer to update the state variable in the event that we join a
-    // // room with no prior state
-    // setTimeout(function() {
-    //     // nobody has shared the state information with us - assume that we're
-    //     // the first peer of the room, and that there is no prior state to be
-    //     // shared
-    //     if (!window.hasStateInfo) {
-    //         window.hasStateInfo = true;
-    //         // add this client's id & nick to the state info
-    //         var nick = document.getElementById("header_local").value == "local" ? localId : 
-    //                    document.getElementById("header_local").value;
-    //         window.stateInfo.peers.push({id: localId, nick: nick});
-    //     }
-    //     // otherwise don't do anything -- we've already synced with someone in
-    //     // the room
-    // }, 5500);
     // first we initialize the webrtc client
     webrtc = new SimpleWebRTC({
        // the id/element dom element that will hold our video;
@@ -150,6 +134,17 @@ function initWebRTC(){
             console.log("setting video ", e.target);
             sessionControl.setVideo(e.target);
         });
+    });
+
+    webrtc.on('localScreenAdded', function (el) {
+        console.log(el);
+         var newPeer = new PeerMediaContainer("your screen", el, webrtc, dashboard);
+        peers["localScreenShare"] = newPeer;
+    });
+
+    webrtc.on("localScreenStopped", function (stream) {
+        peers["localScreenShare"].destroy();
+        delete peers["localScreenShare"];
     });
 
     webrtc.on('channelMessage', function (peer, label, data) {

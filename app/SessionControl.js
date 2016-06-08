@@ -17,29 +17,22 @@ SessionControl.prototype.oscParameter = function(data){
 }
 
 SessionControl.prototype.createControlUI = function(container){
-   
 	var sessionDiv = document.createElement('div');
 	sessionDiv.id = "sessionControl";
-     sessionDiv.className = "toolbar-element hide";
-    // peer window section
-   /* var showWin = document.createElement('div');
-    showWin.className = 'showWindow';*/
-    var showWinButton = document.createElement('input');
-    showWinButton.type = 'button';
-    showWinButton.value = 'window';
-    var showWindow;
-    var ip =window.location.host + window.location.pathname;
-    showWinButton.onclick = function () {
-      showWindow = window.open("https://" + ip + "/show.html", 'Show', 'popup');
-       showWindow.onload = function(){
-       		//console.log(this.video);
-       		 showWindow.document.getElementById('showVideo').src = this.video.src;
-       }.bind(this);
-        // console.log(showWindow);
-    
-   		this.showWindow = showWindow;
-    }.bind(this);
+    sessionDiv.className = "toolbar-element hide";
+
+     var showWinButton = createButton("window", function () {
+          showWindow = window.open("https://" + ip + "/show.html", 'Show', 'popup');
+          showWindow.onload = function () {
+              showWindow.document.getElementById('showVideo').src = this.video.src;
+          }.bind(this);
+          this.showWindow = showWindow;
+    });
     sessionDiv.appendChild(showWinButton);
+
+    var showWindow;
+    var ip = window.location.host + window.location.pathname;
+
     var showFull = document.createElement('div');
     showFull.className = 'showFull';
      var showFullCheck = document.createElement('input');
@@ -72,36 +65,53 @@ SessionControl.prototype.createControlUI = function(container){
     container.appendChild(sessionDiv);
     this.div = sessionDiv;
 
-     var showMixerButton = document.createElement('input');
-    showMixerButton.type = 'button';
-    showMixerButton.value = 'mixer';
-    showMixerButton.className = "mixer-button";
-   
-   
-    showMixerButton.onclick = function () {
+    var showMixerButton = createButton("mixer", function () {
         console.log(this.webrtc);
         this.mixerWindow = new MixerWindow(this.video, this.peers, this.webrtc);
-    
-      
-    }.bind(this);
-
-
-     var showCodeLabButton = document.createElement('input');
-    showCodeLabButton.type = 'button';
-    showCodeLabButton.value = 'Code Lab';
-   
-   
-    showCodeLabButton.onclick = function () {
-        this.CodeLabWindow = new CodeLab(this.peers, this.webrtc);
-    }.bind(this);
+    });
     sessionDiv.appendChild(showMixerButton);
+   
+    var showCodeLabButton = createButton("Code Lab", function () {
+        this.CodeLabWindow = new CodeLab(this.peers, this.webrtc);
+    });
     sessionDiv.appendChild(showCodeLabButton);
+    showCodeLabButton.className = "toolbar-padding";
+
+    var buttonStatus = false;
+    var self = this;
+    var shareScreenButton = createButton("share screen", function () {
+        console.log(shareScreenButton.value);
+        if (shareScreenButton.value === "share screen") {
+            shareScreenButton.value = "stop sharing";
+            self.webrtc.shareScreen(function(err) {
+                if (err) {
+                    console.log("local screen sharing failed");
+                } else {
+                    console.log("nice");
+                }
+            });
+        } else {
+            shareScreenButton.value = "share screen";
+            self.webrtc.stopScreenShare();
+        }
+    });
+    shareScreenButton.className = "toolbar-padding";
+    sessionDiv.appendChild(shareScreenButton);
+}
+
+function createButton(title, cb) {
+    var button = document.createElement('input');
+    button.type = 'button';
+    button.value = title;
+
+    button.onclick = cb.bind(this);
+    return button;
 }
 
 SessionControl.prototype.setVideo = function(video){
     console.log("show window");
     if(this.hasOwnProperty("showWindow")){
-	   this.showWindow.document.getElementById('showVideo').src = video.src;
+        this.showWindow.document.getElementById('showVideo').src = video.src;
     }
 }
 
