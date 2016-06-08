@@ -116,6 +116,11 @@ MixerWindow.prototype.createBlendControl = function(parent, index, sources){
     console.log("CHANGE BLEND", e.target.value);
    this.mixerEvent("blend", {effect: index, mode: e.target.value});
   }.bind(this));
+
+  var slider = createSlider("opacity: ", blendContainer, function(e, i){
+    this.mixerEvent("blend", {effect: index, opacity: e.target.value/100});
+    console.log("OPACITY", e.target.value);
+  }.bind(this));
 }
 
 function createVideoDiv(parent, index, video){
@@ -146,6 +151,15 @@ function createDropdown(name, parent, index, options, callback){
       callback(e, index);
     });
     return dropSelector;
+}
+
+function createSlider(name, parent, callback){
+  var rangeDiv = document.createElement('input');
+  rangeDiv.type = "range";
+  parent.appendChild(rangeDiv);
+  rangeDiv.addEventListener('input', function(e){
+    callback(e);
+  });
 }
 
 function addAccordionItem(name, container){
