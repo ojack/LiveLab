@@ -29,8 +29,12 @@ document.addEventListener('osc', function(e){
 document.addEventListener('blend', function(e){
     //alert("MIXER EVENT");
     console.log(e.detail);
-    effects[e.detail.effect].mode = e.detail.mode;
-
+    if("mode" in e.detail){
+      effects[e.detail.effect].mode = e.detail.mode;
+    }
+    if("opacity" in e.detail){
+       effects[e.detail.effect].opacity = e.detail.opacity;
+    }
    // blend.update();
 });
 
