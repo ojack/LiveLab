@@ -5,50 +5,44 @@
 */
 
 ui.screenMode("immersive");
-ui.backgroundColor(155, 155, 255);
-
-//Add a seekbar
-var slider = ui.addSlider(0, 150, 500, 100, 100, 50).onChange(function(val) {
-    console.log(val);
-});
-
-//Add a label with text
-//ui.addText("I love ice cream", 0, 300, 500, 100);
+ui.backgroundColor(72, 164, 170);
 
 //Add an ip address and port for the OSC connection
-var ip, port;
-ui.addInput("Ip address", 0, 0, 200, 100).onChange(function(val){
-    val = ip;
+var ip = "192.168.1.204", port = "9999";
+ui.addInput("Ip address", 0, 0, 220, 100).onChange(function(val){
+    ip = val;
     console.log("Ip address: " + val);
 });
-//Add an edit text
-ui.addInput("port",200, 0, 100, 100).onChange(function(val){
-    val = port;
+ui.addText(":", 215, 30, 500, 100);
+ui.addInput("port",220, 0, 100, 100).onChange(function(val){
+    port = val;
     console.log("Port address: " + val);
 });
-/*
-ui.addButton("Connect", 0, 0, 300, 200).onClick(function() {
+
+ui.addButton("Connect", 330, 0, 200, 100).onClick(function() {
     client = network.connectOSC(ip, port);
 });
 
 
-ui.addButton("Send", 300, 0, 500, 200).onClick(function() {
+ui.addButton("Send", 520, 0, 200, 100).onClick(function() {
     var o = new Array();
     o.push(1);
-    client.send("/layer2/clip4/connect", o);
+    client.send("/test", o);
 });
 
-ui.addButton("ALCACHOFA", 0, 300, 500, 200).onClick(function() {
-    var o = new Array();
-    o.push(1);
-    client.send("/layer2/clip7/connect", o);
-});
-*/
-//Add a seekbar
-var slider = ui.addSlider(0, 500, 500, 100, 0, 1).onChange(function(val) {
-    console.log(val);
-    var o = new Array();
-    o.push(val);
-    console.log(val);
-    client.send("/activeclip/video/opacity/values", o);
-});
+//Seekbars:
+// /stretch, /blur, /turn/x, /turn/y, /turn/z, /knock, /wiggle/x, /wiggle/y.
+var text = ui.addText("Seekbars:", ui.screenWidth/2 - 100, 150, 500, 100);
+text.textSize(20);
+
+var osc_addresses = ["/stretch","/blur","turn/x","/turn/y","/turn/z","/knock","/wiggle/x","/wiggle/y"];
+
+for(var i=0;i<8;i++){
+    var slider = ui.addSlider(0, 200 + 50*i,ui.screenWidth, 400, 0, 1).onChange(function(val) {
+        console.log(val);
+        var o = new Array();
+        o.push(val);
+        console.log(val);
+        client.send(osc_addresses[i], o);
+    });
+}
