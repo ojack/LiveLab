@@ -2,6 +2,7 @@
 
 console.log("opened page");
 var seriously, sources, canvas, blend, effects, streams, resize;
+var isFullScreen = false;
 var previousState = {};
 var RESIZE_WIDTH = 800;
 var RESIZE_HEIGHT = 600;
@@ -19,19 +20,27 @@ document.addEventListener('sourcesAdded', function(e){
     canvas.style.height = "100%";
     document.body.appendChild(canvas);
     initSeriously(e.detail);
-   window.onresize = function(event){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    window.onkeyup = function(e) {
+       var key = e.keyCode ? e.keyCode : e.which;
+       /*key f triggers full screen*/
+       if (key == 70) {
+           toggleFullscreen();
+       }
+    }
+  /* window.onresize = function(event){
+   // canvas.width = window.innerWidth;
+    //canvas.height = window.innerHeight;
+
     console.log(window.innerWidth);
   /*  resize.width = window.innerWidth;
     resize.height = window.innerHeight;*/
-    resize.mode = 'cover';
+  
    /* for(var i = 0; i < sources.length; i++){
       
       sources[i].reformat.width = canvas.width;
       sources[i].reformat.height = canvas.height;
-    }*/
-   }
+    }
+   }*/
 });
 
 document.addEventListener('osc', function(e){
@@ -152,3 +161,50 @@ seriously.go();
 function updateEffectsFromState(state){
  
 }
+
+function toggleFullscreen(){
+  var isFirefox = typeof InstallTrigger !== 'undefined';
+     var isChrome = !!window.chrome && !!window.chrome.webstore;
+        canvas.focus();
+        if (!isFullScreen) {
+            if (isFirefox == true) {
+                canvas.mozRequestFullScreen();
+            }
+            if (isChrome == true) {
+                canvas.webkitRequestFullScreen();
+            }
+            isFullScreen = true;
+        } else {
+            if (isFirefox == true) {
+                canvas.mozCancelFullscreen();
+            }
+            if (isChrome == true) {
+                canvas.webkitExitFullscreen();
+            }
+            isFullScreen = false;
+        }
+
+    
+}
+// var isFirefox = typeof InstallTrigger !== 'undefined';
+//      var isChrome = !!window.chrome && !!window.chrome.webstore;
+//     peerFullCheck.onchange = function () {
+//       if(this.hasOwnProperty('peerWindow')){
+//         peerWindow.focus();
+//         if (peerFullCheck.checked == true) {
+//             if (isFirefox == true) {
+//                 peerWindow.document.getElementById('showVideo').mozRequestFullScreen();
+//             }
+//             if (isChrome == true) {
+//                 peerWindow.document.getElementById('showVideo').webkitRequestFullScreen();
+//             }
+//         } else {
+//             if (isFirefox == true) {
+//                 peerWindow.document.getElementById('showVideo').mozCancelFullscreen();
+//             }
+//             if (isChrome == true) {
+//                 peerWindow.document.getElementById('showVideo').webkitExitFullscreen();
+//             }
+//         }
+//       }
+//     }.bind(this);
