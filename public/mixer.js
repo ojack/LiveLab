@@ -1,8 +1,10 @@
 // TO DO: add events for adding and removing peers, forwarded from mixer window
 
 console.log("opened page");
-var seriously, sources, canvas, blend, effects, streams;
+var seriously, sources, canvas, blend, effects, streams, resize;
 var previousState = {};
+var RESIZE_WIDTH = 800;
+var RESIZE_HEIGHT = 600;
 
 document.addEventListener('sourcesAdded', function(e){
    console.log("init vid");
@@ -10,12 +12,26 @@ document.addEventListener('sourcesAdded', function(e){
     canvas.id = "mixerCanvas";
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    canvas.style.position = "absolute";
+    canvas.style.position = "fixed";
     canvas.style.top = "0px";
     canvas.style.left = "0px";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
     document.body.appendChild(canvas);
     initSeriously(e.detail);
-   
+   window.onresize = function(event){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    console.log(window.innerWidth);
+  /*  resize.width = window.innerWidth;
+    resize.height = window.innerHeight;*/
+    resize.mode = 'cover';
+   /* for(var i = 0; i < sources.length; i++){
+      
+      sources[i].reformat.width = canvas.width;
+      sources[i].reformat.height = canvas.height;
+    }*/
+   }
 });
 
 document.addEventListener('osc', function(e){
@@ -117,6 +133,11 @@ function initEffectsFromState(state){
    
 
     // connect any node as the source of the target. we only have one.
+    /* resize = seriously.transform('reformat');
+        resize.mode = 'cover';
+        resize.width = canvas.width;
+        resize.height = canvas.height;
+        resize.source = source;*/
     if(effects.length > 0){
         console.log("adding source", blend);
         target.source = effects[effects.length-1];
@@ -124,6 +145,7 @@ function initEffectsFromState(state){
     } else {
         target.source = sources[0];
     }
+   // target.source = resize;
 seriously.go();
 }
 
