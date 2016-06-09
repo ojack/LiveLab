@@ -82,7 +82,7 @@ MixerWindow.prototype.createControls = function(ip, peers){
           this.createSourceControl(controls.document, i);
         }
          this.createBlendControl(controls.document, 0, {top: 1, bottom: 0});
-         this.createBlendControl(controls.document, 1, {top: 2, bottom: "blend"});
+         this.createBlendControl(controls.document, 1, {top: "blend", bottom: 2});
    }.bind(this);
   
 }
