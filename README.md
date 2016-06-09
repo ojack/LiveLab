@@ -6,15 +6,17 @@ Currently being developed as part of [Interactivos?'16 Possible Worlds. Creative
 #####To run:
 1. Clone git repository
 2. cd into folder and run <code>npm install</code>
-3. "npm run start"
-4. go to "https://localhost:8000" in browser
+3. open a new terminal window and run `npm run start`
+4. go to `https://localhost:8000` in browser
 5. Get and send messages using OSC client/server implementation of your choice
 
 #####To develop:
 1. Clone git repository
 2. cd into folder and run <code>npm install</code>
 3. install <code>npm install -g watchify</code>
-4. "npm run watch" (make sure the dev dependencies listed in package.json are installed).
+3. open a new terminal window and do `npm run start`
+4. in another window do `npm run watch-js` (this is so the javascript code is automatically pushed & updated)
+5. open a third and final window and do `gulp` (and this allows us to change the less/css without having to restart the node application to reflect the changes) 
 
 ###Developed by:
 Jesse Ricke ([CultureHub](http://www.culturehub.org/))
@@ -22,5 +24,5 @@ Jesse Ricke ([CultureHub](http://www.culturehub.org/))
 Olivia Jack
 
 #####MediaLab-Prado Collaborators:
-Alexander Cobleigh ([@cblgh](https://www.twitter.com/cblgh))
+Alexander Cobleigh ([@cblgh](https://www.twitter.com/cblgh))  
 Pablo Clemente ([@paclema](https://www.twitter.com/paclema))
