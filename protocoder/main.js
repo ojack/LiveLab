@@ -21,12 +21,14 @@ ui.addInput("port",220, 0, 100, 100).onChange(function(val){
 
 ui.addButton("Connect", 330, 0, 200, 100).onClick(function() {
     client = network.connectOSC(ip, port);
+    console.log("Ip address: " + ip + "port address: " + port);
 });
 
-
-ui.addButton("Send", 520, 0, 200, 100).onClick(function() {
+//Add a toggle button
+ui.addToggle("Send", 520, 0, 200, 100, true).onChange(function(val) {
     var o = new Array();
-    o.push(1);
+    if (val) o.push(1)
+    else o.push(0);
     client.send("/test", o);
 });
 
@@ -35,14 +37,18 @@ ui.addButton("Send", 520, 0, 200, 100).onClick(function() {
 var text = ui.addText("Seekbars:", ui.screenWidth/2 - 100, 150, 500, 100);
 text.textSize(20);
 
-var osc_addresses = ["/stretch","/blur","turn/x","/turn/y","/turn/z","/knock","/wiggle/x","/wiggle/y"];
+var osc_addresses = new Array("/stretch","/blur","/turn/x","/turn/y","/turn/z","/knock","/wiggle/x","/wiggle/y");
 
-for(var i=0;i<8;i++){
-    var slider = ui.addSlider(0, 200 + 50*i,ui.screenWidth, 400, 0, 1).onChange(function(val) {
-        console.log(val);
+for(var i=0;i<osc_addresses.length;i++){
+    (function(index){
+        var text = ui.addText(osc_addresses[index],10, 200 + 70*i, 500, 100);
+        text.textSize(26);
+        ui.addSlider(200, 200 + 70*i, ui.screenWidth-210, ui.screenHeight, 0, 1).onChange(function(val) {
         var o = new Array();
         o.push(val);
-        console.log(val);
-        client.send(osc_addresses[i], o);
-    });
+        console.log(index);
+        console.log(osc_addresses[index]);
+        client.send(osc_addresses[index], o);
+        });
+    })(i);
 }
