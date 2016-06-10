@@ -1,3 +1,4 @@
+var util = require("./util.js");
  /* peers[peer.id] = {peer: peer, video: video, dataStreams: {}};
         var newPeer = new PeerMediaContainer(peers[peer.id], webrtc, dashboard);*/
 
@@ -5,10 +6,11 @@
 // a peer. It creates the divs necessary to display the media as well as
 // additional elements like volume controls 
 // Instantiated upon joining a WebRTC room, or a new peer connecting
-function PeerMediaContainer(id, video, webrtc, dashboard){
+function PeerMediaContainer(id, video, webrtc, dashboard, nick) {
 	this.id = id;
+    this.nick = nick || id;
     this.webrtc = webrtc;
-	this.createAccordion(id);
+	this.createAccordion(this.nick);
 	this.dashboard = dashboard;
 	dashboard.appendChild(this.mediaContainer);
 	this.videoDiv.parentElement.className = "accordion-section open";
@@ -38,6 +40,7 @@ PeerMediaContainer.prototype.createAccordion = function(name){
         }
     } else {
         var peerHeader = document.createElement('div');
+        peerHeader.innerHTML = util.escapeText(this.nick);
     }
     var self = this;
 
@@ -63,7 +66,7 @@ PeerMediaContainer.prototype.createAccordion = function(name){
 
     peerHeader.className = "peer-header";
     peerHeader.id = "header_" + this.id;
-	peerHeader.innerHTML = name;
+	peerHeader.innerHTML = util.escapeText(name);
 	this.mediaContainer.appendChild(peerHeader);
 	this.videoDiv = addAccordionItem("video", this.mediaContainer);
     this.videoDiv.id = "video_" + this.id;
@@ -157,25 +160,23 @@ PeerMediaContainer.prototype.createPeerWindow = function(){
     peerWinButton.type = 'button';
     peerWinButton.value = 'window';
     var peerWindow;
-    var ip =window.location.host + window.location.pathname;
+    var ip = window.location.host + window.location.pathname;
     peerWinButton.onclick = function () {
       peerWindow = window.open("https://" + ip + "/show.html", 'Win_' + this.id, 'popup');
        peerWindow.onload = function(){
        		console.log(this.video);
-       		 peerWindow.document.getElementById('showVideo').src = this.video.src;
+            peerWindow.document.getElementById('showVideo').src = this.video.src;
        }.bind(this);
-         console.log(peerWindow);
-    
-   		this.peerWindow = peerWindow;
+           console.log(peerWindow);
+           this.peerWindow = peerWindow;
     }.bind(this);
     peerWin.appendChild(peerWinButton);
     this.videoDiv.appendChild(peerWin);
-
    
     var peerFullCheck = document.createElement('input');
     peerFullCheck.type = 'checkbox';
     var isFirefox = typeof InstallTrigger !== 'undefined';
-     var isChrome = !!window.chrome && !!window.chrome.webstore;
+    var isChrome = !!window.chrome && !!window.chrome.webstore;
     peerFullCheck.onchange = function () {
       if(this.hasOwnProperty('peerWindow')){
         peerWindow.focus();
@@ -200,7 +201,6 @@ PeerMediaContainer.prototype.createPeerWindow = function(){
     peerWin.appendChild(peerFullCheck);
     var fullText = document.createTextNode("Full");
     peerWin.appendChild(fullText);
-    
 }
 
 function addAccordionItem(name, container){

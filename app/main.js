@@ -181,12 +181,12 @@ function initWebRTC(){
      webrtc.on('videoAdded', function (video, peer) {
          console.log("VIDEO ADDED");
          /*add new peer to peer object*/
-         var newPeer = new PeerMediaContainer(peer.id, video, webrtc, dashboard);
+         var newPeer = new PeerMediaContainer(peer.id, video, webrtc, dashboard, peer.nick);
          peers[peer.id] = {peer: peer, peerContainer: newPeer, dataStreams: {}};
          newPeer.video.addEventListener("click", function(e){
              console.log("setting video ", e.target);
              sessionControl.setVideo(e.target);
-        });
+         });
 
          if (window.hasStateInfo) {
              // check to see if the new peer resides inside the peers list of
