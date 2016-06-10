@@ -2034,10 +2034,14 @@ function initWebRTC(){
     });
 
      webrtc.on('videoAdded', function (video, peer) {
-         console.log("VIDEO ADDED");
+         console.log("VIDEO ADDED", video, peer);
          /*add new peer to peer object*/
-         var newPeer = new PeerMediaContainer(peer.id, video, webrtc, dashboard);
-         peers[peer.id] = {peer: peer, peerContainer: newPeer, dataStreams: {}};
+        var my_id = peer.id;
+         if (peer.type === "screen"){
+            my_id = "screen-"+my_id;
+         }
+          var newPeer = new PeerMediaContainer(my_id, video, webrtc, dashboard);
+         peers[my_id] = {peer: peer, peerContainer: newPeer, dataStreams: {}};
          newPeer.video.addEventListener("click", function(e){
              console.log("setting video ", e.target);
              sessionControl.setVideo(e.target);
