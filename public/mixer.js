@@ -63,6 +63,17 @@ document.addEventListener('blend', function(e){
    // blend.update();
 });
 
+document.addEventListener('contrast', function(e){
+  console.log(e.detail);
+  if("contrast" in e.detail){
+    sources[e.detail.source].contrast.contrast = e.detail.contrast;
+  }
+   if("brightness" in e.detail){
+    sources[e.detail.source].contrast.brightness = e.detail.brightness;
+  }
+
+});
+
 document.addEventListener('source', function(e){
   console.log(e.detail);
    console.log(streams);
@@ -103,7 +114,16 @@ function initEffectsFromState(state){
         reformat.width = canvas.width;
         reformat.height = canvas.height;
         reformat.source = source;
-        var obj = {src: source, reformat: reformat, div: state.sources[i].outputDiv};
+         var contrast = seriously.effect('brightness-contrast');
+        if(i == 1 || i == 2){
+          contrast.contrast = 3.0;
+          contrast.brightness = 3.0;
+        } else {
+          contrast.contrast = 1.0;
+          contrast.brightness = 1.0;
+        }
+        contrast.source = reformat;
+        var obj = {src: source, contrast: contrast, reformat: reformat, div: state.sources[i].outputDiv};
         sources.push(obj);
       }
     //  var blend;
@@ -123,7 +143,7 @@ function initEffectsFromState(state){
               effect[prop] = effects[0];
              } else {
                 
-              effect[prop] = sources[hey].reformat;
+              effect[prop] = sources[hey].contrast;
              }
             
 
@@ -182,29 +202,5 @@ function toggleFullscreen(){
                 canvas.webkitExitFullscreen();
             }
             isFullScreen = false;
-        }
-
-    
+        }   
 }
-// var isFirefox = typeof InstallTrigger !== 'undefined';
-//      var isChrome = !!window.chrome && !!window.chrome.webstore;
-//     peerFullCheck.onchange = function () {
-//       if(this.hasOwnProperty('peerWindow')){
-//         peerWindow.focus();
-//         if (peerFullCheck.checked == true) {
-//             if (isFirefox == true) {
-//                 peerWindow.document.getElementById('showVideo').mozRequestFullScreen();
-//             }
-//             if (isChrome == true) {
-//                 peerWindow.document.getElementById('showVideo').webkitRequestFullScreen();
-//             }
-//         } else {
-//             if (isFirefox == true) {
-//                 peerWindow.document.getElementById('showVideo').mozCancelFullscreen();
-//             }
-//             if (isChrome == true) {
-//                 peerWindow.document.getElementById('showVideo').webkitExitFullscreen();
-//             }
-//         }
-//       }
-//     }.bind(this);

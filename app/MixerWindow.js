@@ -99,6 +99,14 @@ MixerWindow.prototype.createSourceControl = function(parent, index){
     console.log(this.streams[e.target.value]);
     this.mixerEvent('source', {source: i, stream: e.target.value})
   }.bind(this));
+   var slider = createSlider("brightness: ", controlDiv, function(e, i){
+    this.mixerEvent("contrast", {source: index, brightness: e.target.value/40});
+   
+  }.bind(this));
+     var slider = createSlider("contrast: ", controlDiv, function(e, i){
+    this.mixerEvent("contrast", {source: index, contrast: e.target.value/40});
+   
+  }.bind(this));
   this.mixerState.sources[index].controlDiv = drop;
 }
 
