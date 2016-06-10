@@ -82,7 +82,7 @@ MixerWindow.prototype.createControls = function(ip, peers){
           this.createSourceControl(controls.document, i);
         }
          this.createBlendControl(controls.document, 0, {top: 1, bottom: 0});
-         this.createBlendControl(controls.document, 1, {top: 2, bottom: "blend"});
+         this.createBlendControl(controls.document, 1, {top: "blend", bottom: 2});
    }.bind(this);
   
 }
@@ -98,6 +98,14 @@ MixerWindow.prototype.createSourceControl = function(parent, index){
     console.log(e.target.value);
     console.log(this.streams[e.target.value]);
     this.mixerEvent('source', {source: i, stream: e.target.value})
+  }.bind(this));
+   var slider = createSlider("brightness: ", controlDiv, function(e, i){
+    this.mixerEvent("contrast", {source: index, brightness: e.target.value/40});
+   
+  }.bind(this));
+     var slider = createSlider("contrast: ", controlDiv, function(e, i){
+    this.mixerEvent("contrast", {source: index, contrast: e.target.value/40});
+   
   }.bind(this));
   this.mixerState.sources[index].controlDiv = drop;
 }
@@ -115,6 +123,11 @@ MixerWindow.prototype.createBlendControl = function(parent, index, sources){
   //  this.updateState();
     console.log("CHANGE BLEND", e.target.value);
    this.mixerEvent("blend", {effect: index, mode: e.target.value});
+  }.bind(this));
+
+  var slider = createSlider("opacity: ", blendContainer, function(e, i){
+    this.mixerEvent("blend", {effect: index, opacity: e.target.value/100});
+    console.log("OPACITY", e.target.value);
   }.bind(this));
 }
 
@@ -146,6 +159,15 @@ function createDropdown(name, parent, index, options, callback){
       callback(e, index);
     });
     return dropSelector;
+}
+
+function createSlider(name, parent, callback){
+  var rangeDiv = document.createElement('input');
+  rangeDiv.type = "range";
+  parent.appendChild(rangeDiv);
+  rangeDiv.addEventListener('input', function(e){
+    callback(e);
+  });
 }
 
 function addAccordionItem(name, container){

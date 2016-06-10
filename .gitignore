@@ -1,6 +1,4 @@
-# generated files
-public/bundle.js
-public/css/main.css
+
 
 # vim files
 *.swp
@@ -34,6 +32,7 @@ build/Release
 # Dependency directories
 node_modules
 jspm_packages
+codelab
 
 # Optional npm cache directory
 .npm

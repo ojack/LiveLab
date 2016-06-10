@@ -1,4 +1,7 @@
-/* global define, require */
+/* global define, require 
+'	vec4 pixel = texture2D(source, vTexCoord);',
+				'	gl_FragColor = vec4(pow(2.0, exposure) * pixel.rgb, pixel.a);',
+*/
 (function (root, factory) {
 	'use strict';
 
