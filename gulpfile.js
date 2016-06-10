@@ -11,8 +11,19 @@ gulp.task("less", function() {
     .pipe(gulp.dest("./public/css/"));
 });
 
+gulp.task("videoless", function() {
+    return gulp.src("./public/css/video.less")
+    .pipe(less())
+    .pipe(minifycss())
+    .pipe(gulp.dest("./public/css/"));
+});
 
 gulp.task("watch-less", function() {
+    gulp.watch("./public/css/*.less", ["less"]);
+});
+
+gulp.task("compile4alex", function() {
+    gulp.start("videoless");
     gulp.watch("./public/css/*.less", ["less"]);
 });
 
