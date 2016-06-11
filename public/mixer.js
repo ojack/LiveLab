@@ -66,6 +66,12 @@ document.addEventListener('source', function(e){
     sources[e.detail.source].div.src = streams[e.detail.stream].src;
 });
 
+document.addEventListener('updateStreams', function(e){
+    
+    streams = e.detail;
+    console.log("UPDATED STREAMS ", streams);
+});
+
 document.addEventListener('updateState', function(e){
     console.log(e.detail);
     updateEffectsFromState(e.detail);

@@ -349,19 +349,23 @@ function MixerWindow(video, peers, webrtc) {
           this.createSourceControl(this.sourceDiv, i);
         }
         this.remoteMixerEvent("updateStreams", this.streams);
-        // for (var i = 0; i < 3; i++) {
-        //     var selectOptions = this.showMixer.querySelector("#source" + i + " select");
-        //     var option = document.createElement("option");
-        //     option.value = peer.id;
-        //     option.innerHTML = util.escapeText(peer.nick || peer.id);
-        //     console.log(option);
-        //     // selectOptions.appendChild(option);
-        // }
+       
     }.bind(this));
 
     this.webrtc.on('videoRemoved', function (video, peer) {
-        console.log("INSIDE MIXER: removed", video, peer);
-    });
+      console.log(peer);
+      delete this.streams[peer.stream.id];
+      
+       while (this.sourceDiv.firstChild) {
+          this.sourceDiv.removeChild(this.sourceDiv.firstChild);
+        }
+
+        for (var i = 0; i < NUM_INPUTS; i++){
+          this.createSourceControl(this.sourceDiv, i);
+        }
+        this.remoteMixerEvent("updateStreams", this.streams);
+    }.bind(this));
+
 }
 
 MixerWindow.prototype.mixerEvent = function(type, data){
