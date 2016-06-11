@@ -128,12 +128,14 @@ function initWebRTC(){
         chatWindow = new ChatWindow(document.body, webrtc);
         localMedia.addVideoControls();
         sessionControl = new SessionControl(localMedia.video, document.body, peers, webrtc);
-        addToolbarButton("Chat", chatWindow);
-        addToolbarButton("Session Control", sessionControl);
-        localMedia.video.addEventListener("click", function(e){
-            console.log("setting video ", e.target);
-            sessionControl.setVideo(e.target);
-        });
+        if (document.querySelector(".toolbar .toolbar-button") === null) {
+            addToolbarButton("Chat", chatWindow);
+            addToolbarButton("Session Control", sessionControl);
+        }
+            localMedia.video.addEventListener("click", function(e){
+                console.log("setting video ", e.target);
+                sessionControl.setVideo(e.target);
+            });
     });
 
     webrtc.on('localScreenAdded', function (el) {
