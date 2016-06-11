@@ -48,15 +48,24 @@ function MixerWindow(video, peers, webrtc) {
     this.webrtc.on('videoAdded', function (video, peer) {
         console.log("INSIDE MIXER: added", video, peer);
         console.log("cococo", this.showMixer);
-        for (var i = 0; i < 3; i++) {
-            var selectOptions = this.showMixer.querySelector("#source" + i + " select");
-            var option = document.createElement("option");
-            option.value = peer.id;
-            option.innerHTML = util.escapeText(peer.nick || peer.id);
-            console.log(option);
-            // selectOptions.appendChild(option);
+        this.streams[peer.stream.id] = {src: video.src, peer_id: peer.id, stream: peer.stream};
+        while (this.sourceDiv.firstChild) {
+          this.sourceDiv.removeChild(this.sourceDiv.firstChild);
         }
-    });
+
+        for (var i = 0; i < NUM_INPUTS; i++){
+          this.createSourceControl(this.sourceDiv, i);
+        }
+        this.remoteMixerEvent("updateStreams", this.streams);
+        // for (var i = 0; i < 3; i++) {
+        //     var selectOptions = this.showMixer.querySelector("#source" + i + " select");
+        //     var option = document.createElement("option");
+        //     option.value = peer.id;
+        //     option.innerHTML = util.escapeText(peer.nick || peer.id);
+        //     console.log(option);
+        //     // selectOptions.appendChild(option);
+        // }
+    }.bind(this));
 
     this.webrtc.on('videoRemoved', function (video, peer) {
         console.log("INSIDE MIXER: removed", video, peer);
@@ -89,9 +98,13 @@ MixerWindow.prototype.createControls = function(ip, peers){
 
     controls.onload = function() {
         this.controls = controls;
+        var sourceDiv = document.createElement('div');
+        controls.document.body.appendChild(sourceDiv);
         for (var i = 0; i < NUM_INPUTS; i++){
-            this.createSourceControl(controls.document, i);
+            this.createSourceControl(sourceDiv, i);
         }
+        this.sourceDiv = sourceDiv;
+        this.controlWindow = controls;
         this.createBlendControl(controls.document, 0, {top: 1, bottom: 0});
         this.createBlendControl(controls.document, 1, {top: "blend", bottom: 2});
    }.bind(this);
@@ -99,7 +112,7 @@ MixerWindow.prototype.createControls = function(ip, peers){
 }
 
 MixerWindow.prototype.createSourceControl = function(parent, index) {
-    var controlDiv = addAccordionItem("source" + index, parent.body);
+    var controlDiv = addAccordionItem("source" + index, parent);
     var sourceOptions = [];
     
     for (key in this.streams) {
