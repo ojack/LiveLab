@@ -68,7 +68,7 @@ SessionControl.prototype.createControlUI = function(container){
     var showMixerButton = createButton("mixer", function () {
         console.log(this.webrtc);
         this.mixerWindow = new MixerWindow(this.video, this.peers, this.webrtc);
-    });
+    }.bind(this));
     sessionDiv.appendChild(showMixerButton);
    
     var showCodeLabButton = createButton("Code Lab", function () {

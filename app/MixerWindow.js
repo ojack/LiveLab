@@ -14,7 +14,7 @@ function MixerWindow(video, peers, webrtc){
       this.mixerState = {};
       this.mixerState.effects = [];
       this.streams = {};
-      console.log("LOCAL STREAM", webrtc.webrtc.localStreams[0]);
+     // console.log("LOCAL STREAM", webrtc.webrtc.localStreams[0]);
       var str = webrtc.webrtc.localStreams[0];
       this.streams[str.id] = {src: video.src, stream: str, peer_id: "local"};
      this.mixerState.streams = this.streams;
