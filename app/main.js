@@ -149,6 +149,17 @@ function initWebRTC(){
         delete peers["localScreenShare"];
     });
 
+    webrtc.on('localScreenAdded', function (el) {
+        console.log(el);
+         var newPeer = new PeerMediaContainer("your screen", el, webrtc, dashboard);
+        peers["localScreenShare"] = newPeer;
+    });
+
+    webrtc.on("localScreenStopped", function (stream) {
+        peers["localScreenShare"].destroy();
+        delete peers["localScreenShare"];
+    });
+
     webrtc.on('channelMessage', function (peer, label, data) {
         if (data.type=="chat") {
             var name = document.getElementById("header_" + peer.id).innerHTML;
