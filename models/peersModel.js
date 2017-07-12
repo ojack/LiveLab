@@ -61,4 +61,5 @@ function peersModel (state, bus) {
     if (index > -1) state.peers.all.splice(index, 1)
     delete state.peers.byId[peerId]
   })
+  bus.emit('render')
 }

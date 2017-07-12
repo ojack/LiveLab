@@ -44,10 +44,6 @@ function mediaModel (state, bus) {
     bus.emit('render')
   })
 
-  bus.on('media:removeTraxk', function (trackId) {
-    delete state.media.byId(trackId)
-  })
-  
   bus.on('media:addLocalMedia', function (options) {
     var existingTrack = getTrackFromConstraints(state.user.uuid, options.constraints)
 
@@ -88,6 +84,10 @@ function mediaModel (state, bus) {
     bus.emit('render')
   })
 
+  bus.on('media:removeTrack', function (trackId) {
+    delete state.media.byId[trackId]
+    bus.emit('render')
+  })
   // Hacky way to avoid duplicating getusermedia calls:
   // compare requested media constraints to constraints of existing tracks, if there is none, return null..
   // else return existing mediaStreamTrack
