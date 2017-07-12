@@ -3808,6 +3808,10 @@ function mediaModel (state, bus) {
     bus.emit('render')
   })
 
+  bus.on('media:removeTraxk', function (trackId) {
+    delete state.media.byId(trackId)
+  })
+  
   bus.on('media:addLocalMedia', function (options) {
     var existingTrack = getTrackFromConstraints(state.user.uuid, options.constraints)
 
@@ -3932,6 +3936,16 @@ function peersModel (state, bus) {
     }
     bus.emit('render')
   })
+
+  bus.on('peers:removePeer', function (peerId) {
+    // remove all tracks associated with this peer
+    state.peers.byId[peerId].tracks.forEach(function (trackId) {
+      bus.emit('media:removeTrack', trackId)
+    })
+    var index = state.peers.all.indexOf(peerId)
+    if (index > -1) state.peers.all.splice(index, 1)
+    delete state.peers.byId[peerId]
+  })
 }
 
 },{}],17:[function(require,module,exports){
@@ -4003,6 +4017,9 @@ function userModel (state, bus) {
       bus.emit('render')
     })
 
+    multiPeer.on('close', function (id) {
+      bus.emit('peers:removePeer', id)
+    })
     multiPeer.on('new peer', function (data) {
       // console.log("NEW REMOTE PEER", data)
       bus.emit('peers:updatePeer', {
