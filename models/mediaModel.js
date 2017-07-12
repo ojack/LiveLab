@@ -44,6 +44,10 @@ function mediaModel (state, bus) {
     bus.emit('render')
   })
 
+  bus.on('media:removeTraxk', function (trackId) {
+    delete state.media.byId(trackId)
+  })
+  
   bus.on('media:addLocalMedia', function (options) {
     var existingTrack = getTrackFromConstraints(state.user.uuid, options.constraints)
 

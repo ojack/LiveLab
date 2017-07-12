@@ -66,6 +66,9 @@ function userModel (state, bus) {
       bus.emit('render')
     })
 
+    multiPeer.on('close', function (id) {
+      bus.emit('peers:removePeer', id)
+    })
     multiPeer.on('new peer', function (data) {
       // console.log("NEW REMOTE PEER", data)
       bus.emit('peers:updatePeer', {
