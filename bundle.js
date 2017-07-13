@@ -3552,10 +3552,11 @@ app.use(log())
 app.use(expose())
 // }
 
-app.use(require('./models/userModel.js'))
+
 app.use(require('./models/devicesModel.js'))
 app.use(require('./models/mediaModel.js'))
 app.use(require('./models/peersModel.js'))
+app.use(require('./models/userModel.js'))
 
 app.route('/', require('./views/main.js'))
 
@@ -3598,6 +3599,15 @@ MultiPeer.prototype.sendToAll = function (data) {
   }, this)
 }
 
+// userData contains all information about the local user:
+// -uuid
+// -nickname
+// -track information
+// whenever it is updated, new data is sent to all connected peers
+MultiPeer.prototype.updatePeerData = function (data) {
+  this._userData = data
+  this.sendToAll(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
+}
 // Once the new peer receives a list of connected peers from the server,
 // creates new simple peer object for each connected peer.
 MultiPeer.prototype._connectToPeers = function (id, peers) {
@@ -3642,12 +3652,17 @@ MultiPeer.prototype._attachPeerEvents = function (p, _id) {
   }.bind(this, _id))
 
   p.on('connect', function (id) {
+    console.log("connected to ", id)
     this.emit('connect', id)
-      // /console.log('CONNECT')
+    this.peers[id].send(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
+    //when connected, emit user information to other peers
+
+    //this.sendToAll(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
+
   }.bind(this, _id))
 
   p.on('data', function (id, data) {
-    this.emit('data', id, data)
+    this.emit('data', {id: id, data: JSON.parse(data)})
   }.bind(this, _id))
 
   p.on('close', function (id) {
@@ -3905,11 +3920,14 @@ function peersModel (state, bus) {
 
   bus.on('peers:setAllPeers', function (peers) {
     peers.forEach(function (peer) {
-      bus.emit('peers:updatePeer', {peerId: peer})
+      bus.emit('peers:updatePeer', peer)
     })
   })
 
 // update information about a specific peer, creates a new one if none exists
+// Note on Object.assign::
+// Properties in the target object will be overwritten by properties in the sources if they have the same key.
+// Later sources' properties will similarly overwrite earlier ones.
   bus.on('peers:updatePeer', function (peer) {
     state.peers.byId[peer.peerId] = xtend({
       peerId: peer.peerId,
@@ -3919,8 +3937,9 @@ function peersModel (state, bus) {
         audio: null,
         video: null
       }
-    }, state.peers.byId[peer.peerId]
-  )
+    }, state.peers.byId[peer.peerId], peer)
+
+    console.log("NEW  PEER INFO", state.peers.byId)
     if (state.peers.all.indexOf(peer.peerId) < 0) {
       state.peers.all.push(peer.peerId)
     }
@@ -3961,15 +3980,24 @@ module.exports = userModel
 
 function userModel (state, bus) {
   state.user = xtend({
-    nickname: 'olivia',
-    uuid: localStorage.getItem('uuid') || shortid.generate(), // persistent local user id. If none is present in local storage, generate new one
+    //uuid: localStorage.getItem('uuid') || shortid.generate(), // persistent local user id. If none is present in local storage, generate new one
+    uuid: shortid.generate(), // for dev purposes, always regenerate id
     room: 'test',
     server: 'https://live-lab-v1.glitch.me/',
     loggedIn: false,
     statusMessage: ''
   }, state.user)
 
+  bus.emit('peers:updatePeer', {
+    peerId: state.user.uuid,
+    nickname: 'olivia'
+  })
+
   bus.on('user:setNickname', function (name) {
+    bus.emit('peers:updatePeer', {
+      peerId: state.user.uuid,
+      nickname: name
+    })
     state.user.nickname = name
     bus.emit('render')
   })
@@ -4000,7 +4028,12 @@ function userModel (state, bus) {
     multiPeer.on('peers', function (peers) {
       state.user.loggedIn = true
       state.user.statusMessage += 'Connected to server ' + state.user.server + '\n'
-      bus.emit('peers:setAllPeers', peers)
+      var peersInfo = peers.map(function (peer) {
+        var peerInfo = {peerId: peer}
+        if (peer === state.user.uuid) peerInfo.nickname = state.user.nickname
+        return peerInfo
+      })
+      bus.emit('peers:setAllPeers', peersInfo)
       bus.emit('render')
     })
 
@@ -4026,6 +4059,17 @@ function userModel (state, bus) {
       bus.emit('peers:updatePeer', {
         peerId: data.id
       })
+    })
+
+    multiPeer.on('data', function (data) {
+      console.log("received data", data)
+      if (data.data && data.data.type === 'updatePeerData') {
+        var peerData = xtend({
+          peerId: data.id
+        }, data.data.message)
+        console.log('peer data', peerData)
+        bus.emit('peers:updatePeer', peerData)
+      }
     })
 
     state.user.statusMessage = 'Contacting server ' + state.user.server + '\n'
@@ -19201,12 +19245,16 @@ function communicationView (state, emit) {
     var peerIndex = state.peers.all[index]
     if (peerIndex) {
       var trackId = state.peers.byId[peerIndex].defaultTracks.video
-      return vidEl.render({
-        htmlProps: {
-          class: 'h-50 w-25'
-        },
-        track: state.media.byId[trackId]
-      })
+      return html`
+      <div>
+        <p> ${state.peers.byId[peerIndex].nickname}</p>
+        ${vidEl.render({
+          htmlProps: {
+            class: 'h-50 w-25'
+          },
+          track: state.media.byId[trackId]
+        })}
+      </div>`
     } else {
       return null
     }
@@ -19247,6 +19295,7 @@ VideoContainer.prototype._render = function () {
   }
 
   if (this.props.track && this.props.track != null) {
+    console.log("TRACK ", this.props)
     var tracks = []
     tracks.push(this.props.track.track)
     this._stream = new MediaStream(tracks) // stream must be initialized with tracks, even though documentation says otherwise
@@ -19397,7 +19446,7 @@ function loginView (state, emit) {
           <legend class="f1 fw6 ph0 mh0">LIVE LAB</legend>
           <legend class="f4 fw6 ph0 mh0">Join Session</legend>
           ${input('Nickname', 'how you will appear to everyone else', {
-            value: state.user.nickname,
+            value: state.peers.byId[state.user.uuid].nickname,
             onkeyup: setNickname
           })}
           ${input('Room', 'room name', {
@@ -19441,7 +19490,7 @@ function loginView (state, emit) {
   </div>
   `
   function setNickname (e) {
-    emit('login:setNickname', e.target.value)
+    emit('user:setNickname', e.target.value)
   }
 
   function setRoom (e) {

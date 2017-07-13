@@ -20,11 +20,14 @@ function peersModel (state, bus) {
 
   bus.on('peers:setAllPeers', function (peers) {
     peers.forEach(function (peer) {
-      bus.emit('peers:updatePeer', {peerId: peer})
+      bus.emit('peers:updatePeer', peer)
     })
   })
 
 // update information about a specific peer, creates a new one if none exists
+// Note on Object.assign::
+// Properties in the target object will be overwritten by properties in the sources if they have the same key.
+// Later sources' properties will similarly overwrite earlier ones.
   bus.on('peers:updatePeer', function (peer) {
     state.peers.byId[peer.peerId] = xtend({
       peerId: peer.peerId,
@@ -34,8 +37,9 @@ function peersModel (state, bus) {
         audio: null,
         video: null
       }
-    }, state.peers.byId[peer.peerId]
-  )
+    }, state.peers.byId[peer.peerId], peer)
+
+    console.log("NEW  PEER INFO", state.peers.byId)
     if (state.peers.all.indexOf(peer.peerId) < 0) {
       state.peers.all.push(peer.peerId)
     }

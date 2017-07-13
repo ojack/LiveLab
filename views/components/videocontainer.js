@@ -25,6 +25,7 @@ VideoContainer.prototype._render = function () {
   }
 
   if (this.props.track && this.props.track != null) {
+    console.log("TRACK ", this.props)
     var tracks = []
     tracks.push(this.props.track.track)
     this._stream = new MediaStream(tracks) // stream must be initialized with tracks, even though documentation says otherwise

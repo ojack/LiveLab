@@ -9,15 +9,24 @@ module.exports = userModel
 
 function userModel (state, bus) {
   state.user = xtend({
-    nickname: 'olivia',
-    uuid: localStorage.getItem('uuid') || shortid.generate(), // persistent local user id. If none is present in local storage, generate new one
+    //uuid: localStorage.getItem('uuid') || shortid.generate(), // persistent local user id. If none is present in local storage, generate new one
+    uuid: shortid.generate(), // for dev purposes, always regenerate id
     room: 'test',
     server: 'https://live-lab-v1.glitch.me/',
     loggedIn: false,
     statusMessage: ''
   }, state.user)
 
+  bus.emit('peers:updatePeer', {
+    peerId: state.user.uuid,
+    nickname: 'olivia'
+  })
+
   bus.on('user:setNickname', function (name) {
+    bus.emit('peers:updatePeer', {
+      peerId: state.user.uuid,
+      nickname: name
+    })
     state.user.nickname = name
     bus.emit('render')
   })
@@ -48,7 +57,12 @@ function userModel (state, bus) {
     multiPeer.on('peers', function (peers) {
       state.user.loggedIn = true
       state.user.statusMessage += 'Connected to server ' + state.user.server + '\n'
-      bus.emit('peers:setAllPeers', peers)
+      var peersInfo = peers.map(function (peer) {
+        var peerInfo = {peerId: peer}
+        if (peer === state.user.uuid) peerInfo.nickname = state.user.nickname
+        return peerInfo
+      })
+      bus.emit('peers:setAllPeers', peersInfo)
       bus.emit('render')
     })
 
@@ -74,6 +88,17 @@ function userModel (state, bus) {
       bus.emit('peers:updatePeer', {
         peerId: data.id
       })
+    })
+
+    multiPeer.on('data', function (data) {
+      console.log("received data", data)
+      if (data.data && data.data.type === 'updatePeerData') {
+        var peerData = xtend({
+          peerId: data.id
+        }, data.data.message)
+        console.log('peer data', peerData)
+        bus.emit('peers:updatePeer', peerData)
+      }
     })
 
     state.user.statusMessage = 'Contacting server ' + state.user.server + '\n'

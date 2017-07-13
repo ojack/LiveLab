@@ -18,12 +18,16 @@ function communicationView (state, emit) {
     var peerIndex = state.peers.all[index]
     if (peerIndex) {
       var trackId = state.peers.byId[peerIndex].defaultTracks.video
-      return vidEl.render({
-        htmlProps: {
-          class: 'h-50 w-25'
-        },
-        track: state.media.byId[trackId]
-      })
+      return html`
+      <div>
+        <p> ${state.peers.byId[peerIndex].nickname}</p>
+        ${vidEl.render({
+          htmlProps: {
+            class: 'h-50 w-25'
+          },
+          track: state.media.byId[trackId]
+        })}
+      </div>`
     } else {
       return null
     }
