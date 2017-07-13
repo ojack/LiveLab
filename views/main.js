@@ -3,6 +3,7 @@
 const html = require('choo/html')
 const login = require('./login.js')
 const communication = require('./communication.js')
+const mediaList = require('./mediaList.js')
 
 module.exports = mainView
 
@@ -16,7 +17,8 @@ function mainView (state, emit) {
   } else {
     return html`
     <div>
-    ${communication(state, emit)}
+      ${communication(state, emit)}
+      ${mediaList(state, emit)}
     </div>
     `
   }

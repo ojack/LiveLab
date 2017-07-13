@@ -6,8 +6,8 @@
 // Peer ids and device ids are persistent between sessions.
 //
 // "default" refers to the audio and video tracks used for communication
-// TO DO: generated track id (UNIQUE TO ENTIRE SESSION, persistent across sessions)
-//
+// TO DO: generated track id (UNIQUE TO ENTIRE SESSION, persistent across sessions) ?? maybe bad idea
+// To DO: default information only stored in one place--peer info
 // MONITORING:
 // there is no straightforward way to get actual specifications for each track (other than getusermedia constraints, which can drastically vary from actual settings)
 // eventually makes sense to monitor information
@@ -25,7 +25,8 @@ function mediaModel (state, bus) {
     default: {
       audio: null,
       video: null
-    }
+    },
+    all: []
   }, state.media)
 
   bus.on('media:addTracksFromStream', function (options) {
@@ -40,6 +41,7 @@ function mediaModel (state, bus) {
         kind: track.kind
       })
       if (options.isDefault) state.media.default[track.kind] = track.id
+
     })
     bus.emit('render')
   })
@@ -73,6 +75,9 @@ function mediaModel (state, bus) {
 
   bus.on('media:addTrack', function (opts) {
     state.media.byId[opts.track.id] = xtend({}, opts)
+    if (state.media.all.indexOf(opts.track.id) < 0) {
+      state.media.all.push(opts.track.id)
+    }
 
     bus.emit('peers:addTrackToPeer', {
       trackId: opts.track.id,
@@ -86,6 +91,8 @@ function mediaModel (state, bus) {
 
   bus.on('media:removeTrack', function (trackId) {
     delete state.media.byId[trackId]
+    var index = state.media.all.indexOf(trackId)
+    if (index > -1) state.media.all.splice(index, 1)
     bus.emit('render')
   })
   // Hacky way to avoid duplicating getusermedia calls:

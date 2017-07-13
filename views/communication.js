@@ -19,11 +19,11 @@ function communicationView (state, emit) {
     if (peerIndex) {
       var trackId = state.peers.byId[peerIndex].defaultTracks.video
       return html`
-      <div>
+      <div class="dib w-25">
         <p> ${state.peers.byId[peerIndex].nickname}</p>
         ${vidEl.render({
           htmlProps: {
-            class: 'h-50 w-25'
+            class: 'h-50 w-100'
           },
           track: state.media.byId[trackId]
         })}

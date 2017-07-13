@@ -3785,8 +3785,8 @@ function devicesModel (state, bus) {
 // Peer ids and device ids are persistent between sessions.
 //
 // "default" refers to the audio and video tracks used for communication
-// TO DO: generated track id (UNIQUE TO ENTIRE SESSION, persistent across sessions)
-//
+// TO DO: generated track id (UNIQUE TO ENTIRE SESSION, persistent across sessions) ?? maybe bad idea
+// To DO: default information only stored in one place--peer info
 // MONITORING:
 // there is no straightforward way to get actual specifications for each track (other than getusermedia constraints, which can drastically vary from actual settings)
 // eventually makes sense to monitor information
@@ -3804,7 +3804,8 @@ function mediaModel (state, bus) {
     default: {
       audio: null,
       video: null
-    }
+    },
+    all: []
   }, state.media)
 
   bus.on('media:addTracksFromStream', function (options) {
@@ -3819,6 +3820,7 @@ function mediaModel (state, bus) {
         kind: track.kind
       })
       if (options.isDefault) state.media.default[track.kind] = track.id
+
     })
     bus.emit('render')
   })
@@ -3852,6 +3854,9 @@ function mediaModel (state, bus) {
 
   bus.on('media:addTrack', function (opts) {
     state.media.byId[opts.track.id] = xtend({}, opts)
+    if (state.media.all.indexOf(opts.track.id) < 0) {
+      state.media.all.push(opts.track.id)
+    }
 
     bus.emit('peers:addTrackToPeer', {
       trackId: opts.track.id,
@@ -3865,6 +3870,8 @@ function mediaModel (state, bus) {
 
   bus.on('media:removeTrack', function (trackId) {
     delete state.media.byId[trackId]
+    var index = state.media.all.indexOf(trackId)
+    if (index > -1) state.media.all.splice(index, 1)
     bus.emit('render')
   })
   // Hacky way to avoid duplicating getusermedia calls:
@@ -19246,11 +19253,11 @@ function communicationView (state, emit) {
     if (peerIndex) {
       var trackId = state.peers.byId[peerIndex].defaultTracks.video
       return html`
-      <div>
+      <div class="dib w-25">
         <p> ${state.peers.byId[peerIndex].nickname}</p>
         ${vidEl.render({
           htmlProps: {
-            class: 'h-50 w-25'
+            class: 'h-50 w-100'
           },
           track: state.media.byId[trackId]
         })}
@@ -19508,6 +19515,7 @@ function loginView (state, emit) {
 const html = require('choo/html')
 const login = require('./login.js')
 const communication = require('./communication.js')
+const mediaList = require('./mediaList.js')
 
 module.exports = mainView
 
@@ -19521,10 +19529,44 @@ function mainView (state, emit) {
   } else {
     return html`
     <div>
-    ${communication(state, emit)}
+      ${communication(state, emit)}
+      ${mediaList(state, emit)}
     </div>
     `
   }
 }
 
-},{"./communication.js":135,"./login.js":139,"choo/html":26}]},{},[12]);
+},{"./communication.js":135,"./login.js":139,"./mediaList.js":141,"choo/html":26}],141:[function(require,module,exports){
+'use strict'
+const html = require('choo/html')
+
+module.exports = mediaListView
+
+function mediaListView (state, emit) {
+  return html`
+
+    <div >
+        <h3 class="f6 lh-copy"> AVAILABLE MEDIA: </h3>
+        <table>
+          <tr>
+            <th>ID</th>
+            <th>PEER</th>
+            <th>KIND</th>
+          </tr>
+          ${state.media.all.map((id) => {
+            var media = state.media.byId[id]
+            return html`
+              <tr>
+                <td>${media.trackId}</td>
+                <td>${state.peers.byId[media.peerId].nickname}</td>
+                <td>${media.kind}</td>
+              </tr>
+            `
+          })}
+      </table>
+
+    </div>
+    `
+}
+
+},{"choo/html":26}]},{},[12]);
