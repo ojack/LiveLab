@@ -27,7 +27,7 @@ VideoContainer.prototype._render = function () {
   if (this.props.track && this.props.track != null) {
     console.log("TRACK ", this.props)
     var tracks = []
-    tracks.push(this.props.track.track)
+    tracks.push(this.props.track)
     this._stream = new MediaStream(tracks) // stream must be initialized with tracks, even though documentation says otherwise
     this.element.srcObject = this._stream
   }
@@ -37,5 +37,7 @@ VideoContainer.prototype._render = function () {
 
 // call "render" if track property has changed
 VideoContainer.prototype._update = function (props) {
-  return this.props.track !== props.track
+  console.log("CHECKING UPDATE", this.props.track, props.track)
+
+  return this.props.id !== props.id
 }

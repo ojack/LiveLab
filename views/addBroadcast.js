@@ -15,7 +15,7 @@ function addBroadcast (state, emit) {
   var deviceOptions
   var defaultLabel = ''
   if(bState.kind==="audio") {
-    defaultLabel = bState.deviceId === null ? '' : state.devices.audioinput.byId[bState.deviceId].label
+    defaultLabel = bState.audio.deviceId === null ? '' : state.devices.audioinput.byId[bState.audio.deviceId].label
     deviceOptions = state.devices.audioinput.all.map((id) => (
       {
         value: id,
@@ -23,7 +23,7 @@ function addBroadcast (state, emit) {
       }
     ))
   } else {
-    defaultLabel = bState.deviceId === null ? '' : state.devices.videoinput.byId[bState.deviceId].label
+    defaultLabel = bState.video.deviceId === null ? '' : state.devices.videoinput.byId[bState.video.deviceId].label
     deviceOptions = state.devices.videoinput.all.map((id) => (
       {
         value: id,
@@ -44,7 +44,7 @@ function addBroadcast (state, emit) {
               value: 'Device:  ' + defaultLabel,
               options: deviceOptions,
               onchange: (value) => {
-                emit('devices:setBroadcastDevice', value)
+                emit('devices:updateBroadcastConstraints', {deviceId: value})
               }
             })}
         </div>`,

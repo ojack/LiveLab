@@ -27,8 +27,8 @@ function loginView (state, emit) {
        htmlProps: {
          class: 'w-100 h-100'
        },
-       track: (state.devices.default.previewTracks.video === null ? null : {
-         track: state.devices.default.previewTracks.video
+       track: state.devices.default.previewTracks.video,
+       id: state.devices.default.previewTracks.video === null ? null : state.devices.default.previewTracks.video.id
        })
      })}
     </div>

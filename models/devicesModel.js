@@ -28,8 +28,12 @@ function devicesModel (state, bus) {
       active: false,
       stream: null,
       kind: "video",
-      deviceId: null,
-      userConstraints: {}
+      audio: {
+        deviceId: null
+      },
+      video: {
+        deviceId: null
+      }
     },
     default: {
       inputDevices: {
@@ -51,36 +55,34 @@ function devicesModel (state, bus) {
     })
   }
 
-  bus.on('devices:setBroadcastDevice', function(val){
-    setBroadcastDevice(val, state.devices.addBroadcast.kind)
+  bus.on('devices:updateBroadcastConstraints', function(obj){
+    xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind], obj)
+    //setBroadcastDevice(val, state.devices.addBroadcast.kind)
+
+    updateBroadcastPreview()
+    bus.emit('render')
   })
 
   bus.on('devices:setBroadcastKind', function(val){
     state.devices.addBroadcast.kind = val
-  //  if(state.devices.addBroadcast.deviceId === null){
-      if(val==="audio"){
-        setBroadcastDevice(state.devices.default.inputDevices.audio, "audio")
-      } else {
-        setBroadcastDevice(state.devices.default.inputDevices.video, "video")
-      }
-  //  }
+
+    //set broadcast to default on c
+
     bus.emit('render')
   })
 
-  function setBroadcastDevice(val, kind){
-    if(state.devices.addBroadcast.deviceId !==val) {
-      state.devices.addBroadcast.deviceId = val
-      updateBroadcastPreview()
-      bus.emit('render')
-    }
-  }
+
 
   function updateBroadcastPreview() {
-
+      var bState = state.devices.addBroadcast
+      var constraints = {}
+    //  if(bState.kind == 'audio')
+      //getLocalMedia ({
   }
 
   bus.on('devices:setDefaultAudio', function (val) {
     setDefaultAudio(val)
+    
   })
 
   bus.on('devices:setDefaultVideo', function (val) {

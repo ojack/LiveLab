@@ -25,7 +25,8 @@ function communicationView (state, emit) {
           htmlProps: {
             class: 'h-50 w-100'
           },
-          track: state.media.byId[trackId]
+          track: (trackId in state.media.byId)  ? state.media.byId[trackId].track : null,
+          id: (trackId in state.media.byId) ?  state.media.byId[trackId].track.id : null
         })}
       </div>`
     } else {

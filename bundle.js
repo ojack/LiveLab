@@ -208,8 +208,12 @@ function devicesModel (state, bus) {
       active: false,
       stream: null,
       kind: "video",
-      deviceId: null,
-      userConstraints: {}
+      audio: {
+        deviceId: null
+      },
+      video: {
+        deviceId: null
+      }
     },
     default: {
       inputDevices: {
@@ -231,36 +235,34 @@ function devicesModel (state, bus) {
     })
   }
 
-  bus.on('devices:setBroadcastDevice', function(val){
-    setBroadcastDevice(val, state.devices.addBroadcast.kind)
+  bus.on('devices:updateBroadcastConstraints', function(obj){
+    xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind], obj)
+    //setBroadcastDevice(val, state.devices.addBroadcast.kind)
+
+    updateBroadcastPreview()
+    bus.emit('render')
   })
 
   bus.on('devices:setBroadcastKind', function(val){
     state.devices.addBroadcast.kind = val
-  //  if(state.devices.addBroadcast.deviceId === null){
-      if(val==="audio"){
-        setBroadcastDevice(state.devices.default.inputDevices.audio, "audio")
-      } else {
-        setBroadcastDevice(state.devices.default.inputDevices.video, "video")
-      }
-  //  }
+
+    //set broadcast to default on c
+
     bus.emit('render')
   })
 
-  function setBroadcastDevice(val, kind){
-    if(state.devices.addBroadcast.deviceId !==val) {
-      state.devices.addBroadcast.deviceId = val
-      updateBroadcastPreview()
-      bus.emit('render')
-    }
-  }
+
 
   function updateBroadcastPreview() {
-
+      var bState = state.devices.addBroadcast
+      var constraints = {}
+    //  if(bState.kind == 'audio')
+      //getLocalMedia ({
   }
 
   bus.on('devices:setDefaultAudio', function (val) {
     setDefaultAudio(val)
+    
   })
 
   bus.on('devices:setDefaultVideo', function (val) {
@@ -20154,7 +20156,7 @@ function addBroadcast (state, emit) {
   var deviceOptions
   var defaultLabel = ''
   if(bState.kind==="audio") {
-    defaultLabel = bState.deviceId === null ? '' : state.devices.audioinput.byId[bState.deviceId].label
+    defaultLabel = bState.audio.deviceId === null ? '' : state.devices.audioinput.byId[bState.audio.deviceId].label
     deviceOptions = state.devices.audioinput.all.map((id) => (
       {
         value: id,
@@ -20162,7 +20164,7 @@ function addBroadcast (state, emit) {
       }
     ))
   } else {
-    defaultLabel = bState.deviceId === null ? '' : state.devices.videoinput.byId[bState.deviceId].label
+    defaultLabel = bState.video.deviceId === null ? '' : state.devices.videoinput.byId[bState.video.deviceId].label
     deviceOptions = state.devices.videoinput.all.map((id) => (
       {
         value: id,
@@ -20183,7 +20185,7 @@ function addBroadcast (state, emit) {
               value: 'Device:  ' + defaultLabel,
               options: deviceOptions,
               onchange: (value) => {
-                emit('devices:setBroadcastDevice', value)
+                emit('devices:updateBroadcastConstraints', {deviceId: value})
               }
             })}
         </div>`,
@@ -20238,7 +20240,8 @@ function communicationView (state, emit) {
           htmlProps: {
             class: 'h-50 w-100'
           },
-          track: state.media.byId[trackId]
+          track: (trackId in state.media.byId)  ? state.media.byId[trackId].track : null,
+          id: (trackId in state.media.byId) ?  state.media.byId[trackId].track.id : null
         })}
       </div>`
     } else {
@@ -20414,7 +20417,7 @@ VideoContainer.prototype._render = function () {
   if (this.props.track && this.props.track != null) {
     console.log("TRACK ", this.props)
     var tracks = []
-    tracks.push(this.props.track.track)
+    tracks.push(this.props.track)
     this._stream = new MediaStream(tracks) // stream must be initialized with tracks, even though documentation says otherwise
     this.element.srcObject = this._stream
   }
@@ -20424,7 +20427,9 @@ VideoContainer.prototype._render = function () {
 
 // call "render" if track property has changed
 VideoContainer.prototype._update = function (props) {
-  return this.props.track !== props.track
+  console.log("CHECKING UPDATE", this.props.track, props.track)
+
+  return this.props.id !== props.id
 }
 
 },{"choo/html":21,"nanocomponent":69,"xtend":140}],149:[function(require,module,exports){
@@ -20457,8 +20462,8 @@ function loginView (state, emit) {
        htmlProps: {
          class: 'w-100 h-100'
        },
-       track: (state.devices.default.previewTracks.video === null ? null : {
-         track: state.devices.default.previewTracks.video
+       track: state.devices.default.previewTracks.video,
+       id: state.devices.default.previewTracks.video === null ? null : state.devices.default.previewTracks.video.id
        })
      })}
     </div>
@@ -20540,7 +20545,7 @@ function mainView (state, emit) {
     return html`
     <div>
     ${login(state, emit)}
-
+  
     </div>
     `
   } else {
