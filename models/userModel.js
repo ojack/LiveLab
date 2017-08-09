@@ -41,6 +41,8 @@ function userModel (state, bus) {
     bus.emit('render')
   })
 
+
+
   // TO DO: validate form info before submitting
   bus.on('user:join', function () {
     localStorage.setItem('uuid', state.user.uuid)
@@ -108,8 +110,30 @@ function userModel (state, bus) {
 
   function getLocalCommunicationStream () {
     var tracks = []
-    if (state.media.default.audio !== null) tracks.push(state.media.byId[state.media.default.audio].track)
-    if (state.media.default.video !== null) tracks.push(state.media.byId[state.media.default.video].track)
+    if (state.devices.default.previewTracks.audio !== null) {
+      tracks.push(state.devices.default.previewTracks.audio)
+      var track = state.devices.default.previewTracks.audio
+      bus.emit('media:addTrack', {
+        track: track,
+        trackId: track.id,
+        peerId: state.user.uuid, // should be user peerId ?
+        constraints: {}, //local default constrains
+        isDefault: true,
+        kind: track.kind
+      })
+    }
+    if (state.devices.default.previewTracks.video !== null) {
+      tracks.push(state.devices.default.previewTracks.video)
+      var track = state.devices.default.previewTracks.video
+      bus.emit('media:addTrack', {
+        track: track,
+        trackId: track.id,
+        peerId: state.user.uuid, // should be user peerId ?
+        constraints: {}, //local default constrains
+        isDefault: true,
+        kind: track.kind
+      })
+    }
     return new MediaStream(tracks)
   }
 

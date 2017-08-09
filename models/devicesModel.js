@@ -1,5 +1,6 @@
 const enumerateDevices = require('enumerate-devices')
-
+const constraints = require('./availableConstraints.json')
+const getUserMedia = require('getusermedia')
 const xtend = Object.assign
 
 module.exports = devicesModel
@@ -23,9 +24,22 @@ function devicesModel (state, bus) {
       byId: {},
       all: []
     },
+    addBroadcast: {
+      active: false,
+      stream: null,
+      kind: "video",
+      deviceId: null,
+      userConstraints: {}
+    },
     default: {
-      audioinput: null,
-      videoinput: null
+      inputDevices: {
+        audio: null,
+        video: null
+      },
+      previewTracks: {
+        audio: null,
+        video: null
+      }
     }
   }, state.devices)
 
@@ -35,6 +49,34 @@ function devicesModel (state, bus) {
     bus.emit('peers:updatePeer', {
       peerId: state.user.uuid
     })
+  }
+
+  bus.on('devices:setBroadcastDevice', function(val){
+    setBroadcastDevice(val, state.devices.addBroadcast.kind)
+  })
+
+  bus.on('devices:setBroadcastKind', function(val){
+    state.devices.addBroadcast.kind = val
+  //  if(state.devices.addBroadcast.deviceId === null){
+      if(val==="audio"){
+        setBroadcastDevice(state.devices.default.inputDevices.audio, "audio")
+      } else {
+        setBroadcastDevice(state.devices.default.inputDevices.video, "video")
+      }
+  //  }
+    bus.emit('render')
+  })
+
+  function setBroadcastDevice(val, kind){
+    if(state.devices.addBroadcast.deviceId !==val) {
+      state.devices.addBroadcast.deviceId = val
+      updateBroadcastPreview()
+      bus.emit('render')
+    }
+  }
+
+  function updateBroadcastPreview() {
+
   }
 
   bus.on('devices:setDefaultAudio', function (val) {
@@ -47,36 +89,72 @@ function devicesModel (state, bus) {
 // bus.on('devices:getDevices', function () {
 // TO DO: use electron remote available displays to enumerate video output devices
 // })
+//display window for adding broadcast
+  bus.on('devices:modalAddBroadcast', function (modalState) {
+    state.devices.addBroadcast.active = modalState
+    bus.emit('render')
+  })
 
   function setDefaultAudio (val) {
-    if (state.devices.default.audioinput !== val) {
-      state.devices.default.audioinput = val
-      bus.emit('media:addLocalMedia', {
+    if (state.devices.default.inputDevices.audio !== val) {
+      state.devices.default.inputDevices.audio = val
+      getLocalMedia ({
         constraints: {
-          audio: { deviceId: { exact: state.devices.default.audioinput } },
+          audio: { deviceId: { exact: state.devices.default.inputDevices.audio } },
           video: false
         },
         isDefault: true
+      }, function(err, stream){
+        if(err===null){
+          var tracks = stream.getTracks()
+          tracks.forEach(function (track) {
+             state.devices.default.previewTracks.audio = track
+          })
+        }
       })
     }
     bus.emit('render')
   }
 
   function setDefaultVideo (vid) {
-    if (state.devices.default.videoinput !== vid) {
+    if (state.devices.default.inputDevices.video !== vid) {
       console.log('SETTING VIDEO', vid)
-      state.devices.default.videoinput = vid
-      bus.emit('media:addLocalMedia', {
+      state.devices.default.inputDevices.video = vid
+      getLocalMedia ({
         constraints: {
           audio: false,
-          video: { deviceId: { exact: state.devices.default.videoinput } }
+          video: { deviceId: { exact: state.devices.default.inputDevices.video } }
         },
         isDefault: true
+      }, function(err, stream){
+        if(err===null){
+          var tracks = stream.getTracks()
+          tracks.forEach(function (track) {
+             state.devices.default.previewTracks.video = track
+          })
+        }
       })
     }
   }
 
+function getLocalMedia(options, callback) {
+    getUserMedia(options.constraints, function (err, stream) {
+        if (err) {
+          callback(err, null)
+          // TO DO: do something about error
+        } else {
+          callback(null, stream)
+        }
+        bus.emit('render')
+      })
+  }
+
+
+
   function getDevices () {
+    var supportedConstraints = navigator.mediaDevices.getSupportedConstraints()
+    console.log("CONSTRIANTSS", supportedConstraints)
+
     enumerateDevices().then((devices) => {
       const kinds = ['audioinput', 'videoinput', 'audiooutput']
 

@@ -17,8 +17,8 @@ function loginView (state, emit) {
 
   var audioinput = state.devices.audioinput
   var videoinput = state.devices.videoinput
-  var defaultAudio = state.devices.default.audioinput
-  var defaultVideo = state.devices.default.videoinput
+  var defaultAudio = state.devices.default.inputDevices.audio
+  var defaultVideo = state.devices.default.inputDevices.video
 
   return html`
   <div>
@@ -27,7 +27,9 @@ function loginView (state, emit) {
        htmlProps: {
          class: 'w-100 h-100'
        },
-       track: state.media.byId[state.media.default.video]
+       track: (state.devices.default.previewTracks.video === null ? null : {
+         track: state.devices.default.previewTracks.video
+       })
      })}
     </div>
     <div class="vh-100 dt w-100 fixed top-0 left-0">

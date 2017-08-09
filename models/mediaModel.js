@@ -15,7 +15,7 @@
 'use strict'
 
 var xtend = Object.assign
-const getUserMedia = require('getusermedia')
+
 
 module.exports = mediaModel
 
@@ -40,38 +40,13 @@ function mediaModel (state, bus) {
         isDefault: options.isDefault,
         kind: track.kind
       })
-      if (options.isDefault) state.media.default[track.kind] = track.id
+
 
     })
     bus.emit('render')
   })
 
-  bus.on('media:addLocalMedia', function (options) {
-    var existingTrack = getTrackFromConstraints(state.user.uuid, options.constraints)
 
-    // check whether a track with the given constrainst currently exists, if not, get user media
-    if (existingTrack !== null) {
-      // TO DO: user warning
-      if (options.isDefault) state.media.default[existingTrack.kind] = existingTrack.trackId
-      bus.emit('render')
-      console.log('track already exists!', existingTrack)
-    } else {
-      getUserMedia(options.constraints, function (err, stream) {
-        if (err) {
-          // TO DO: do something about error
-        } else {
-          // console.log("got stream", stream)
-          bus.emit('media:addTracksFromStream', {
-            stream: stream,
-            peerId: state.user.uuid,
-            constraints: options.constraints,
-            isDefault: options.isDefault
-          })
-        }
-        bus.emit('render')
-      })
-    }
-  })
 
   bus.on('media:addTrack', function (opts) {
     state.media.byId[opts.track.id] = xtend({}, opts)

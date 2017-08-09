@@ -1,4 +1,747 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+const expose = require('choo-expose')
+const log = require('choo-log')
+const choo = require('choo')
+
+const app = choo()
+
+// if in dev mode, show logging in console and expose global app object
+// if (process.env.NODE_ENV === 'development') {
+app.use(log())
+app.use(expose())
+// }
+
+
+app.use(require('./models/devicesModel.js'))
+app.use(require('./models/mediaModel.js'))
+app.use(require('./models/peersModel.js'))
+app.use(require('./models/userModel.js'))
+
+app.route('/', require('./views/main.js'))
+
+app.mount('body div')
+
+},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/userModel.js":7,"./views/main.js":150,"choo":22,"choo-expose":19,"choo-log":20}],2:[function(require,module,exports){
+// Module for handling connections to multiple peers
+
+var io = require('socket.io-client')
+var SimplePeer = require('simple-peer')
+var extend = Object.assign
+var events = require('events').EventEmitter
+var inherits = require('inherits')
+
+var MultiPeer = function (options) {
+// connect to websocket signalling server. To DO: error validation
+  this.signaller = io(options.server)
+  this._userData = options.userData || null
+  this.stream = options.stream || null
+ // this.stream = options.stream || null
+  this._peerOptions = options.peerOptions || {}
+  this._room = options.room
+  this.peers = {}
+
+  // Handle events from signalling server
+  this.signaller.on('ready', this._connectToPeers.bind(this))
+//  this.signaller.on('peers', )
+  this.signaller.on('signal', this._handleSignal.bind(this))
+
+  // emit 'join' event to signalling server
+  this.signaller.emit('join', this._room, this._userData)
+}
+// inherits from events module in order to trigger events
+inherits(MultiPeer, events)
+
+// send data to all connected peers via data channels
+MultiPeer.prototype.sendToAll = function (data) {
+  Object.keys(this.peers).forEach(function (id) {
+    this.peers[id].send(data)
+  }, this)
+}
+
+// userData contains all information about the local user:
+// -uuid
+// -nickname
+// -track information
+// whenever it is updated, new data is sent to all connected peers
+MultiPeer.prototype.updatePeerData = function (data) {
+  this._userData = data
+  this.sendToAll(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
+}
+// Once the new peer receives a list of connected peers from the server,
+// creates new simple peer object for each connected peer.
+MultiPeer.prototype._connectToPeers = function (id, peers) {
+  this.emit('peers', peers)
+
+  peers.forEach(function (id) {
+    var newOptions = {initiator: true}
+    if (this.stream != null) {
+      newOptions.stream = this.stream
+    } else {
+      console.log('stream is null')
+    }
+    var options = extend(newOptions, this._peerOptions)
+
+    this.peers[id] = new SimplePeer(options)
+    this._attachPeerEvents(this.peers[id], id)
+  }.bind(this))
+}
+
+// receive signal from signalling server, forward to simple-peer
+MultiPeer.prototype._handleSignal = function (data) {
+  // if there is currently no peer object for a peer id, that peer is initiating a new connection.
+  if (!this.peers[data.id]) {
+    this.emit('new peer', data)
+    var options = extend({stream: this.stream}, this._peerOptions)
+    this.peers[data.id] = new SimplePeer(options)
+    this._attachPeerEvents(this.peers[data.id], data.id)
+  }
+  this.peers[data.id].signal(data.signal)
+}
+
+// handle events for each connected peer
+MultiPeer.prototype._attachPeerEvents = function (p, _id) {
+  p.on('signal', function (id, signal) {
+    //  console.log("peer signal sending over sockets", id, signal)
+    this.signaller.emit('signal', {id: id, signal: signal})
+  }.bind(this, _id))
+
+  p.on('stream', function (id, stream) {
+    //  console.log("received a stream", stream)
+    this.emit('stream', id, stream)
+  }.bind(this, _id))
+
+  p.on('connect', function (id) {
+    console.log("connected to ", id)
+    this.emit('connect', id)
+    this.peers[id].send(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
+    //when connected, emit user information to other peers
+
+    //this.sendToAll(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
+
+  }.bind(this, _id))
+
+  p.on('data', function (id, data) {
+    this.emit('data', {id: id, data: JSON.parse(data)})
+  }.bind(this, _id))
+
+  p.on('close', function (id) {
+    console.log('CLOSED')
+    delete (this.peers[id])
+    this.emit('close', id)
+  }.bind(this, _id))
+}
+
+module.exports = MultiPeer
+
+},{"events":45,"inherits":58,"simple-peer":112,"socket.io-client":113}],3:[function(require,module,exports){
+module.exports=/*
+  Options for constraints as defined in: https://w3c.github.io/mediacapture-main/getusermedia.html
+  constraints not added: latency, facingMode, sampleRate, sampleSize, volume
+*/
+
+{
+  "video": {
+    "height": {
+      "type": "range",
+      "min": 1,
+      "max": 1080
+    },
+    "width": {
+      "type": "range",
+      "min": 1,
+      "max": 1920
+    },
+    "aspectRatio": {
+      "type": "range",
+      "min": 0.0,
+      "max": 4.0
+    },
+
+    "frameRate": {
+      "type": "range",
+      "min": 1,
+      "max": 128
+    }
+  },
+  "audio": {
+    "channelCount": {
+      "type": "range",
+      "default": 2,
+      "min": 0,
+      "max": 128
+    },
+    "echoCancellation": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}
+
+},{}],4:[function(require,module,exports){
+const enumerateDevices = require('enumerate-devices')
+const constraints = require('./availableConstraints.json')
+const getUserMedia = require('getusermedia')
+const xtend = Object.assign
+
+module.exports = devicesModel
+
+function devicesModel (state, bus) {
+// object representing the user's input and output devices
+  state.devices = xtend({
+    videoinput: {
+      byId: {},
+      all: []
+    },
+    audiooutput: {
+      byId: {},
+      all: []
+    },
+    audioinput: {
+      byId: {},
+      all: []
+    },
+    videooutput: {
+      byId: {},
+      all: []
+    },
+    addBroadcast: {
+      active: false,
+      stream: null,
+      kind: "video",
+      deviceId: null,
+      userConstraints: {}
+    },
+    default: {
+      inputDevices: {
+        audio: null,
+        video: null
+      },
+      previewTracks: {
+        audio: null,
+        video: null
+      }
+    }
+  }, state.devices)
+
+// TO DO: put this function somewhere else
+  window.onload = function () {
+    getDevices()
+    bus.emit('peers:updatePeer', {
+      peerId: state.user.uuid
+    })
+  }
+
+  bus.on('devices:setBroadcastDevice', function(val){
+    setBroadcastDevice(val, state.devices.addBroadcast.kind)
+  })
+
+  bus.on('devices:setBroadcastKind', function(val){
+    state.devices.addBroadcast.kind = val
+  //  if(state.devices.addBroadcast.deviceId === null){
+      if(val==="audio"){
+        setBroadcastDevice(state.devices.default.inputDevices.audio, "audio")
+      } else {
+        setBroadcastDevice(state.devices.default.inputDevices.video, "video")
+      }
+  //  }
+    bus.emit('render')
+  })
+
+  function setBroadcastDevice(val, kind){
+    if(state.devices.addBroadcast.deviceId !==val) {
+      state.devices.addBroadcast.deviceId = val
+      updateBroadcastPreview()
+      bus.emit('render')
+    }
+  }
+
+  function updateBroadcastPreview() {
+
+  }
+
+  bus.on('devices:setDefaultAudio', function (val) {
+    setDefaultAudio(val)
+  })
+
+  bus.on('devices:setDefaultVideo', function (val) {
+    setDefaultVideo(val)
+  })
+// bus.on('devices:getDevices', function () {
+// TO DO: use electron remote available displays to enumerate video output devices
+// })
+//display window for adding broadcast
+  bus.on('devices:modalAddBroadcast', function (modalState) {
+    state.devices.addBroadcast.active = modalState
+    bus.emit('render')
+  })
+
+  function setDefaultAudio (val) {
+    if (state.devices.default.inputDevices.audio !== val) {
+      state.devices.default.inputDevices.audio = val
+      getLocalMedia ({
+        constraints: {
+          audio: { deviceId: { exact: state.devices.default.inputDevices.audio } },
+          video: false
+        },
+        isDefault: true
+      }, function(err, stream){
+        if(err===null){
+          var tracks = stream.getTracks()
+          tracks.forEach(function (track) {
+             state.devices.default.previewTracks.audio = track
+          })
+        }
+      })
+    }
+    bus.emit('render')
+  }
+
+  function setDefaultVideo (vid) {
+    if (state.devices.default.inputDevices.video !== vid) {
+      console.log('SETTING VIDEO', vid)
+      state.devices.default.inputDevices.video = vid
+      getLocalMedia ({
+        constraints: {
+          audio: false,
+          video: { deviceId: { exact: state.devices.default.inputDevices.video } }
+        },
+        isDefault: true
+      }, function(err, stream){
+        if(err===null){
+          var tracks = stream.getTracks()
+          tracks.forEach(function (track) {
+             state.devices.default.previewTracks.video = track
+          })
+        }
+      })
+    }
+  }
+
+function getLocalMedia(options, callback) {
+    getUserMedia(options.constraints, function (err, stream) {
+        if (err) {
+          callback(err, null)
+          // TO DO: do something about error
+        } else {
+          callback(null, stream)
+        }
+        bus.emit('render')
+      })
+  }
+
+
+
+  function getDevices () {
+    var supportedConstraints = navigator.mediaDevices.getSupportedConstraints()
+    console.log("CONSTRIANTSS", supportedConstraints)
+
+    enumerateDevices().then((devices) => {
+      const kinds = ['audioinput', 'videoinput', 'audiooutput']
+
+      kinds.forEach((kind) => {
+        const filtered = devices.filter((elem) => elem.kind === kind)
+
+        state.devices[kind].all = filtered.map((elem) => {
+          state.devices[kind].byId[elem.deviceId] = xtend({}, elem)
+          return elem.deviceId
+        })
+      })
+
+  // Set default audio and video devices
+      if (state.devices.audioinput.all.length > 0) setDefaultAudio(state.devices.audioinput.all[0])
+      if (state.devices.videoinput.all.length > 0) setDefaultVideo(state.devices.videoinput.all[0])
+
+      console.log('DEVICES', state.devices)
+      bus.emit('render')
+    }).catch(console.log.bind(console)) // TO DO:: display error to user
+  }
+}
+
+},{"./availableConstraints.json":3,"enumerate-devices":44,"getusermedia":48}],5:[function(require,module,exports){
+// MEDIA::
+// For now: each peer only broadcasts one stream, each stream has an unlimited number of tracks corresponding to each audio and video device + specific constraint settings.
+// (i.e. the same device could broadcast multiple tracks at different framerates/bandwidths/ etc.)
+// Any change in settings creates a new stream and renegotiates with peers.
+// Each user creates a unique id for a specific device / constraint configuration, and this id is broadcast to other users along with the track id that it referes to.
+// Peer ids and device ids are persistent between sessions.
+//
+// "default" refers to the audio and video tracks used for communication
+// TO DO: generated track id (UNIQUE TO ENTIRE SESSION, persistent across sessions) ?? maybe bad idea
+// To DO: default information only stored in one place--peer info
+// MONITORING:
+// there is no straightforward way to get actual specifications for each track (other than getusermedia constraints, which can drastically vary from actual settings)
+// eventually makes sense to monitor information
+
+'use strict'
+
+var xtend = Object.assign
+
+
+module.exports = mediaModel
+
+function mediaModel (state, bus) {
+  state.media = xtend({
+    byId: {},
+    default: {
+      audio: null,
+      video: null
+    },
+    all: []
+  }, state.media)
+
+  bus.on('media:addTracksFromStream', function (options) {
+    var tracks = options.stream.getTracks()
+    tracks.forEach(function (track) {
+      bus.emit('media:addTrack', {
+        track: track,
+        trackId: track.id,
+        peerId: options.peerId, // should be user peerId ?
+        constraints: options.constraints,
+        isDefault: options.isDefault,
+        kind: track.kind
+      })
+
+
+    })
+    bus.emit('render')
+  })
+
+
+
+  bus.on('media:addTrack', function (opts) {
+    state.media.byId[opts.track.id] = xtend({}, opts)
+    if (state.media.all.indexOf(opts.track.id) < 0) {
+      state.media.all.push(opts.track.id)
+    }
+
+    bus.emit('peers:addTrackToPeer', {
+      trackId: opts.track.id,
+      peerId: opts.peerId,
+      isDefault: opts.isDefault,
+      kind: opts.kind
+    })
+
+    bus.emit('render')
+  })
+
+  bus.on('media:removeTrack', function (trackId) {
+    delete state.media.byId[trackId]
+    var index = state.media.all.indexOf(trackId)
+    if (index > -1) state.media.all.splice(index, 1)
+    bus.emit('render')
+  })
+  // Hacky way to avoid duplicating getusermedia calls:
+  // compare requested media constraints to constraints of existing tracks, if there is none, return null..
+  // else return existing mediaStreamTrack
+  function getTrackFromConstraints (peerId, constraints) {
+    var existingTrack = null
+    if (state.peers.byId[peerId] && state.peers.byId[peerId].tracks.length > 0) {
+      var tracks = state.peers.byId[peerId].tracks
+      console.log(' comparing : ', tracks, constraints)
+      tracks.forEach(function (trackId) {
+        var track = state.media.byId[trackId]
+      //  console.log("1:", JSON.stringify(constraints))
+      //  console.log("2:", JSON.stringify(track.constraints))
+        if (JSON.stringify(constraints) === JSON.stringify(track.constraints)) {
+          existingTrack = track
+        }
+      })
+    }
+    return existingTrack
+  }
+
+  // returns a new object containing only the keys in the array 'keys', only if undefined
+    function filterKeys (object, keys) {
+      var newObject = {}
+      keys.forEach(function (key) {
+        if (object[key]) newObject[key] = xtend({}, object[key])
+      })
+      return newObject
+    }
+}
+
+},{}],6:[function(require,module,exports){
+// the PEERS data store contains information about each connected peer (including the local user (definied by state.user.uuid))
+// Each peer has/will have:
+// 1. a nickname
+// 2. a set of mediaStreamTrackIds (including metadata about the track)
+// 3. certain tracks (defaultTracks) designated for communication
+//
+// The PEER data store ideally should be identical for all users in a session, with each connected peer updating its own information and broadcasting to other users as necessary
+
+var xtend = Object.assign
+
+module.exports = peersModel
+
+function peersModel (state, bus) {
+  state.peers = xtend({
+    byId: {
+
+    },
+    all: []
+  }, state.peers)
+
+  bus.on('peers:setAllPeers', function (peers) {
+    peers.forEach(function (peer) {
+      bus.emit('peers:updatePeer', peer)
+    })
+  })
+
+// update information about a specific peer, creates a new one if none exists
+// Note on Object.assign::
+// Properties in the target object will be overwritten by properties in the sources if they have the same key.
+// Later sources' properties will similarly overwrite earlier ones.
+  bus.on('peers:updatePeer', function (peer) {
+    state.peers.byId[peer.peerId] = xtend({
+      peerId: peer.peerId,
+      tracks: [],
+      nickname: null,
+      defaultTracks: {
+        audio: null,
+        video: null
+      }
+    }, state.peers.byId[peer.peerId], peer)
+
+    console.log("NEW  PEER INFO", state.peers.byId)
+    if (state.peers.all.indexOf(peer.peerId) < 0) {
+      state.peers.all.push(peer.peerId)
+    }
+    bus.emit('render')
+  })
+
+  bus.on('peers:addTrackToPeer', function (opts) {
+  //  console.log('Track TO PEER', state.peers, opts)
+    state.peers.byId[opts.peerId].tracks.push(opts.trackId)
+    // if track is default communication track, add to peer defaultTracks
+    if (opts.isDefault) {
+      state.peers.byId[opts.peerId].defaultTracks[opts.kind] = opts.trackId
+    }
+    bus.emit('render')
+  })
+
+  bus.on('peers:removePeer', function (peerId) {
+    // remove all tracks associated with this peer
+    state.peers.byId[peerId].tracks.forEach(function (trackId) {
+      bus.emit('media:removeTrack', trackId)
+    })
+    var index = state.peers.all.indexOf(peerId)
+    if (index > -1) state.peers.all.splice(index, 1)
+    delete state.peers.byId[peerId]
+  })
+  bus.emit('render')
+}
+
+},{}],7:[function(require,module,exports){
+var xtend = Object.assign
+var shortid = require('shortid')
+var MultiPeer = require('./../lib/MultiPeer.js')
+
+// To do: separate ui events (logged in) and connection state/ status log from user model
+// status log contains all peer connection related information
+
+module.exports = userModel
+
+function userModel (state, bus) {
+  state.user = xtend({
+    //uuid: localStorage.getItem('uuid') || shortid.generate(), // persistent local user id. If none is present in local storage, generate new one
+    uuid: shortid.generate(), // for dev purposes, always regenerate id
+    room: 'test',
+    server: 'https://live-lab-v1.glitch.me/',
+    loggedIn: false,
+    statusMessage: ''
+  }, state.user)
+
+  bus.emit('peers:updatePeer', {
+    peerId: state.user.uuid,
+    nickname: 'olivia'
+  })
+
+  bus.on('user:setNickname', function (name) {
+    bus.emit('peers:updatePeer', {
+      peerId: state.user.uuid,
+      nickname: name
+    })
+    state.user.nickname = name
+    bus.emit('render')
+  })
+
+  bus.on('user:setServer', function (server) {
+    state.user.server = server
+    bus.emit('render')
+  })
+
+  bus.on('user:setRoom', function (room) {
+    state.user.room = room
+    bus.emit('render')
+  })
+
+
+
+  // TO DO: validate form info before submitting
+  bus.on('user:join', function () {
+    localStorage.setItem('uuid', state.user.uuid)
+    var multiPeer = new MultiPeer({
+      room: state.user.room,
+      server: state.user.server,
+      stream: getLocalCommunicationStream(),
+      userData: {
+        uuid: state.user.uuid,
+        nickname: state.user.nickname
+      }
+    })
+
+    multiPeer.on('peers', function (peers) {
+      state.user.loggedIn = true
+      state.user.statusMessage += 'Connected to server ' + state.user.server + '\n'
+      var peersInfo = peers.map(function (peer) {
+        var peerInfo = {peerId: peer}
+        if (peer === state.user.uuid) peerInfo.nickname = state.user.nickname
+        return peerInfo
+      })
+      bus.emit('peers:setAllPeers', peersInfo)
+      bus.emit('render')
+    })
+
+    multiPeer.on('stream', function (peerId, stream) {
+      state.user.statusMessage += 'Received media from peer ' + peerId + '\n'
+      bus.emit('media:addTracksFromStream', {
+        peerId: peerId,
+        stream: stream,
+        isDefault: true
+      })
+    })
+
+    multiPeer.on('connect', function (id) {
+      state.user.statusMessage += 'Connected to peer ' + id + '\n'
+      bus.emit('render')
+    })
+
+    multiPeer.on('close', function (id) {
+      bus.emit('peers:removePeer', id)
+    })
+    multiPeer.on('new peer', function (data) {
+      // console.log("NEW REMOTE PEER", data)
+      bus.emit('peers:updatePeer', {
+        peerId: data.id
+      })
+    })
+
+    multiPeer.on('data', function (data) {
+      console.log("received data", data)
+      if (data.data && data.data.type === 'updatePeerData') {
+        var peerData = xtend({
+          peerId: data.id
+        }, data.data.message)
+        console.log('peer data', peerData)
+        bus.emit('peers:updatePeer', peerData)
+      }
+    })
+
+    state.user.statusMessage = 'Contacting server ' + state.user.server + '\n'
+
+    bus.emit('render')
+  })
+
+  function getLocalCommunicationStream () {
+    var tracks = []
+    if (state.devices.default.previewTracks.audio !== null) {
+      tracks.push(state.devices.default.previewTracks.audio)
+      var track = state.devices.default.previewTracks.audio
+      bus.emit('media:addTrack', {
+        track: track,
+        trackId: track.id,
+        peerId: state.user.uuid, // should be user peerId ?
+        constraints: {}, //local default constrains
+        isDefault: true,
+        kind: track.kind
+      })
+    }
+    if (state.devices.default.previewTracks.video !== null) {
+      tracks.push(state.devices.default.previewTracks.video)
+      var track = state.devices.default.previewTracks.video
+      bus.emit('media:addTrack', {
+        track: track,
+        trackId: track.id,
+        peerId: state.user.uuid, // should be user peerId ?
+        constraints: {}, //local default constrains
+        isDefault: true,
+        kind: track.kind
+      })
+    }
+    return new MediaStream(tracks)
+  }
+
+// returns a stream that contains all local tracks
+  function getCombinedLocalStream () {
+    var userTracks = state.peers.byId[state.user.uuid].tracks.map(function (trackId) {
+      return state.media.byId[trackId].track
+    })
+    return new MediaStream(userTracks)
+  }
+}
+
+},{"./../lib/MultiPeer.js":2,"shortid":102}],8:[function(require,module,exports){
+module.exports = after
+
+function after(count, callback, err_cb) {
+    var bail = false
+    err_cb = err_cb || noop
+    proxy.count = count
+
+    return (count === 0) ? callback() : proxy
+
+    function proxy(err, result) {
+        if (proxy.count <= 0) {
+            throw new Error('after called too many times')
+        }
+        --proxy.count
+
+        // after first error, rest are passed to err_cb
+        if (err) {
+            bail = true
+            callback(err)
+            // future error callbacks will go to error handler
+            callback = err_cb
+        } else if (proxy.count === 0 && !bail) {
+            callback(null, result)
+        }
+    }
+}
+
+function noop() {}
+
+},{}],9:[function(require,module,exports){
+/**
+ * An abstraction for slicing an arraybuffer even when
+ * ArrayBuffer.prototype.slice is not supported
+ *
+ * @api public
+ */
+
+module.exports = function(arraybuffer, start, end) {
+  var bytes = arraybuffer.byteLength;
+  start = start || 0;
+  end = end || bytes;
+
+  if (arraybuffer.slice) { return arraybuffer.slice(start, end); }
+
+  if (start < 0) { start += bytes; }
+  if (end < 0) { end += bytes; }
+  if (end > bytes) { end = bytes; }
+
+  if (start >= bytes || start >= end || bytes === 0) {
+    return new ArrayBuffer(0);
+  }
+
+  var abv = new Uint8Array(arraybuffer);
+  var result = new Uint8Array(end - start);
+  for (var i = start, ii = 0; i < end; i++, ii++) {
+    result[ii] = abv[i];
+  }
+  return result.buffer;
+};
+
+},{}],10:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -492,7 +1235,163 @@ var objectKeys = Object.keys || function (obj) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"util/":11}],2:[function(require,module,exports){
+},{"util/":128}],11:[function(require,module,exports){
+
+/**
+ * Expose `Backoff`.
+ */
+
+module.exports = Backoff;
+
+/**
+ * Initialize backoff timer with `opts`.
+ *
+ * - `min` initial timeout in milliseconds [100]
+ * - `max` max timeout [10000]
+ * - `jitter` [0]
+ * - `factor` [2]
+ *
+ * @param {Object} opts
+ * @api public
+ */
+
+function Backoff(opts) {
+  opts = opts || {};
+  this.ms = opts.min || 100;
+  this.max = opts.max || 10000;
+  this.factor = opts.factor || 2;
+  this.jitter = opts.jitter > 0 && opts.jitter <= 1 ? opts.jitter : 0;
+  this.attempts = 0;
+}
+
+/**
+ * Return the backoff duration.
+ *
+ * @return {Number}
+ * @api public
+ */
+
+Backoff.prototype.duration = function(){
+  var ms = this.ms * Math.pow(this.factor, this.attempts++);
+  if (this.jitter) {
+    var rand =  Math.random();
+    var deviation = Math.floor(rand * this.jitter * ms);
+    ms = (Math.floor(rand * 10) & 1) == 0  ? ms - deviation : ms + deviation;
+  }
+  return Math.min(ms, this.max) | 0;
+};
+
+/**
+ * Reset the number of attempts.
+ *
+ * @api public
+ */
+
+Backoff.prototype.reset = function(){
+  this.attempts = 0;
+};
+
+/**
+ * Set the minimum duration
+ *
+ * @api public
+ */
+
+Backoff.prototype.setMin = function(min){
+  this.ms = min;
+};
+
+/**
+ * Set the maximum duration
+ *
+ * @api public
+ */
+
+Backoff.prototype.setMax = function(max){
+  this.max = max;
+};
+
+/**
+ * Set the jitter
+ *
+ * @api public
+ */
+
+Backoff.prototype.setJitter = function(jitter){
+  this.jitter = jitter;
+};
+
+
+},{}],12:[function(require,module,exports){
+/*
+ * base64-arraybuffer
+ * https://github.com/niklasvh/base64-arraybuffer
+ *
+ * Copyright (c) 2012 Niklas von Hertzen
+ * Licensed under the MIT license.
+ */
+(function(){
+  "use strict";
+
+  var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+  // Use a lookup table to find the index.
+  var lookup = new Uint8Array(256);
+  for (var i = 0; i < chars.length; i++) {
+    lookup[chars.charCodeAt(i)] = i;
+  }
+
+  exports.encode = function(arraybuffer) {
+    var bytes = new Uint8Array(arraybuffer),
+    i, len = bytes.length, base64 = "";
+
+    for (i = 0; i < len; i+=3) {
+      base64 += chars[bytes[i] >> 2];
+      base64 += chars[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
+      base64 += chars[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
+      base64 += chars[bytes[i + 2] & 63];
+    }
+
+    if ((len % 3) === 2) {
+      base64 = base64.substring(0, base64.length - 1) + "=";
+    } else if (len % 3 === 1) {
+      base64 = base64.substring(0, base64.length - 2) + "==";
+    }
+
+    return base64;
+  };
+
+  exports.decode =  function(base64) {
+    var bufferLength = base64.length * 0.75,
+    len = base64.length, i, p = 0,
+    encoded1, encoded2, encoded3, encoded4;
+
+    if (base64[base64.length - 1] === "=") {
+      bufferLength--;
+      if (base64[base64.length - 2] === "=") {
+        bufferLength--;
+      }
+    }
+
+    var arraybuffer = new ArrayBuffer(bufferLength),
+    bytes = new Uint8Array(arraybuffer);
+
+    for (i = 0; i < len; i+=4) {
+      encoded1 = lookup[base64.charCodeAt(i)];
+      encoded2 = lookup[base64.charCodeAt(i+1)];
+      encoded3 = lookup[base64.charCodeAt(i+2)];
+      encoded4 = lookup[base64.charCodeAt(i+3)];
+
+      bytes[p++] = (encoded1 << 2) | (encoded2 >> 4);
+      bytes[p++] = ((encoded2 & 15) << 4) | (encoded3 >> 2);
+      bytes[p++] = ((encoded3 & 3) << 6) | (encoded4 & 63);
+    }
+
+    return arraybuffer;
+  };
+})();
+
+},{}],13:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -528,22 +1427,22 @@ function placeHoldersCount (b64) {
 
 function byteLength (b64) {
   // base64 is 4/3 + up to two characters of the original data
-  return b64.length * 3 / 4 - placeHoldersCount(b64)
+  return (b64.length * 3 / 4) - placeHoldersCount(b64)
 }
 
 function toByteArray (b64) {
-  var i, j, l, tmp, placeHolders, arr
+  var i, l, tmp, placeHolders, arr
   var len = b64.length
   placeHolders = placeHoldersCount(b64)
 
-  arr = new Arr(len * 3 / 4 - placeHolders)
+  arr = new Arr((len * 3 / 4) - placeHolders)
 
   // if there are placeholders, only get up to the last complete 4 chars
   l = placeHolders > 0 ? len - 4 : len
 
   var L = 0
 
-  for (i = 0, j = 0; i < l; i += 4, j += 3) {
+  for (i = 0; i < l; i += 4) {
     tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
     arr[L++] = (tmp >> 16) & 0xFF
     arr[L++] = (tmp >> 8) & 0xFF
@@ -608,9 +1507,450 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],3:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
+var document = require('global/document')
+var hyperx = require('hyperx')
+var onload = require('on-load')
 
-},{}],4:[function(require,module,exports){
+var SVGNS = 'http://www.w3.org/2000/svg'
+var XLINKNS = 'http://www.w3.org/1999/xlink'
+
+var BOOL_PROPS = {
+  autofocus: 1,
+  checked: 1,
+  defaultchecked: 1,
+  disabled: 1,
+  formnovalidate: 1,
+  indeterminate: 1,
+  readonly: 1,
+  required: 1,
+  selected: 1,
+  willvalidate: 1
+}
+var COMMENT_TAG = '!--'
+var SVG_TAGS = [
+  'svg',
+  'altGlyph', 'altGlyphDef', 'altGlyphItem', 'animate', 'animateColor',
+  'animateMotion', 'animateTransform', 'circle', 'clipPath', 'color-profile',
+  'cursor', 'defs', 'desc', 'ellipse', 'feBlend', 'feColorMatrix',
+  'feComponentTransfer', 'feComposite', 'feConvolveMatrix', 'feDiffuseLighting',
+  'feDisplacementMap', 'feDistantLight', 'feFlood', 'feFuncA', 'feFuncB',
+  'feFuncG', 'feFuncR', 'feGaussianBlur', 'feImage', 'feMerge', 'feMergeNode',
+  'feMorphology', 'feOffset', 'fePointLight', 'feSpecularLighting',
+  'feSpotLight', 'feTile', 'feTurbulence', 'filter', 'font', 'font-face',
+  'font-face-format', 'font-face-name', 'font-face-src', 'font-face-uri',
+  'foreignObject', 'g', 'glyph', 'glyphRef', 'hkern', 'image', 'line',
+  'linearGradient', 'marker', 'mask', 'metadata', 'missing-glyph', 'mpath',
+  'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect',
+  'set', 'stop', 'switch', 'symbol', 'text', 'textPath', 'title', 'tref',
+  'tspan', 'use', 'view', 'vkern'
+]
+
+function belCreateElement (tag, props, children) {
+  var el
+
+  // If an svg tag, it needs a namespace
+  if (SVG_TAGS.indexOf(tag) !== -1) {
+    props.namespace = SVGNS
+  }
+
+  // If we are using a namespace
+  var ns = false
+  if (props.namespace) {
+    ns = props.namespace
+    delete props.namespace
+  }
+
+  // Create the element
+  if (ns) {
+    el = document.createElementNS(ns, tag)
+  } else if (tag === COMMENT_TAG) {
+    return document.createComment(props.comment)
+  } else {
+    el = document.createElement(tag)
+  }
+
+  // If adding onload events
+  if (props.onload || props.onunload) {
+    var load = props.onload || function () {}
+    var unload = props.onunload || function () {}
+    onload(el, function belOnload () {
+      load(el)
+    }, function belOnunload () {
+      unload(el)
+    },
+    // We have to use non-standard `caller` to find who invokes `belCreateElement`
+    belCreateElement.caller.caller.caller)
+    delete props.onload
+    delete props.onunload
+  }
+
+  // Create the properties
+  for (var p in props) {
+    if (props.hasOwnProperty(p)) {
+      var key = p.toLowerCase()
+      var val = props[p]
+      // Normalize className
+      if (key === 'classname') {
+        key = 'class'
+        p = 'class'
+      }
+      // The for attribute gets transformed to htmlFor, but we just set as for
+      if (p === 'htmlFor') {
+        p = 'for'
+      }
+      // If a property is boolean, set itself to the key
+      if (BOOL_PROPS[key]) {
+        if (val === 'true') val = key
+        else if (val === 'false') continue
+      }
+      // If a property prefers being set directly vs setAttribute
+      if (key.slice(0, 2) === 'on') {
+        el[p] = val
+      } else {
+        if (ns) {
+          if (p === 'xlink:href') {
+            el.setAttributeNS(XLINKNS, p, val)
+          } else if (/^xmlns($|:)/i.test(p)) {
+            // skip xmlns definitions
+          } else {
+            el.setAttributeNS(null, p, val)
+          }
+        } else {
+          el.setAttribute(p, val)
+        }
+      }
+    }
+  }
+
+  function appendChild (childs) {
+    if (!Array.isArray(childs)) return
+    for (var i = 0; i < childs.length; i++) {
+      var node = childs[i]
+      if (Array.isArray(node)) {
+        appendChild(node)
+        continue
+      }
+
+      if (typeof node === 'number' ||
+        typeof node === 'boolean' ||
+        typeof node === 'function' ||
+        node instanceof Date ||
+        node instanceof RegExp) {
+        node = node.toString()
+      }
+
+      if (typeof node === 'string') {
+        if (el.lastChild && el.lastChild.nodeName === '#text') {
+          el.lastChild.nodeValue += node
+          continue
+        }
+        node = document.createTextNode(node)
+      }
+
+      if (node && node.nodeType) {
+        el.appendChild(node)
+      }
+    }
+  }
+  appendChild(children)
+
+  return el
+}
+
+module.exports = hyperx(belCreateElement, {comments: true})
+module.exports.default = module.exports
+module.exports.createElement = belCreateElement
+
+},{"global/document":49,"hyperx":55,"on-load":81}],15:[function(require,module,exports){
+(function (global){
+/**
+ * Create a blob builder even when vendor prefixes exist
+ */
+
+var BlobBuilder = global.BlobBuilder
+  || global.WebKitBlobBuilder
+  || global.MSBlobBuilder
+  || global.MozBlobBuilder;
+
+/**
+ * Check if Blob constructor is supported
+ */
+
+var blobSupported = (function() {
+  try {
+    var a = new Blob(['hi']);
+    return a.size === 2;
+  } catch(e) {
+    return false;
+  }
+})();
+
+/**
+ * Check if Blob constructor supports ArrayBufferViews
+ * Fails in Safari 6, so we need to map to ArrayBuffers there.
+ */
+
+var blobSupportsArrayBufferView = blobSupported && (function() {
+  try {
+    var b = new Blob([new Uint8Array([1,2])]);
+    return b.size === 2;
+  } catch(e) {
+    return false;
+  }
+})();
+
+/**
+ * Check if BlobBuilder is supported
+ */
+
+var blobBuilderSupported = BlobBuilder
+  && BlobBuilder.prototype.append
+  && BlobBuilder.prototype.getBlob;
+
+/**
+ * Helper function that maps ArrayBufferViews to ArrayBuffers
+ * Used by BlobBuilder constructor and old browsers that didn't
+ * support it in the Blob constructor.
+ */
+
+function mapArrayBufferViews(ary) {
+  for (var i = 0; i < ary.length; i++) {
+    var chunk = ary[i];
+    if (chunk.buffer instanceof ArrayBuffer) {
+      var buf = chunk.buffer;
+
+      // if this is a subarray, make a copy so we only
+      // include the subarray region from the underlying buffer
+      if (chunk.byteLength !== buf.byteLength) {
+        var copy = new Uint8Array(chunk.byteLength);
+        copy.set(new Uint8Array(buf, chunk.byteOffset, chunk.byteLength));
+        buf = copy.buffer;
+      }
+
+      ary[i] = buf;
+    }
+  }
+}
+
+function BlobBuilderConstructor(ary, options) {
+  options = options || {};
+
+  var bb = new BlobBuilder();
+  mapArrayBufferViews(ary);
+
+  for (var i = 0; i < ary.length; i++) {
+    bb.append(ary[i]);
+  }
+
+  return (options.type) ? bb.getBlob(options.type) : bb.getBlob();
+};
+
+function BlobConstructor(ary, options) {
+  mapArrayBufferViews(ary);
+  return new Blob(ary, options || {});
+};
+
+module.exports = (function() {
+  if (blobSupported) {
+    return blobSupportsArrayBufferView ? global.Blob : BlobConstructor;
+  } else if (blobBuilderSupported) {
+    return BlobBuilderConstructor;
+  } else {
+    return undefined;
+  }
+})();
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],16:[function(require,module,exports){
+
+},{}],17:[function(require,module,exports){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],18:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -717,7 +2057,7 @@ function from (value, encodingOrOffset, length) {
     throw new TypeError('"value" argument must not be a number')
   }
 
-  if (value instanceof ArrayBuffer) {
+  if (isArrayBuffer(value)) {
     return fromArrayBuffer(value, encodingOrOffset, length)
   }
 
@@ -977,7 +2317,7 @@ function byteLength (string, encoding) {
   if (Buffer.isBuffer(string)) {
     return string.length
   }
-  if (isArrayBufferView(string) || string instanceof ArrayBuffer) {
+  if (isArrayBufferView(string) || isArrayBuffer(string)) {
     return string.byteLength
   }
   if (typeof string !== 'string') {
@@ -2309,6 +3649,14 @@ function blitBuffer (src, dst, offset, length) {
   return i
 }
 
+// ArrayBuffers from another context (i.e. an iframe) do not pass the `instanceof` check
+// but they should be treated as valid. See: https://github.com/feross/buffer/issues/166
+function isArrayBuffer (obj) {
+  return obj instanceof ArrayBuffer ||
+    (obj != null && obj.constructor != null && obj.constructor.name === 'ArrayBuffer' &&
+      typeof obj.byteLength === 'number')
+}
+
 // Node 0.10 supports `ArrayBuffer` but lacks `ArrayBuffer.isView`
 function isArrayBufferView (obj) {
   return (typeof ArrayBuffer.isView === 'function') && ArrayBuffer.isView(obj)
@@ -2318,2278 +3666,73 @@ function numberIsNaN (obj) {
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-},{"base64-js":2,"ieee754":6}],5:[function(require,module,exports){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
+},{"base64-js":13,"ieee754":56}],19:[function(require,module,exports){
+var removeItems = require('remove-array-items')
+var onIdle = require('on-idle')
+var stateCopy = require('state-copy')
+var pluck = require('plucker')
 
-function EventEmitter() {
-  this._events = this._events || {};
-  this._maxListeners = this._maxListeners || undefined;
-}
-module.exports = EventEmitter;
+var MAX_HISTORY_LENGTH = 150   // How many items we should keep around
 
-// Backwards-compat with node 0.10.x
-EventEmitter.EventEmitter = EventEmitter;
-
-EventEmitter.prototype._events = undefined;
-EventEmitter.prototype._maxListeners = undefined;
-
-// By default EventEmitters will print a warning if more than 10 listeners are
-// added to it. This is a useful default which helps finding memory leaks.
-EventEmitter.defaultMaxListeners = 10;
-
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!isNumber(n) || n < 0 || isNaN(n))
-    throw TypeError('n must be a positive number');
-  this._maxListeners = n;
-  return this;
-};
-
-EventEmitter.prototype.emit = function(type) {
-  var er, handler, len, args, i, listeners;
-
-  if (!this._events)
-    this._events = {};
-
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events.error ||
-        (isObject(this._events.error) && !this._events.error.length)) {
-      er = arguments[1];
-      if (er instanceof Error) {
-        throw er; // Unhandled 'error' event
-      } else {
-        // At least give some kind of context to the user
-        var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
-        err.context = er;
-        throw err;
-      }
-    }
-  }
-
-  handler = this._events[type];
-
-  if (isUndefined(handler))
-    return false;
-
-  if (isFunction(handler)) {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        args = Array.prototype.slice.call(arguments, 1);
-        handler.apply(this, args);
-    }
-  } else if (isObject(handler)) {
-    args = Array.prototype.slice.call(arguments, 1);
-    listeners = handler.slice();
-    len = listeners.length;
-    for (i = 0; i < len; i++)
-      listeners[i].apply(this, args);
-  }
-
-  return true;
-};
-
-EventEmitter.prototype.addListener = function(type, listener) {
-  var m;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events)
-    this._events = {};
-
-  // To avoid recursion in the case that type === "newListener"! Before
-  // adding it to the listeners, first emit "newListener".
-  if (this._events.newListener)
-    this.emit('newListener', type,
-              isFunction(listener.listener) ?
-              listener.listener : listener);
-
-  if (!this._events[type])
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  else if (isObject(this._events[type]))
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  else
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-
-  // Check for listener leak
-  if (isObject(this._events[type]) && !this._events[type].warned) {
-    if (!isUndefined(this._maxListeners)) {
-      m = this._maxListeners;
-    } else {
-      m = EventEmitter.defaultMaxListeners;
-    }
-
-    if (m && m > 0 && this._events[type].length > m) {
-      this._events[type].warned = true;
-      console.error('(node) warning: possible EventEmitter memory ' +
-                    'leak detected. %d listeners added. ' +
-                    'Use emitter.setMaxListeners() to increase limit.',
-                    this._events[type].length);
-      if (typeof console.trace === 'function') {
-        // not supported in IE 10
-        console.trace();
-      }
-    }
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.once = function(type, listener) {
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  var fired = false;
-
-  function g() {
-    this.removeListener(type, g);
-
-    if (!fired) {
-      fired = true;
-      listener.apply(this, arguments);
-    }
-  }
-
-  g.listener = listener;
-  this.on(type, g);
-
-  return this;
-};
-
-// emits a 'removeListener' event iff the listener was removed
-EventEmitter.prototype.removeListener = function(type, listener) {
-  var list, position, length, i;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events || !this._events[type])
-    return this;
-
-  list = this._events[type];
-  length = list.length;
-  position = -1;
-
-  if (list === listener ||
-      (isFunction(list.listener) && list.listener === listener)) {
-    delete this._events[type];
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-
-  } else if (isObject(list)) {
-    for (i = length; i-- > 0;) {
-      if (list[i] === listener ||
-          (list[i].listener && list[i].listener === listener)) {
-        position = i;
-        break;
-      }
-    }
-
-    if (position < 0)
-      return this;
-
-    if (list.length === 1) {
-      list.length = 0;
-      delete this._events[type];
-    } else {
-      list.splice(position, 1);
-    }
-
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function(type) {
-  var key, listeners;
-
-  if (!this._events)
-    return this;
-
-  // not listening for removeListener, no need to emit
-  if (!this._events.removeListener) {
-    if (arguments.length === 0)
-      this._events = {};
-    else if (this._events[type])
-      delete this._events[type];
-    return this;
-  }
-
-  // emit removeListener for all listeners on all events
-  if (arguments.length === 0) {
-    for (key in this._events) {
-      if (key === 'removeListener') continue;
-      this.removeAllListeners(key);
-    }
-    this.removeAllListeners('removeListener');
-    this._events = {};
-    return this;
-  }
-
-  listeners = this._events[type];
-
-  if (isFunction(listeners)) {
-    this.removeListener(type, listeners);
-  } else if (listeners) {
-    // LIFO order
-    while (listeners.length)
-      this.removeListener(type, listeners[listeners.length - 1]);
-  }
-  delete this._events[type];
-
-  return this;
-};
-
-EventEmitter.prototype.listeners = function(type) {
-  var ret;
-  if (!this._events || !this._events[type])
-    ret = [];
-  else if (isFunction(this._events[type]))
-    ret = [this._events[type]];
-  else
-    ret = this._events[type].slice();
-  return ret;
-};
-
-EventEmitter.prototype.listenerCount = function(type) {
-  if (this._events) {
-    var evlistener = this._events[type];
-
-    if (isFunction(evlistener))
-      return 1;
-    else if (evlistener)
-      return evlistener.length;
-  }
-  return 0;
-};
-
-EventEmitter.listenerCount = function(emitter, type) {
-  return emitter.listenerCount(type);
-};
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-
-},{}],6:[function(require,module,exports){
-exports.read = function (buffer, offset, isLE, mLen, nBytes) {
-  var e, m
-  var eLen = nBytes * 8 - mLen - 1
-  var eMax = (1 << eLen) - 1
-  var eBias = eMax >> 1
-  var nBits = -7
-  var i = isLE ? (nBytes - 1) : 0
-  var d = isLE ? -1 : 1
-  var s = buffer[offset + i]
-
-  i += d
-
-  e = s & ((1 << (-nBits)) - 1)
-  s >>= (-nBits)
-  nBits += eLen
-  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
-
-  m = e & ((1 << (-nBits)) - 1)
-  e >>= (-nBits)
-  nBits += mLen
-  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
-
-  if (e === 0) {
-    e = 1 - eBias
-  } else if (e === eMax) {
-    return m ? NaN : ((s ? -1 : 1) * Infinity)
-  } else {
-    m = m + Math.pow(2, mLen)
-    e = e - eBias
-  }
-  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
-}
-
-exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
-  var e, m, c
-  var eLen = nBytes * 8 - mLen - 1
-  var eMax = (1 << eLen) - 1
-  var eBias = eMax >> 1
-  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
-  var i = isLE ? 0 : (nBytes - 1)
-  var d = isLE ? 1 : -1
-  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0
-
-  value = Math.abs(value)
-
-  if (isNaN(value) || value === Infinity) {
-    m = isNaN(value) ? 1 : 0
-    e = eMax
-  } else {
-    e = Math.floor(Math.log(value) / Math.LN2)
-    if (value * (c = Math.pow(2, -e)) < 1) {
-      e--
-      c *= 2
-    }
-    if (e + eBias >= 1) {
-      value += rt / c
-    } else {
-      value += rt * Math.pow(2, 1 - eBias)
-    }
-    if (value * c >= 2) {
-      e++
-      c /= 2
-    }
-
-    if (e + eBias >= eMax) {
-      m = 0
-      e = eMax
-    } else if (e + eBias >= 1) {
-      m = (value * c - 1) * Math.pow(2, mLen)
-      e = e + eBias
-    } else {
-      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
-      e = 0
-    }
-  }
-
-  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
-
-  e = (e << mLen) | m
-  eLen += mLen
-  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
-
-  buffer[offset + i - d] |= s * 128
-}
-
-},{}],7:[function(require,module,exports){
-/*!
- * Determine if an object is a Buffer
- *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
- * @license  MIT
- */
-
-// The _isBuffer check is for Safari 5-7 support, because it's missing
-// Object.prototype.constructor. Remove this eventually
-module.exports = function (obj) {
-  return obj != null && (isBuffer(obj) || isSlowBuffer(obj) || !!obj._isBuffer)
-}
-
-function isBuffer (obj) {
-  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
-}
-
-// For Node v0.10 support. Remove this eventually.
-function isSlowBuffer (obj) {
-  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
-}
-
-},{}],8:[function(require,module,exports){
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],9:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],10:[function(require,module,exports){
-module.exports = function isBuffer(arg) {
-  return arg && typeof arg === 'object'
-    && typeof arg.copy === 'function'
-    && typeof arg.fill === 'function'
-    && typeof arg.readUInt8 === 'function';
-}
-},{}],11:[function(require,module,exports){
-(function (process,global){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-var formatRegExp = /%[sdj%]/g;
-exports.format = function(f) {
-  if (!isString(f)) {
-    var objects = [];
-    for (var i = 0; i < arguments.length; i++) {
-      objects.push(inspect(arguments[i]));
-    }
-    return objects.join(' ');
-  }
-
-  var i = 1;
-  var args = arguments;
-  var len = args.length;
-  var str = String(f).replace(formatRegExp, function(x) {
-    if (x === '%%') return '%';
-    if (i >= len) return x;
-    switch (x) {
-      case '%s': return String(args[i++]);
-      case '%d': return Number(args[i++]);
-      case '%j':
-        try {
-          return JSON.stringify(args[i++]);
-        } catch (_) {
-          return '[Circular]';
-        }
-      default:
-        return x;
-    }
-  });
-  for (var x = args[i]; i < len; x = args[++i]) {
-    if (isNull(x) || !isObject(x)) {
-      str += ' ' + x;
-    } else {
-      str += ' ' + inspect(x);
-    }
-  }
-  return str;
-};
-
-
-// Mark that a method should not be used.
-// Returns a modified function which warns once by default.
-// If --no-deprecation is set, then it is a no-op.
-exports.deprecate = function(fn, msg) {
-  // Allow for deprecating things in the process of starting up.
-  if (isUndefined(global.process)) {
-    return function() {
-      return exports.deprecate(fn, msg).apply(this, arguments);
-    };
-  }
-
-  if (process.noDeprecation === true) {
-    return fn;
-  }
-
-  var warned = false;
-  function deprecated() {
-    if (!warned) {
-      if (process.throwDeprecation) {
-        throw new Error(msg);
-      } else if (process.traceDeprecation) {
-        console.trace(msg);
-      } else {
-        console.error(msg);
-      }
-      warned = true;
-    }
-    return fn.apply(this, arguments);
-  }
-
-  return deprecated;
-};
-
-
-var debugs = {};
-var debugEnviron;
-exports.debuglog = function(set) {
-  if (isUndefined(debugEnviron))
-    debugEnviron = process.env.NODE_DEBUG || '';
-  set = set.toUpperCase();
-  if (!debugs[set]) {
-    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
-      var pid = process.pid;
-      debugs[set] = function() {
-        var msg = exports.format.apply(exports, arguments);
-        console.error('%s %d: %s', set, pid, msg);
-      };
-    } else {
-      debugs[set] = function() {};
-    }
-  }
-  return debugs[set];
-};
-
-
-/**
- * Echos the value of a value. Trys to print the value out
- * in the best way possible given the different types.
- *
- * @param {Object} obj The object to print out.
- * @param {Object} opts Optional options object that alters the output.
- */
-/* legacy: obj, showHidden, depth, colors*/
-function inspect(obj, opts) {
-  // default options
-  var ctx = {
-    seen: [],
-    stylize: stylizeNoColor
-  };
-  // legacy...
-  if (arguments.length >= 3) ctx.depth = arguments[2];
-  if (arguments.length >= 4) ctx.colors = arguments[3];
-  if (isBoolean(opts)) {
-    // legacy...
-    ctx.showHidden = opts;
-  } else if (opts) {
-    // got an "options" object
-    exports._extend(ctx, opts);
-  }
-  // set default options
-  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
-  if (isUndefined(ctx.depth)) ctx.depth = 2;
-  if (isUndefined(ctx.colors)) ctx.colors = false;
-  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
-  if (ctx.colors) ctx.stylize = stylizeWithColor;
-  return formatValue(ctx, obj, ctx.depth);
-}
-exports.inspect = inspect;
-
-
-// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-inspect.colors = {
-  'bold' : [1, 22],
-  'italic' : [3, 23],
-  'underline' : [4, 24],
-  'inverse' : [7, 27],
-  'white' : [37, 39],
-  'grey' : [90, 39],
-  'black' : [30, 39],
-  'blue' : [34, 39],
-  'cyan' : [36, 39],
-  'green' : [32, 39],
-  'magenta' : [35, 39],
-  'red' : [31, 39],
-  'yellow' : [33, 39]
-};
-
-// Don't use 'blue' not visible on cmd.exe
-inspect.styles = {
-  'special': 'cyan',
-  'number': 'yellow',
-  'boolean': 'yellow',
-  'undefined': 'grey',
-  'null': 'bold',
-  'string': 'green',
-  'date': 'magenta',
-  // "name": intentionally not styling
-  'regexp': 'red'
-};
-
-
-function stylizeWithColor(str, styleType) {
-  var style = inspect.styles[styleType];
-
-  if (style) {
-    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
-           '\u001b[' + inspect.colors[style][1] + 'm';
-  } else {
-    return str;
-  }
-}
-
-
-function stylizeNoColor(str, styleType) {
-  return str;
-}
-
-
-function arrayToHash(array) {
-  var hash = {};
-
-  array.forEach(function(val, idx) {
-    hash[val] = true;
-  });
-
-  return hash;
-}
-
-
-function formatValue(ctx, value, recurseTimes) {
-  // Provide a hook for user-specified inspect functions.
-  // Check that value is an object with an inspect function on it
-  if (ctx.customInspect &&
-      value &&
-      isFunction(value.inspect) &&
-      // Filter out the util module, it's inspect function is special
-      value.inspect !== exports.inspect &&
-      // Also filter out any prototype objects using the circular check.
-      !(value.constructor && value.constructor.prototype === value)) {
-    var ret = value.inspect(recurseTimes, ctx);
-    if (!isString(ret)) {
-      ret = formatValue(ctx, ret, recurseTimes);
-    }
-    return ret;
-  }
-
-  // Primitive types cannot have properties
-  var primitive = formatPrimitive(ctx, value);
-  if (primitive) {
-    return primitive;
-  }
-
-  // Look up the keys of the object.
-  var keys = Object.keys(value);
-  var visibleKeys = arrayToHash(keys);
-
-  if (ctx.showHidden) {
-    keys = Object.getOwnPropertyNames(value);
-  }
-
-  // IE doesn't make error fields non-enumerable
-  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
-  if (isError(value)
-      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
-    return formatError(value);
-  }
-
-  // Some type of object without properties can be shortcutted.
-  if (keys.length === 0) {
-    if (isFunction(value)) {
-      var name = value.name ? ': ' + value.name : '';
-      return ctx.stylize('[Function' + name + ']', 'special');
-    }
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    }
-    if (isDate(value)) {
-      return ctx.stylize(Date.prototype.toString.call(value), 'date');
-    }
-    if (isError(value)) {
-      return formatError(value);
-    }
-  }
-
-  var base = '', array = false, braces = ['{', '}'];
-
-  // Make Array say that they are Array
-  if (isArray(value)) {
-    array = true;
-    braces = ['[', ']'];
-  }
-
-  // Make functions say that they are functions
-  if (isFunction(value)) {
-    var n = value.name ? ': ' + value.name : '';
-    base = ' [Function' + n + ']';
-  }
-
-  // Make RegExps say that they are RegExps
-  if (isRegExp(value)) {
-    base = ' ' + RegExp.prototype.toString.call(value);
-  }
-
-  // Make dates with properties first say the date
-  if (isDate(value)) {
-    base = ' ' + Date.prototype.toUTCString.call(value);
-  }
-
-  // Make error with message first say the error
-  if (isError(value)) {
-    base = ' ' + formatError(value);
-  }
-
-  if (keys.length === 0 && (!array || value.length == 0)) {
-    return braces[0] + base + braces[1];
-  }
-
-  if (recurseTimes < 0) {
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    } else {
-      return ctx.stylize('[Object]', 'special');
-    }
-  }
-
-  ctx.seen.push(value);
-
-  var output;
-  if (array) {
-    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
-  } else {
-    output = keys.map(function(key) {
-      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
-    });
-  }
-
-  ctx.seen.pop();
-
-  return reduceToSingleString(output, base, braces);
-}
-
-
-function formatPrimitive(ctx, value) {
-  if (isUndefined(value))
-    return ctx.stylize('undefined', 'undefined');
-  if (isString(value)) {
-    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
-                                             .replace(/'/g, "\\'")
-                                             .replace(/\\"/g, '"') + '\'';
-    return ctx.stylize(simple, 'string');
-  }
-  if (isNumber(value))
-    return ctx.stylize('' + value, 'number');
-  if (isBoolean(value))
-    return ctx.stylize('' + value, 'boolean');
-  // For some reason typeof null is "object", so special case here.
-  if (isNull(value))
-    return ctx.stylize('null', 'null');
-}
-
-
-function formatError(value) {
-  return '[' + Error.prototype.toString.call(value) + ']';
-}
-
-
-function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
-  var output = [];
-  for (var i = 0, l = value.length; i < l; ++i) {
-    if (hasOwnProperty(value, String(i))) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          String(i), true));
-    } else {
-      output.push('');
-    }
-  }
-  keys.forEach(function(key) {
-    if (!key.match(/^\d+$/)) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          key, true));
-    }
-  });
-  return output;
-}
-
-
-function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
-  var name, str, desc;
-  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
-  if (desc.get) {
-    if (desc.set) {
-      str = ctx.stylize('[Getter/Setter]', 'special');
-    } else {
-      str = ctx.stylize('[Getter]', 'special');
-    }
-  } else {
-    if (desc.set) {
-      str = ctx.stylize('[Setter]', 'special');
-    }
-  }
-  if (!hasOwnProperty(visibleKeys, key)) {
-    name = '[' + key + ']';
-  }
-  if (!str) {
-    if (ctx.seen.indexOf(desc.value) < 0) {
-      if (isNull(recurseTimes)) {
-        str = formatValue(ctx, desc.value, null);
-      } else {
-        str = formatValue(ctx, desc.value, recurseTimes - 1);
-      }
-      if (str.indexOf('\n') > -1) {
-        if (array) {
-          str = str.split('\n').map(function(line) {
-            return '  ' + line;
-          }).join('\n').substr(2);
-        } else {
-          str = '\n' + str.split('\n').map(function(line) {
-            return '   ' + line;
-          }).join('\n');
-        }
-      }
-    } else {
-      str = ctx.stylize('[Circular]', 'special');
-    }
-  }
-  if (isUndefined(name)) {
-    if (array && key.match(/^\d+$/)) {
-      return str;
-    }
-    name = JSON.stringify('' + key);
-    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
-      name = name.substr(1, name.length - 2);
-      name = ctx.stylize(name, 'name');
-    } else {
-      name = name.replace(/'/g, "\\'")
-                 .replace(/\\"/g, '"')
-                 .replace(/(^"|"$)/g, "'");
-      name = ctx.stylize(name, 'string');
-    }
-  }
-
-  return name + ': ' + str;
-}
-
-
-function reduceToSingleString(output, base, braces) {
-  var numLinesEst = 0;
-  var length = output.reduce(function(prev, cur) {
-    numLinesEst++;
-    if (cur.indexOf('\n') >= 0) numLinesEst++;
-    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
-  }, 0);
-
-  if (length > 60) {
-    return braces[0] +
-           (base === '' ? '' : base + '\n ') +
-           ' ' +
-           output.join(',\n  ') +
-           ' ' +
-           braces[1];
-  }
-
-  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
-}
-
-
-// NOTE: These type checking functions intentionally don't use `instanceof`
-// because it is fragile and can be easily faked with `Object.create()`.
-function isArray(ar) {
-  return Array.isArray(ar);
-}
-exports.isArray = isArray;
-
-function isBoolean(arg) {
-  return typeof arg === 'boolean';
-}
-exports.isBoolean = isBoolean;
-
-function isNull(arg) {
-  return arg === null;
-}
-exports.isNull = isNull;
-
-function isNullOrUndefined(arg) {
-  return arg == null;
-}
-exports.isNullOrUndefined = isNullOrUndefined;
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-exports.isNumber = isNumber;
-
-function isString(arg) {
-  return typeof arg === 'string';
-}
-exports.isString = isString;
-
-function isSymbol(arg) {
-  return typeof arg === 'symbol';
-}
-exports.isSymbol = isSymbol;
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-exports.isUndefined = isUndefined;
-
-function isRegExp(re) {
-  return isObject(re) && objectToString(re) === '[object RegExp]';
-}
-exports.isRegExp = isRegExp;
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-exports.isObject = isObject;
-
-function isDate(d) {
-  return isObject(d) && objectToString(d) === '[object Date]';
-}
-exports.isDate = isDate;
-
-function isError(e) {
-  return isObject(e) &&
-      (objectToString(e) === '[object Error]' || e instanceof Error);
-}
-exports.isError = isError;
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-exports.isFunction = isFunction;
-
-function isPrimitive(arg) {
-  return arg === null ||
-         typeof arg === 'boolean' ||
-         typeof arg === 'number' ||
-         typeof arg === 'string' ||
-         typeof arg === 'symbol' ||  // ES6 symbol
-         typeof arg === 'undefined';
-}
-exports.isPrimitive = isPrimitive;
-
-exports.isBuffer = require('./support/isBuffer');
-
-function objectToString(o) {
-  return Object.prototype.toString.call(o);
-}
-
-
-function pad(n) {
-  return n < 10 ? '0' + n.toString(10) : n.toString(10);
-}
-
-
-var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-              'Oct', 'Nov', 'Dec'];
-
-// 26 Feb 16:19:34
-function timestamp() {
-  var d = new Date();
-  var time = [pad(d.getHours()),
-              pad(d.getMinutes()),
-              pad(d.getSeconds())].join(':');
-  return [d.getDate(), months[d.getMonth()], time].join(' ');
-}
-
-
-// log is just a thin wrapper to console.log that prepends a timestamp
-exports.log = function() {
-  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
-};
-
-
-/**
- * Inherit the prototype methods from one constructor into another.
- *
- * The Function.prototype.inherits from lang.js rewritten as a standalone
- * function (not on Function.prototype). NOTE: If this file is to be loaded
- * during bootstrapping this function needs to be rewritten using some native
- * functions as prototype setup using normal JavaScript does not work as
- * expected during bootstrapping (see mirror.js in r114903).
- *
- * @param {function} ctor Constructor function which needs to inherit the
- *     prototype.
- * @param {function} superCtor Constructor function to inherit prototype from.
- */
-exports.inherits = require('inherits');
-
-exports._extend = function(origin, add) {
-  // Don't do anything if add isn't an object
-  if (!add || !isObject(add)) return origin;
-
-  var keys = Object.keys(add);
-  var i = keys.length;
-  while (i--) {
-    origin[keys[i]] = add[keys[i]];
-  }
-  return origin;
-};
-
-function hasOwnProperty(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
-}
-
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":10,"_process":8,"inherits":9}],12:[function(require,module,exports){
-const expose = require('choo-expose')
-const log = require('choo-log')
-const choo = require('choo')
-
-const app = choo()
-
-// if in dev mode, show logging in console and expose global app object
-// if (process.env.NODE_ENV === 'development') {
-app.use(log())
-app.use(expose())
-// }
-
-
-app.use(require('./models/devicesModel.js'))
-app.use(require('./models/mediaModel.js'))
-app.use(require('./models/peersModel.js'))
-app.use(require('./models/userModel.js'))
-
-app.route('/', require('./views/main.js'))
-
-app.mount('body div')
-
-},{"./models/devicesModel.js":14,"./models/mediaModel.js":15,"./models/peersModel.js":16,"./models/userModel.js":17,"./views/main.js":140,"choo":27,"choo-expose":24,"choo-log":25}],13:[function(require,module,exports){
-// Module for handling connections to multiple peers
-
-var io = require('socket.io-client')
-var SimplePeer = require('simple-peer')
-var extend = Object.assign
-var events = require('events').EventEmitter
-var inherits = require('inherits')
-
-var MultiPeer = function (options) {
-// connect to websocket signalling server. To DO: error validation
-  this.signaller = io(options.server)
-  this._userData = options.userData || null
-  this.stream = options.stream || null
- // this.stream = options.stream || null
-  this._peerOptions = options.peerOptions || {}
-  this._room = options.room
-  this.peers = {}
-
-  // Handle events from signalling server
-  this.signaller.on('ready', this._connectToPeers.bind(this))
-//  this.signaller.on('peers', )
-  this.signaller.on('signal', this._handleSignal.bind(this))
-
-  // emit 'join' event to signalling server
-  this.signaller.emit('join', this._room, this._userData)
-}
-// inherits from events module in order to trigger events
-inherits(MultiPeer, events)
-
-// send data to all connected peers via data channels
-MultiPeer.prototype.sendToAll = function (data) {
-  Object.keys(this.peers).forEach(function (id) {
-    this.peers[id].send(data)
-  }, this)
-}
-
-// userData contains all information about the local user:
-// -uuid
-// -nickname
-// -track information
-// whenever it is updated, new data is sent to all connected peers
-MultiPeer.prototype.updatePeerData = function (data) {
-  this._userData = data
-  this.sendToAll(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
-}
-// Once the new peer receives a list of connected peers from the server,
-// creates new simple peer object for each connected peer.
-MultiPeer.prototype._connectToPeers = function (id, peers) {
-  this.emit('peers', peers)
-
-  peers.forEach(function (id) {
-    var newOptions = {initiator: true}
-    if (this.stream != null) {
-      newOptions.stream = this.stream
-    } else {
-      console.log('stream is null')
-    }
-    var options = extend(newOptions, this._peerOptions)
-
-    this.peers[id] = new SimplePeer(options)
-    this._attachPeerEvents(this.peers[id], id)
-  }.bind(this))
-}
-
-// receive signal from signalling server, forward to simple-peer
-MultiPeer.prototype._handleSignal = function (data) {
-  // if there is currently no peer object for a peer id, that peer is initiating a new connection.
-  if (!this.peers[data.id]) {
-    this.emit('new peer', data)
-    var options = extend({stream: this.stream}, this._peerOptions)
-    this.peers[data.id] = new SimplePeer(options)
-    this._attachPeerEvents(this.peers[data.id], data.id)
-  }
-  this.peers[data.id].signal(data.signal)
-}
-
-// handle events for each connected peer
-MultiPeer.prototype._attachPeerEvents = function (p, _id) {
-  p.on('signal', function (id, signal) {
-    //  console.log("peer signal sending over sockets", id, signal)
-    this.signaller.emit('signal', {id: id, signal: signal})
-  }.bind(this, _id))
-
-  p.on('stream', function (id, stream) {
-    //  console.log("received a stream", stream)
-    this.emit('stream', id, stream)
-  }.bind(this, _id))
-
-  p.on('connect', function (id) {
-    console.log("connected to ", id)
-    this.emit('connect', id)
-    this.peers[id].send(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
-    //when connected, emit user information to other peers
-
-    //this.sendToAll(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
-
-  }.bind(this, _id))
-
-  p.on('data', function (id, data) {
-    this.emit('data', {id: id, data: JSON.parse(data)})
-  }.bind(this, _id))
-
-  p.on('close', function (id) {
-    console.log('CLOSED')
-    delete (this.peers[id])
-    this.emit('close', id)
-  }.bind(this, _id))
-}
-
-module.exports = MultiPeer
-
-},{"events":5,"inherits":59,"simple-peer":108,"socket.io-client":109}],14:[function(require,module,exports){
-const enumerateDevices = require('enumerate-devices')
-
-const xtend = Object.assign
-
-module.exports = devicesModel
-
-function devicesModel (state, bus) {
-// object representing the user's input and output devices
-  state.devices = xtend({
-    videoinput: {
-      byId: {},
-      all: []
-    },
-    audiooutput: {
-      byId: {},
-      all: []
-    },
-    audioinput: {
-      byId: {},
-      all: []
-    },
-    videooutput: {
-      byId: {},
-      all: []
-    },
-    default: {
-      audioinput: null,
-      videoinput: null
-    }
-  }, state.devices)
-
-// TO DO: put this function somewhere else
-  window.onload = function () {
-    getDevices()
-    bus.emit('peers:updatePeer', {
-      peerId: state.user.uuid
-    })
-  }
-
-  bus.on('devices:setDefaultAudio', function (val) {
-    setDefaultAudio(val)
-  })
-
-  bus.on('devices:setDefaultVideo', function (val) {
-    setDefaultVideo(val)
-  })
-// bus.on('devices:getDevices', function () {
-// TO DO: use electron remote available displays to enumerate video output devices
-// })
-
-  function setDefaultAudio (val) {
-    if (state.devices.default.audioinput !== val) {
-      state.devices.default.audioinput = val
-      bus.emit('media:addLocalMedia', {
-        constraints: {
-          audio: { deviceId: { exact: state.devices.default.audioinput } },
-          video: false
-        },
-        isDefault: true
-      })
-    }
-    bus.emit('render')
-  }
-
-  function setDefaultVideo (vid) {
-    if (state.devices.default.videoinput !== vid) {
-      console.log('SETTING VIDEO', vid)
-      state.devices.default.videoinput = vid
-      bus.emit('media:addLocalMedia', {
-        constraints: {
-          audio: false,
-          video: { deviceId: { exact: state.devices.default.videoinput } }
-        },
-        isDefault: true
-      })
-    }
-  }
-
-  function getDevices () {
-    enumerateDevices().then((devices) => {
-      const kinds = ['audioinput', 'videoinput', 'audiooutput']
-
-      kinds.forEach((kind) => {
-        const filtered = devices.filter((elem) => elem.kind === kind)
-
-        state.devices[kind].all = filtered.map((elem) => {
-          state.devices[kind].byId[elem.deviceId] = xtend({}, elem)
-          return elem.deviceId
-        })
-      })
-
-  // Set default audio and video devices
-      if (state.devices.audioinput.all.length > 0) setDefaultAudio(state.devices.audioinput.all[0])
-      if (state.devices.videoinput.all.length > 0) setDefaultVideo(state.devices.videoinput.all[0])
-
-      console.log('DEVICES', state.devices)
-      bus.emit('render')
-    }).catch(console.log.bind(console)) // TO DO:: display error to user
-  }
-}
-
-},{"enumerate-devices":48}],15:[function(require,module,exports){
-// MEDIA::
-// For now: each peer only broadcasts one stream, each stream has an unlimited number of tracks corresponding to each audio and video device + specific constraint settings.
-// (i.e. the same device could broadcast multiple tracks at different framerates/bandwidths/ etc.)
-// Any change in settings creates a new stream and renegotiates with peers.
-// Each user creates a unique id for a specific device / constraint configuration, and this id is broadcast to other users along with the track id that it referes to.
-// Peer ids and device ids are persistent between sessions.
-//
-// "default" refers to the audio and video tracks used for communication
-// TO DO: generated track id (UNIQUE TO ENTIRE SESSION, persistent across sessions) ?? maybe bad idea
-// To DO: default information only stored in one place--peer info
-// MONITORING:
-// there is no straightforward way to get actual specifications for each track (other than getusermedia constraints, which can drastically vary from actual settings)
-// eventually makes sense to monitor information
-
-'use strict'
-
-var xtend = Object.assign
-const getUserMedia = require('getusermedia')
-
-module.exports = mediaModel
-
-function mediaModel (state, bus) {
-  state.media = xtend({
-    byId: {},
-    default: {
-      audio: null,
-      video: null
-    },
-    all: []
-  }, state.media)
-
-  bus.on('media:addTracksFromStream', function (options) {
-    var tracks = options.stream.getTracks()
-    tracks.forEach(function (track) {
-      bus.emit('media:addTrack', {
-        track: track,
-        trackId: track.id,
-        peerId: options.peerId, // should be user peerId ?
-        constraints: options.constraints,
-        isDefault: options.isDefault,
-        kind: track.kind
-      })
-      if (options.isDefault) state.media.default[track.kind] = track.id
-
-    })
-    bus.emit('render')
-  })
-
-  bus.on('media:addLocalMedia', function (options) {
-    var existingTrack = getTrackFromConstraints(state.user.uuid, options.constraints)
-
-    // check whether a track with the given constrainst currently exists, if not, get user media
-    if (existingTrack !== null) {
-      // TO DO: user warning
-      if (options.isDefault) state.media.default[existingTrack.kind] = existingTrack.trackId
-      bus.emit('render')
-      console.log('track already exists!', existingTrack)
-    } else {
-      getUserMedia(options.constraints, function (err, stream) {
-        if (err) {
-          // TO DO: do something about error
-        } else {
-          // console.log("got stream", stream)
-          bus.emit('media:addTracksFromStream', {
-            stream: stream,
-            peerId: state.user.uuid,
-            constraints: options.constraints,
-            isDefault: options.isDefault
-          })
-        }
-        bus.emit('render')
-      })
-    }
-  })
-
-  bus.on('media:addTrack', function (opts) {
-    state.media.byId[opts.track.id] = xtend({}, opts)
-    if (state.media.all.indexOf(opts.track.id) < 0) {
-      state.media.all.push(opts.track.id)
-    }
-
-    bus.emit('peers:addTrackToPeer', {
-      trackId: opts.track.id,
-      peerId: opts.peerId,
-      isDefault: opts.isDefault,
-      kind: opts.kind
-    })
-
-    bus.emit('render')
-  })
-
-  bus.on('media:removeTrack', function (trackId) {
-    delete state.media.byId[trackId]
-    var index = state.media.all.indexOf(trackId)
-    if (index > -1) state.media.all.splice(index, 1)
-    bus.emit('render')
-  })
-  // Hacky way to avoid duplicating getusermedia calls:
-  // compare requested media constraints to constraints of existing tracks, if there is none, return null..
-  // else return existing mediaStreamTrack
-  function getTrackFromConstraints (peerId, constraints) {
-    var existingTrack = null
-    if (state.peers.byId[peerId] && state.peers.byId[peerId].tracks.length > 0) {
-      var tracks = state.peers.byId[peerId].tracks
-      console.log(' comparing : ', tracks, constraints)
-      tracks.forEach(function (trackId) {
-        var track = state.media.byId[trackId]
-      //  console.log("1:", JSON.stringify(constraints))
-      //  console.log("2:", JSON.stringify(track.constraints))
-        if (JSON.stringify(constraints) === JSON.stringify(track.constraints)) {
-          existingTrack = track
-        }
-      })
-    }
-    return existingTrack
-  }
-
-  // returns a new object containing only the keys in the array 'keys', only if undefined
-    function filterKeys (object, keys) {
-      var newObject = {}
-      keys.forEach(function (key) {
-        if (object[key]) newObject[key] = xtend({}, object[key])
-      })
-      return newObject
-    }
-}
-
-},{"getusermedia":50}],16:[function(require,module,exports){
-// the PEERS data store contains information about each connected peer (including the local user (definied by state.user.uuid))
-// Each peer has/will have:
-// 1. a nickname
-// 2. a set of mediaStreamTrackIds (including metadata about the track)
-// 3. certain tracks (defaultTracks) designated for communication
-//
-// The PEER data store ideally should be identical for all users in a session, with each connected peer updating its own information and broadcasting to other users as necessary
-
-var xtend = Object.assign
-
-module.exports = peersModel
-
-function peersModel (state, bus) {
-  state.peers = xtend({
-    byId: {
-
-    },
-    all: []
-  }, state.peers)
-
-  bus.on('peers:setAllPeers', function (peers) {
-    peers.forEach(function (peer) {
-      bus.emit('peers:updatePeer', peer)
-    })
-  })
-
-// update information about a specific peer, creates a new one if none exists
-// Note on Object.assign::
-// Properties in the target object will be overwritten by properties in the sources if they have the same key.
-// Later sources' properties will similarly overwrite earlier ones.
-  bus.on('peers:updatePeer', function (peer) {
-    state.peers.byId[peer.peerId] = xtend({
-      peerId: peer.peerId,
-      tracks: [],
-      nickname: null,
-      defaultTracks: {
-        audio: null,
-        video: null
-      }
-    }, state.peers.byId[peer.peerId], peer)
-
-    console.log("NEW  PEER INFO", state.peers.byId)
-    if (state.peers.all.indexOf(peer.peerId) < 0) {
-      state.peers.all.push(peer.peerId)
-    }
-    bus.emit('render')
-  })
-
-  bus.on('peers:addTrackToPeer', function (opts) {
-  //  console.log('Track TO PEER', state.peers, opts)
-    state.peers.byId[opts.peerId].tracks.push(opts.trackId)
-    // if track is default communication track, add to peer defaultTracks
-    if (opts.isDefault) {
-      state.peers.byId[opts.peerId].defaultTracks[opts.kind] = opts.trackId
-    }
-    bus.emit('render')
-  })
-
-  bus.on('peers:removePeer', function (peerId) {
-    // remove all tracks associated with this peer
-    state.peers.byId[peerId].tracks.forEach(function (trackId) {
-      bus.emit('media:removeTrack', trackId)
-    })
-    var index = state.peers.all.indexOf(peerId)
-    if (index > -1) state.peers.all.splice(index, 1)
-    delete state.peers.byId[peerId]
-  })
-  bus.emit('render')
-}
-
-},{}],17:[function(require,module,exports){
-var xtend = Object.assign
-var shortid = require('shortid')
-var MultiPeer = require('./../lib/MultiPeer.js')
-
-// To do: separate ui events (logged in) and connection state/ status log from user model
-// status log contains all peer connection related information
-
-module.exports = userModel
-
-function userModel (state, bus) {
-  state.user = xtend({
-    //uuid: localStorage.getItem('uuid') || shortid.generate(), // persistent local user id. If none is present in local storage, generate new one
-    uuid: shortid.generate(), // for dev purposes, always regenerate id
-    room: 'test',
-    server: 'https://live-lab-v1.glitch.me/',
-    loggedIn: false,
-    statusMessage: ''
-  }, state.user)
-
-  bus.emit('peers:updatePeer', {
-    peerId: state.user.uuid,
-    nickname: 'olivia'
-  })
-
-  bus.on('user:setNickname', function (name) {
-    bus.emit('peers:updatePeer', {
-      peerId: state.user.uuid,
-      nickname: name
-    })
-    state.user.nickname = name
-    bus.emit('render')
-  })
-
-  bus.on('user:setServer', function (server) {
-    state.user.server = server
-    bus.emit('render')
-  })
-
-  bus.on('user:setRoom', function (room) {
-    state.user.room = room
-    bus.emit('render')
-  })
-
-  // TO DO: validate form info before submitting
-  bus.on('user:join', function () {
-    localStorage.setItem('uuid', state.user.uuid)
-    var multiPeer = new MultiPeer({
-      room: state.user.room,
-      server: state.user.server,
-      stream: getLocalCommunicationStream(),
-      userData: {
-        uuid: state.user.uuid,
-        nickname: state.user.nickname
-      }
-    })
-
-    multiPeer.on('peers', function (peers) {
-      state.user.loggedIn = true
-      state.user.statusMessage += 'Connected to server ' + state.user.server + '\n'
-      var peersInfo = peers.map(function (peer) {
-        var peerInfo = {peerId: peer}
-        if (peer === state.user.uuid) peerInfo.nickname = state.user.nickname
-        return peerInfo
-      })
-      bus.emit('peers:setAllPeers', peersInfo)
-      bus.emit('render')
-    })
-
-    multiPeer.on('stream', function (peerId, stream) {
-      state.user.statusMessage += 'Received media from peer ' + peerId + '\n'
-      bus.emit('media:addTracksFromStream', {
-        peerId: peerId,
-        stream: stream,
-        isDefault: true
-      })
-    })
-
-    multiPeer.on('connect', function (id) {
-      state.user.statusMessage += 'Connected to peer ' + id + '\n'
-      bus.emit('render')
-    })
-
-    multiPeer.on('close', function (id) {
-      bus.emit('peers:removePeer', id)
-    })
-    multiPeer.on('new peer', function (data) {
-      // console.log("NEW REMOTE PEER", data)
-      bus.emit('peers:updatePeer', {
-        peerId: data.id
-      })
-    })
-
-    multiPeer.on('data', function (data) {
-      console.log("received data", data)
-      if (data.data && data.data.type === 'updatePeerData') {
-        var peerData = xtend({
-          peerId: data.id
-        }, data.data.message)
-        console.log('peer data', peerData)
-        bus.emit('peers:updatePeer', peerData)
-      }
-    })
-
-    state.user.statusMessage = 'Contacting server ' + state.user.server + '\n'
-
-    bus.emit('render')
-  })
-
-  function getLocalCommunicationStream () {
-    var tracks = []
-    if (state.media.default.audio !== null) tracks.push(state.media.byId[state.media.default.audio].track)
-    if (state.media.default.video !== null) tracks.push(state.media.byId[state.media.default.video].track)
-    return new MediaStream(tracks)
-  }
-
-// returns a stream that contains all local tracks
-  function getCombinedLocalStream () {
-    var userTracks = state.peers.byId[state.user.uuid].tracks.map(function (trackId) {
-      return state.media.byId[trackId].track
-    })
-    return new MediaStream(userTracks)
-  }
-}
-
-},{"./../lib/MultiPeer.js":13,"shortid":98}],18:[function(require,module,exports){
-module.exports = after
-
-function after(count, callback, err_cb) {
-    var bail = false
-    err_cb = err_cb || noop
-    proxy.count = count
-
-    return (count === 0) ? callback() : proxy
-
-    function proxy(err, result) {
-        if (proxy.count <= 0) {
-            throw new Error('after called too many times')
-        }
-        --proxy.count
-
-        // after first error, rest are passed to err_cb
-        if (err) {
-            bail = true
-            callback(err)
-            // future error callbacks will go to error handler
-            callback = err_cb
-        } else if (proxy.count === 0 && !bail) {
-            callback(null, result)
-        }
-    }
-}
-
-function noop() {}
-
-},{}],19:[function(require,module,exports){
-/**
- * An abstraction for slicing an arraybuffer even when
- * ArrayBuffer.prototype.slice is not supported
- *
- * @api public
- */
-
-module.exports = function(arraybuffer, start, end) {
-  var bytes = arraybuffer.byteLength;
-  start = start || 0;
-  end = end || bytes;
-
-  if (arraybuffer.slice) { return arraybuffer.slice(start, end); }
-
-  if (start < 0) { start += bytes; }
-  if (end < 0) { end += bytes; }
-  if (end > bytes) { end = bytes; }
-
-  if (start >= bytes || start >= end || bytes === 0) {
-    return new ArrayBuffer(0);
-  }
-
-  var abv = new Uint8Array(arraybuffer);
-  var result = new Uint8Array(end - start);
-  for (var i = start, ii = 0; i < end; i++, ii++) {
-    result[ii] = abv[i];
-  }
-  return result.buffer;
-};
-
-},{}],20:[function(require,module,exports){
-
-/**
- * Expose `Backoff`.
- */
-
-module.exports = Backoff;
-
-/**
- * Initialize backoff timer with `opts`.
- *
- * - `min` initial timeout in milliseconds [100]
- * - `max` max timeout [10000]
- * - `jitter` [0]
- * - `factor` [2]
- *
- * @param {Object} opts
- * @api public
- */
-
-function Backoff(opts) {
-  opts = opts || {};
-  this.ms = opts.min || 100;
-  this.max = opts.max || 10000;
-  this.factor = opts.factor || 2;
-  this.jitter = opts.jitter > 0 && opts.jitter <= 1 ? opts.jitter : 0;
-  this.attempts = 0;
-}
-
-/**
- * Return the backoff duration.
- *
- * @return {Number}
- * @api public
- */
-
-Backoff.prototype.duration = function(){
-  var ms = this.ms * Math.pow(this.factor, this.attempts++);
-  if (this.jitter) {
-    var rand =  Math.random();
-    var deviation = Math.floor(rand * this.jitter * ms);
-    ms = (Math.floor(rand * 10) & 1) == 0  ? ms - deviation : ms + deviation;
-  }
-  return Math.min(ms, this.max) | 0;
-};
-
-/**
- * Reset the number of attempts.
- *
- * @api public
- */
-
-Backoff.prototype.reset = function(){
-  this.attempts = 0;
-};
-
-/**
- * Set the minimum duration
- *
- * @api public
- */
-
-Backoff.prototype.setMin = function(min){
-  this.ms = min;
-};
-
-/**
- * Set the maximum duration
- *
- * @api public
- */
-
-Backoff.prototype.setMax = function(max){
-  this.max = max;
-};
-
-/**
- * Set the jitter
- *
- * @api public
- */
-
-Backoff.prototype.setJitter = function(jitter){
-  this.jitter = jitter;
-};
-
-
-},{}],21:[function(require,module,exports){
-/*
- * base64-arraybuffer
- * https://github.com/niklasvh/base64-arraybuffer
- *
- * Copyright (c) 2012 Niklas von Hertzen
- * Licensed under the MIT license.
- */
-(function(){
-  "use strict";
-
-  var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-  // Use a lookup table to find the index.
-  var lookup = new Uint8Array(256);
-  for (var i = 0; i < chars.length; i++) {
-    lookup[chars.charCodeAt(i)] = i;
-  }
-
-  exports.encode = function(arraybuffer) {
-    var bytes = new Uint8Array(arraybuffer),
-    i, len = bytes.length, base64 = "";
-
-    for (i = 0; i < len; i+=3) {
-      base64 += chars[bytes[i] >> 2];
-      base64 += chars[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
-      base64 += chars[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
-      base64 += chars[bytes[i + 2] & 63];
-    }
-
-    if ((len % 3) === 2) {
-      base64 = base64.substring(0, base64.length - 1) + "=";
-    } else if (len % 3 === 1) {
-      base64 = base64.substring(0, base64.length - 2) + "==";
-    }
-
-    return base64;
-  };
-
-  exports.decode =  function(base64) {
-    var bufferLength = base64.length * 0.75,
-    len = base64.length, i, p = 0,
-    encoded1, encoded2, encoded3, encoded4;
-
-    if (base64[base64.length - 1] === "=") {
-      bufferLength--;
-      if (base64[base64.length - 2] === "=") {
-        bufferLength--;
-      }
-    }
-
-    var arraybuffer = new ArrayBuffer(bufferLength),
-    bytes = new Uint8Array(arraybuffer);
-
-    for (i = 0; i < len; i+=4) {
-      encoded1 = lookup[base64.charCodeAt(i)];
-      encoded2 = lookup[base64.charCodeAt(i+1)];
-      encoded3 = lookup[base64.charCodeAt(i+2)];
-      encoded4 = lookup[base64.charCodeAt(i+3)];
-
-      bytes[p++] = (encoded1 << 2) | (encoded2 >> 4);
-      bytes[p++] = ((encoded2 & 15) << 4) | (encoded3 >> 2);
-      bytes[p++] = ((encoded3 & 3) << 6) | (encoded4 & 63);
-    }
-
-    return arraybuffer;
-  };
-})();
-
-},{}],22:[function(require,module,exports){
-var document = require('global/document')
-var hyperx = require('hyperx')
-var onload = require('on-load')
-
-var SVGNS = 'http://www.w3.org/2000/svg'
-var XLINKNS = 'http://www.w3.org/1999/xlink'
-
-var BOOL_PROPS = {
-  autofocus: 1,
-  checked: 1,
-  defaultchecked: 1,
-  disabled: 1,
-  formnovalidate: 1,
-  indeterminate: 1,
-  readonly: 1,
-  required: 1,
-  selected: 1,
-  willvalidate: 1
-}
-var COMMENT_TAG = '!--'
-var SVG_TAGS = [
-  'svg',
-  'altGlyph', 'altGlyphDef', 'altGlyphItem', 'animate', 'animateColor',
-  'animateMotion', 'animateTransform', 'circle', 'clipPath', 'color-profile',
-  'cursor', 'defs', 'desc', 'ellipse', 'feBlend', 'feColorMatrix',
-  'feComponentTransfer', 'feComposite', 'feConvolveMatrix', 'feDiffuseLighting',
-  'feDisplacementMap', 'feDistantLight', 'feFlood', 'feFuncA', 'feFuncB',
-  'feFuncG', 'feFuncR', 'feGaussianBlur', 'feImage', 'feMerge', 'feMergeNode',
-  'feMorphology', 'feOffset', 'fePointLight', 'feSpecularLighting',
-  'feSpotLight', 'feTile', 'feTurbulence', 'filter', 'font', 'font-face',
-  'font-face-format', 'font-face-name', 'font-face-src', 'font-face-uri',
-  'foreignObject', 'g', 'glyph', 'glyphRef', 'hkern', 'image', 'line',
-  'linearGradient', 'marker', 'mask', 'metadata', 'missing-glyph', 'mpath',
-  'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect',
-  'set', 'stop', 'switch', 'symbol', 'text', 'textPath', 'title', 'tref',
-  'tspan', 'use', 'view', 'vkern'
-]
-
-function belCreateElement (tag, props, children) {
-  var el
-
-  // If an svg tag, it needs a namespace
-  if (SVG_TAGS.indexOf(tag) !== -1) {
-    props.namespace = SVGNS
-  }
-
-  // If we are using a namespace
-  var ns = false
-  if (props.namespace) {
-    ns = props.namespace
-    delete props.namespace
-  }
-
-  // Create the element
-  if (ns) {
-    el = document.createElementNS(ns, tag)
-  } else if (tag === COMMENT_TAG) {
-    return document.createComment(props.comment)
-  } else {
-    el = document.createElement(tag)
-  }
-
-  // If adding onload events
-  if (props.onload || props.onunload) {
-    var load = props.onload || function () {}
-    var unload = props.onunload || function () {}
-    onload(el, function belOnload () {
-      load(el)
-    }, function belOnunload () {
-      unload(el)
-    },
-    // We have to use non-standard `caller` to find who invokes `belCreateElement`
-    belCreateElement.caller.caller.caller)
-    delete props.onload
-    delete props.onunload
-  }
-
-  // Create the properties
-  for (var p in props) {
-    if (props.hasOwnProperty(p)) {
-      var key = p.toLowerCase()
-      var val = props[p]
-      // Normalize className
-      if (key === 'classname') {
-        key = 'class'
-        p = 'class'
-      }
-      // The for attribute gets transformed to htmlFor, but we just set as for
-      if (p === 'htmlFor') {
-        p = 'for'
-      }
-      // If a property is boolean, set itself to the key
-      if (BOOL_PROPS[key]) {
-        if (val === 'true') val = key
-        else if (val === 'false') continue
-      }
-      // If a property prefers being set directly vs setAttribute
-      if (key.slice(0, 2) === 'on') {
-        el[p] = val
-      } else {
-        if (ns) {
-          if (p === 'xlink:href') {
-            el.setAttributeNS(XLINKNS, p, val)
-          } else if (/^xmlns($|:)/i.test(p)) {
-            // skip xmlns definitions
-          } else {
-            el.setAttributeNS(null, p, val)
-          }
-        } else {
-          el.setAttribute(p, val)
-        }
-      }
-    }
-  }
-
-  function appendChild (childs) {
-    if (!Array.isArray(childs)) return
-    for (var i = 0; i < childs.length; i++) {
-      var node = childs[i]
-      if (Array.isArray(node)) {
-        appendChild(node)
-        continue
-      }
-
-      if (typeof node === 'number' ||
-        typeof node === 'boolean' ||
-        typeof node === 'function' ||
-        node instanceof Date ||
-        node instanceof RegExp) {
-        node = node.toString()
-      }
-
-      if (typeof node === 'string') {
-        if (el.lastChild && el.lastChild.nodeName === '#text') {
-          el.lastChild.nodeValue += node
-          continue
-        }
-        node = document.createTextNode(node)
-      }
-
-      if (node && node.nodeType) {
-        el.appendChild(node)
-      }
-    }
-  }
-  appendChild(children)
-
-  return el
-}
-
-module.exports = hyperx(belCreateElement, {comments: true})
-module.exports.default = module.exports
-module.exports.createElement = belCreateElement
-
-},{"global/document":51,"hyperx":57,"on-load":81}],23:[function(require,module,exports){
-(function (global){
-/**
- * Create a blob builder even when vendor prefixes exist
- */
-
-var BlobBuilder = global.BlobBuilder
-  || global.WebKitBlobBuilder
-  || global.MSBlobBuilder
-  || global.MozBlobBuilder;
-
-/**
- * Check if Blob constructor is supported
- */
-
-var blobSupported = (function() {
-  try {
-    var a = new Blob(['hi']);
-    return a.size === 2;
-  } catch(e) {
-    return false;
-  }
-})();
-
-/**
- * Check if Blob constructor supports ArrayBufferViews
- * Fails in Safari 6, so we need to map to ArrayBuffers there.
- */
-
-var blobSupportsArrayBufferView = blobSupported && (function() {
-  try {
-    var b = new Blob([new Uint8Array([1,2])]);
-    return b.size === 2;
-  } catch(e) {
-    return false;
-  }
-})();
-
-/**
- * Check if BlobBuilder is supported
- */
-
-var blobBuilderSupported = BlobBuilder
-  && BlobBuilder.prototype.append
-  && BlobBuilder.prototype.getBlob;
-
-/**
- * Helper function that maps ArrayBufferViews to ArrayBuffers
- * Used by BlobBuilder constructor and old browsers that didn't
- * support it in the Blob constructor.
- */
-
-function mapArrayBufferViews(ary) {
-  for (var i = 0; i < ary.length; i++) {
-    var chunk = ary[i];
-    if (chunk.buffer instanceof ArrayBuffer) {
-      var buf = chunk.buffer;
-
-      // if this is a subarray, make a copy so we only
-      // include the subarray region from the underlying buffer
-      if (chunk.byteLength !== buf.byteLength) {
-        var copy = new Uint8Array(chunk.byteLength);
-        copy.set(new Uint8Array(buf, chunk.byteOffset, chunk.byteLength));
-        buf = copy.buffer;
-      }
-
-      ary[i] = buf;
-    }
-  }
-}
-
-function BlobBuilderConstructor(ary, options) {
-  options = options || {};
-
-  var bb = new BlobBuilder();
-  mapArrayBufferViews(ary);
-
-  for (var i = 0; i < ary.length; i++) {
-    bb.append(ary[i]);
-  }
-
-  return (options.type) ? bb.getBlob(options.type) : bb.getBlob();
-};
-
-function BlobConstructor(ary, options) {
-  mapArrayBufferViews(ary);
-  return new Blob(ary, options || {});
-};
-
-module.exports = (function() {
-  if (blobSupported) {
-    return blobSupportsArrayBufferView ? global.Blob : BlobConstructor;
-  } else if (blobBuilderSupported) {
-    return BlobBuilderConstructor;
-  } else {
-    return undefined;
-  }
-})();
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],24:[function(require,module,exports){
 module.exports = expose
 
 function expose () {
-  return function (state, bus) {
-    window.choo = {}
-    window.choo.state = state
-    window.choo.emit = function (eventName, data) {
-      bus.emit(eventName, data)
-    }
+  return function (state, emitter) {
+    emitter.on('DOMContentLoaded', function () {
+      window.choo = {}
+      window.choo.state = state
+      window.choo.emit = function (eventName, data) {
+        emitter.emit(eventName, data)
+      }
 
-    window.choo.on = function (eventName, listener) {
-      bus.on(eventName, listener)
-    }
+      window.choo.on = function (eventName, listener) {
+        emitter.on(eventName, listener)
+      }
+
+      var history = []
+      var i = 0
+      window.choo._history = history
+      window.choo.history = showHistory
+      window.choo.copy = copy
+      Object.defineProperty(window.choo, 'log', { get: showHistory })
+      Object.defineProperty(window.choo, 'history', { get: showHistory })
+
+      emitter.on('*', function (name, data) {
+        i += 1
+        var entry = new Event(name, data)
+        history.push(entry)
+        onIdle(function () {
+          var length = history.length
+          if (length > MAX_HISTORY_LENGTH) {
+            removeItems(history, 0, length - MAX_HISTORY_LENGTH)
+          }
+        })
+      })
+
+      function showHistory () {
+        console.table(history)
+        return i + ' events recorded, showing the last ' + MAX_HISTORY_LENGTH
+      }
+
+      function copy (state) {
+        var isStateString = state && typeof state === 'string'
+        var isChooPath = isStateString && arguments.length === 1 && state.indexOf('state.') === 0
+
+        if (!state || typeof state === 'function') state = window.choo.state
+        if (isChooPath) [].push.call(arguments, {state: window.choo.state})
+
+        stateCopy(isStateString ? pluck.apply(this, arguments) : state)
+      }
+    })
   }
 }
 
-},{}],25:[function(require,module,exports){
+function Event (name, data) {
+  this.name = name
+  this.data = data
+}
+
+},{"on-idle":80,"plucker":85,"remove-array-items":98,"state-copy":122}],20:[function(require,module,exports){
 var nanologger = require('nanologger')
 
 module.exports = logger
@@ -4662,10 +3805,10 @@ function logger (opts) {
   }
 }
 
-},{"nanologger":73}],26:[function(require,module,exports){
+},{"nanologger":72}],21:[function(require,module,exports){
 module.exports = require('bel')
 
-},{"bel":22}],27:[function(require,module,exports){
+},{"bel":14}],22:[function(require,module,exports){
 var documentReady = require('document-ready')
 var nanohistory = require('nanohistory')
 var nanorouter = require('nanorouter')
@@ -4805,7 +3948,7 @@ function createLocation () {
   return pathname + hash
 }
 
-},{"assert":1,"document-ready":34,"nanobus":69,"nanohistory":71,"nanohref":72,"nanomorph":74,"nanomount":77,"nanoraf":78,"nanorouter":79}],28:[function(require,module,exports){
+},{"assert":10,"document-ready":30,"nanobus":68,"nanohistory":70,"nanohref":71,"nanomorph":73,"nanomount":76,"nanoraf":77,"nanorouter":78}],23:[function(require,module,exports){
 /**
  * Slice reference.
  */
@@ -4830,7 +3973,7 @@ module.exports = function(obj, fn){
   }
 };
 
-},{}],29:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -4995,7 +4138,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],30:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 
 module.exports = function(a, b){
   var fn = function(){};
@@ -5003,7 +4146,46 @@ module.exports = function(a, b){
   a.prototype = new fn;
   a.prototype.constructor = a;
 };
-},{}],31:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
+'use strict';
+module.exports = input => {
+	const el = document.createElement('textarea');
+
+	el.value = input;
+
+	// Prevent keyboard from showing on mobile
+	el.setAttribute('readonly', '');
+
+	el.style.contain = 'strict';
+	el.style.position = 'absolute';
+	el.style.left = '-9999px';
+	el.style.fontSize = '12pt'; // Prevent zooming on iOS
+
+	const selection = getSelection();
+	let originalRange = false;
+	if (selection.rangeCount > 0) {
+		originalRange = selection.getRangeAt(0);
+	}
+
+	document.body.appendChild(el);
+	el.select();
+
+	let success = false;
+	try {
+		success = document.execCommand('copy');
+	} catch (err) {}
+
+	document.body.removeChild(el);
+
+	if (originalRange) {
+		selection.removeAllRanges();
+		selection.addRange(originalRange);
+	}
+
+	return success;
+};
+
+},{}],27:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -5113,8 +4295,8 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 
-}).call(this,{"isBuffer":require("../../../../../../../AppData/Roaming/npm/node_modules/watchify/node_modules/is-buffer/index.js")})
-},{"../../../../../../../AppData/Roaming/npm/node_modules/watchify/node_modules/is-buffer/index.js":7}],32:[function(require,module,exports){
+}).call(this,{"isBuffer":require("../../is-buffer/index.js")})
+},{"../../is-buffer/index.js":60}],28:[function(require,module,exports){
 (function (process){
 /**
  * This is the web browser implementation of `debug()`.
@@ -5303,7 +4485,7 @@ function localstorage() {
 }
 
 }).call(this,require('_process'))
-},{"./debug":33,"_process":8}],33:[function(require,module,exports){
+},{"./debug":29,"_process":17}],29:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -5507,7 +4689,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":68}],34:[function(require,module,exports){
+},{"ms":67}],30:[function(require,module,exports){
 'use strict'
 
 var assert = require('assert')
@@ -5526,11 +4708,11 @@ function ready (callback) {
   })
 }
 
-},{"assert":1}],35:[function(require,module,exports){
+},{"assert":10}],31:[function(require,module,exports){
 
 module.exports = require('./lib/index');
 
-},{"./lib/index":36}],36:[function(require,module,exports){
+},{"./lib/index":32}],32:[function(require,module,exports){
 
 module.exports = require('./socket');
 
@@ -5542,7 +4724,7 @@ module.exports = require('./socket');
  */
 module.exports.parser = require('engine.io-parser');
 
-},{"./socket":37,"engine.io-parser":45}],37:[function(require,module,exports){
+},{"./socket":33,"engine.io-parser":41}],33:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -6290,7 +5472,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./transport":38,"./transports/index":39,"component-emitter":29,"debug":32,"engine.io-parser":45,"indexof":58,"parsejson":82,"parseqs":83,"parseuri":84}],38:[function(require,module,exports){
+},{"./transport":34,"./transports/index":35,"component-emitter":24,"debug":28,"engine.io-parser":41,"indexof":57,"parsejson":82,"parseqs":83,"parseuri":84}],34:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -6449,7 +5631,7 @@ Transport.prototype.onClose = function () {
   this.emit('close');
 };
 
-},{"component-emitter":29,"engine.io-parser":45}],39:[function(require,module,exports){
+},{"component-emitter":24,"engine.io-parser":41}],35:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies
@@ -6506,7 +5688,7 @@ function polling (opts) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling-jsonp":40,"./polling-xhr":41,"./websocket":43,"xmlhttprequest-ssl":44}],40:[function(require,module,exports){
+},{"./polling-jsonp":36,"./polling-xhr":37,"./websocket":39,"xmlhttprequest-ssl":40}],36:[function(require,module,exports){
 (function (global){
 
 /**
@@ -6741,7 +5923,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":42,"component-inherit":30}],41:[function(require,module,exports){
+},{"./polling":38,"component-inherit":25}],37:[function(require,module,exports){
 (function (global){
 /**
  * Module requirements.
@@ -7158,7 +6340,7 @@ function unloadHandler () {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":42,"component-emitter":29,"component-inherit":30,"debug":32,"xmlhttprequest-ssl":44}],42:[function(require,module,exports){
+},{"./polling":38,"component-emitter":24,"component-inherit":25,"debug":28,"xmlhttprequest-ssl":40}],38:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -7405,7 +6587,7 @@ Polling.prototype.uri = function () {
   return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
 };
 
-},{"../transport":38,"component-inherit":30,"debug":32,"engine.io-parser":45,"parseqs":83,"xmlhttprequest-ssl":44,"yeast":134}],43:[function(require,module,exports){
+},{"../transport":34,"component-inherit":25,"debug":28,"engine.io-parser":41,"parseqs":83,"xmlhttprequest-ssl":40,"yeast":142}],39:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -7695,7 +6877,7 @@ WS.prototype.check = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../transport":38,"component-inherit":30,"debug":32,"engine.io-parser":45,"parseqs":83,"ws":3,"yeast":134}],44:[function(require,module,exports){
+},{"../transport":34,"component-inherit":25,"debug":28,"engine.io-parser":41,"parseqs":83,"ws":16,"yeast":142}],40:[function(require,module,exports){
 (function (global){
 // browser shim for xmlhttprequest module
 
@@ -7736,7 +6918,7 @@ module.exports = function (opts) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"has-cors":55}],45:[function(require,module,exports){
+},{"has-cors":53}],41:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -8346,7 +7528,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./keys":46,"./utf8":47,"after":18,"arraybuffer.slice":19,"base64-arraybuffer":21,"blob":23,"has-binary2":53}],46:[function(require,module,exports){
+},{"./keys":42,"./utf8":43,"after":8,"arraybuffer.slice":9,"base64-arraybuffer":12,"blob":15,"has-binary2":51}],42:[function(require,module,exports){
 
 /**
  * Gets the keys for an object.
@@ -8367,7 +7549,7 @@ module.exports = Object.keys || function keys (obj){
   return arr;
 };
 
-},{}],47:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/utf8js v2.1.2 by @mathias */
 ;(function(root) {
@@ -8626,7 +7808,7 @@ module.exports = Object.keys || function keys (obj){
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],48:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 module.exports = function (cb) {
     if (typeof Promise !== 'function') {
       var err = new Error('Device enumeration not supported.');
@@ -8681,7 +7863,359 @@ module.exports = function (cb) {
     });
 };
 
-},{}],49:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+function EventEmitter() {
+  this._events = this._events || {};
+  this._maxListeners = this._maxListeners || undefined;
+}
+module.exports = EventEmitter;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+EventEmitter.defaultMaxListeners = 10;
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!isNumber(n) || n < 0 || isNaN(n))
+    throw TypeError('n must be a positive number');
+  this._maxListeners = n;
+  return this;
+};
+
+EventEmitter.prototype.emit = function(type) {
+  var er, handler, len, args, i, listeners;
+
+  if (!this._events)
+    this._events = {};
+
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events.error ||
+        (isObject(this._events.error) && !this._events.error.length)) {
+      er = arguments[1];
+      if (er instanceof Error) {
+        throw er; // Unhandled 'error' event
+      } else {
+        // At least give some kind of context to the user
+        var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
+        err.context = er;
+        throw err;
+      }
+    }
+  }
+
+  handler = this._events[type];
+
+  if (isUndefined(handler))
+    return false;
+
+  if (isFunction(handler)) {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        args = Array.prototype.slice.call(arguments, 1);
+        handler.apply(this, args);
+    }
+  } else if (isObject(handler)) {
+    args = Array.prototype.slice.call(arguments, 1);
+    listeners = handler.slice();
+    len = listeners.length;
+    for (i = 0; i < len; i++)
+      listeners[i].apply(this, args);
+  }
+
+  return true;
+};
+
+EventEmitter.prototype.addListener = function(type, listener) {
+  var m;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events)
+    this._events = {};
+
+  // To avoid recursion in the case that type === "newListener"! Before
+  // adding it to the listeners, first emit "newListener".
+  if (this._events.newListener)
+    this.emit('newListener', type,
+              isFunction(listener.listener) ?
+              listener.listener : listener);
+
+  if (!this._events[type])
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  else if (isObject(this._events[type]))
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  else
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+
+  // Check for listener leak
+  if (isObject(this._events[type]) && !this._events[type].warned) {
+    if (!isUndefined(this._maxListeners)) {
+      m = this._maxListeners;
+    } else {
+      m = EventEmitter.defaultMaxListeners;
+    }
+
+    if (m && m > 0 && this._events[type].length > m) {
+      this._events[type].warned = true;
+      console.error('(node) warning: possible EventEmitter memory ' +
+                    'leak detected. %d listeners added. ' +
+                    'Use emitter.setMaxListeners() to increase limit.',
+                    this._events[type].length);
+      if (typeof console.trace === 'function') {
+        // not supported in IE 10
+        console.trace();
+      }
+    }
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  var fired = false;
+
+  function g() {
+    this.removeListener(type, g);
+
+    if (!fired) {
+      fired = true;
+      listener.apply(this, arguments);
+    }
+  }
+
+  g.listener = listener;
+  this.on(type, g);
+
+  return this;
+};
+
+// emits a 'removeListener' event iff the listener was removed
+EventEmitter.prototype.removeListener = function(type, listener) {
+  var list, position, length, i;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events || !this._events[type])
+    return this;
+
+  list = this._events[type];
+  length = list.length;
+  position = -1;
+
+  if (list === listener ||
+      (isFunction(list.listener) && list.listener === listener)) {
+    delete this._events[type];
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+
+  } else if (isObject(list)) {
+    for (i = length; i-- > 0;) {
+      if (list[i] === listener ||
+          (list[i].listener && list[i].listener === listener)) {
+        position = i;
+        break;
+      }
+    }
+
+    if (position < 0)
+      return this;
+
+    if (list.length === 1) {
+      list.length = 0;
+      delete this._events[type];
+    } else {
+      list.splice(position, 1);
+    }
+
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  var key, listeners;
+
+  if (!this._events)
+    return this;
+
+  // not listening for removeListener, no need to emit
+  if (!this._events.removeListener) {
+    if (arguments.length === 0)
+      this._events = {};
+    else if (this._events[type])
+      delete this._events[type];
+    return this;
+  }
+
+  // emit removeListener for all listeners on all events
+  if (arguments.length === 0) {
+    for (key in this._events) {
+      if (key === 'removeListener') continue;
+      this.removeAllListeners(key);
+    }
+    this.removeAllListeners('removeListener');
+    this._events = {};
+    return this;
+  }
+
+  listeners = this._events[type];
+
+  if (isFunction(listeners)) {
+    this.removeListener(type, listeners);
+  } else if (listeners) {
+    // LIFO order
+    while (listeners.length)
+      this.removeListener(type, listeners[listeners.length - 1]);
+  }
+  delete this._events[type];
+
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  var ret;
+  if (!this._events || !this._events[type])
+    ret = [];
+  else if (isFunction(this._events[type]))
+    ret = [this._events[type]];
+  else
+    ret = this._events[type].slice();
+  return ret;
+};
+
+EventEmitter.prototype.listenerCount = function(type) {
+  if (this._events) {
+    var evlistener = this._events[type];
+
+    if (isFunction(evlistener))
+      return 1;
+    else if (evlistener)
+      return evlistener.length;
+  }
+  return 0;
+};
+
+EventEmitter.listenerCount = function(emitter, type) {
+  return emitter.listenerCount(type);
+};
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+
+},{}],46:[function(require,module,exports){
+module.exports = stringify
+stringify.default = stringify
+function stringify (obj) {
+  if (obj !== null && typeof obj === 'object' && typeof obj.toJSON !== 'function') {
+    decirc(obj, '', [], null)
+  }
+  return JSON.stringify(obj)
+}
+function Circle (val, k, parent) {
+  this.val = val
+  this.k = k
+  this.parent = parent
+  this.count = 1
+}
+Circle.prototype.toJSON = function toJSON () {
+  if (--this.count === 0) {
+    this.parent[this.k] = this.val
+  }
+  return '[Circular]'
+}
+function decirc (val, k, stack, parent) {
+  var keys, len, i
+  if (typeof val !== 'object' || val === null) {
+    // not an object, nothing to do
+    return
+  } else if (val instanceof Circle) {
+    val.count++
+    return
+  } else if (typeof val.toJSON === 'function' && !val.toJSON.forceDecirc) {
+    return
+  } else if (parent) {
+    if (~stack.indexOf(val)) {
+      parent[k] = new Circle(val, k, parent)
+      return
+    }
+  }
+  stack.push(val)
+  keys = Object.keys(val)
+  len = keys.length
+  i = 0
+  for (; i < len; i++) {
+    k = keys[i]
+    decirc(val[k], k, stack, val)
+  }
+  stack.pop()
+}
+
+},{}],47:[function(require,module,exports){
 // originally pulled out of simple-peer
 
 module.exports = function getBrowserRTC () {
@@ -8698,7 +8232,7 @@ module.exports = function getBrowserRTC () {
   return wrtc
 }
 
-},{}],50:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg used for navigator.getUserMedia shim
 var adapter = require('webrtc-adapter');
 
@@ -8775,7 +8309,7 @@ module.exports = function (constraints, cb) {
     });
 };
 
-},{"webrtc-adapter":123}],51:[function(require,module,exports){
+},{"webrtc-adapter":131}],49:[function(require,module,exports){
 (function (global){
 var topLevel = typeof global !== 'undefined' ? global :
     typeof window !== 'undefined' ? window : {}
@@ -8796,7 +8330,7 @@ if (typeof document !== 'undefined') {
 module.exports = doccy;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"min-document":3}],52:[function(require,module,exports){
+},{"min-document":16}],50:[function(require,module,exports){
 (function (global){
 var win;
 
@@ -8813,7 +8347,7 @@ if (typeof window !== "undefined") {
 module.exports = win;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],53:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 (function (global){
 /* global Blob File */
 
@@ -8879,14 +8413,14 @@ function hasBinary (obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"isarray":54}],54:[function(require,module,exports){
+},{"isarray":52}],52:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],55:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -8905,7 +8439,7 @@ try {
   module.exports = false;
 }
 
-},{}],56:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 module.exports = attributeToProperty
 
 var transform = {
@@ -8926,7 +8460,7 @@ function attributeToProperty (h) {
   }
 }
 
-},{}],57:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 var attrToProp = require('hyperscript-attribute-to-property')
 
 var VAR = 0, TEXT = 1, OPEN = 2, CLOSE = 3, ATTR = 4
@@ -9206,7 +8740,93 @@ var closeRE = RegExp('^(' + [
 ].join('|') + ')(?:[\.#][a-zA-Z0-9\u007F-\uFFFF_:-]+)*$')
 function selfClosing (tag) { return closeRE.test(tag) }
 
-},{"hyperscript-attribute-to-property":56}],58:[function(require,module,exports){
+},{"hyperscript-attribute-to-property":54}],56:[function(require,module,exports){
+exports.read = function (buffer, offset, isLE, mLen, nBytes) {
+  var e, m
+  var eLen = nBytes * 8 - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var nBits = -7
+  var i = isLE ? (nBytes - 1) : 0
+  var d = isLE ? -1 : 1
+  var s = buffer[offset + i]
+
+  i += d
+
+  e = s & ((1 << (-nBits)) - 1)
+  s >>= (-nBits)
+  nBits += eLen
+  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  m = e & ((1 << (-nBits)) - 1)
+  e >>= (-nBits)
+  nBits += mLen
+  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  if (e === 0) {
+    e = 1 - eBias
+  } else if (e === eMax) {
+    return m ? NaN : ((s ? -1 : 1) * Infinity)
+  } else {
+    m = m + Math.pow(2, mLen)
+    e = e - eBias
+  }
+  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
+}
+
+exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
+  var e, m, c
+  var eLen = nBytes * 8 - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
+  var i = isLE ? 0 : (nBytes - 1)
+  var d = isLE ? 1 : -1
+  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0
+
+  value = Math.abs(value)
+
+  if (isNaN(value) || value === Infinity) {
+    m = isNaN(value) ? 1 : 0
+    e = eMax
+  } else {
+    e = Math.floor(Math.log(value) / Math.LN2)
+    if (value * (c = Math.pow(2, -e)) < 1) {
+      e--
+      c *= 2
+    }
+    if (e + eBias >= 1) {
+      value += rt / c
+    } else {
+      value += rt * Math.pow(2, 1 - eBias)
+    }
+    if (value * c >= 2) {
+      e++
+      c /= 2
+    }
+
+    if (e + eBias >= eMax) {
+      m = 0
+      e = eMax
+    } else if (e + eBias >= 1) {
+      m = (value * c - 1) * Math.pow(2, mLen)
+      e = e + eBias
+    } else {
+      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
+      e = 0
+    }
+  }
+
+  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
+
+  e = (e << mLen) | m
+  eLen += mLen
+  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
+
+  buffer[offset + i - d] |= s * 128
+}
+
+},{}],57:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -9217,9 +8837,32 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
+},{}],58:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
 },{}],59:[function(require,module,exports){
-arguments[4][9][0].apply(exports,arguments)
-},{"dup":9}],60:[function(require,module,exports){
 var containers = []; // will store container HTMLElement references
 var styleElements = []; // will store {prepend: HTMLElement, append: HTMLElement}
 
@@ -9279,9 +8922,30 @@ function createStyleElement() {
 module.exports = insertCss;
 module.exports.insertCss = insertCss;
 
+},{}],60:[function(require,module,exports){
+/*!
+ * Determine if an object is a Buffer
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+
+// The _isBuffer check is for Safari 5-7 support, because it's missing
+// Object.prototype.constructor. Remove this eventually
+module.exports = function (obj) {
+  return obj != null && (isBuffer(obj) || isSlowBuffer(obj) || !!obj._isBuffer)
+}
+
+function isBuffer (obj) {
+  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
+}
+
+// For Node v0.10 support. Remove this eventually.
+function isSlowBuffer (obj) {
+  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
+}
+
 },{}],61:[function(require,module,exports){
-arguments[4][54][0].apply(exports,arguments)
-},{"dup":54}],62:[function(require,module,exports){
 var is = require('./is')
 
 module.exports = function shallowEqualObjects(objA, objB) {
@@ -9308,7 +8972,7 @@ module.exports = function shallowEqualObjects(objA, objB) {
   return true;
 };
 
-},{"./is":63}],63:[function(require,module,exports){
+},{"./is":62}],62:[function(require,module,exports){
 const hasElement = typeof Element !== 'undefined'
 
 module.exports = function is(a, b) {
@@ -9320,7 +8984,7 @@ module.exports = function is(a, b) {
   return a === b;
 }
 
-},{}],64:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 var Nanocomponent = require('nanocomponent')
 var nanologger = require('nanologger')
 var nanomorph = require('nanomorph')
@@ -9407,14 +9071,17 @@ Microcomponent.prototype.emit = function (eventname) {
   return this['_' + eventname].apply(this, args)
 }
 
-},{"assert":1,"juliangruber-shallow-equal/objects":62,"nanocomponent":70,"nanologger":73,"nanomorph":65}],65:[function(require,module,exports){
+},{"assert":10,"juliangruber-shallow-equal/objects":61,"nanocomponent":69,"nanologger":72,"nanomorph":64}],64:[function(require,module,exports){
 var assert = require('assert')
 var morph = require('./lib/morph')
 
+var TEXT_NODE = 3
+// var DEBUG = false
+
 module.exports = nanomorph
 
-// morph one tree into another tree
-// (obj, obj) -> obj
+// Morph one tree into another tree
+//
 // no parent
 //   -> same: diff and walk children
 //   -> not same: replace and return
@@ -9427,15 +9094,29 @@ module.exports = nanomorph
 // nodes are the same
 //   -> walk all child nodes and append to old node
 function nanomorph (oldTree, newTree) {
+  // if (DEBUG) {
+  //   console.log(
+  //   'nanomorph\nold\n  %s\nnew\n  %s',
+  //   oldTree && oldTree.outerHTML,
+  //   newTree && newTree.outerHTML
+  // )
+  // }
   assert.equal(typeof oldTree, 'object', 'nanomorph: oldTree should be an object')
   assert.equal(typeof newTree, 'object', 'nanomorph: newTree should be an object')
   var tree = walk(newTree, oldTree)
+  // if (DEBUG) console.log('=> morphed\n  %s', tree.outerHTML)
   return tree
 }
 
-// walk and morph a dom tree
-// (obj, obj) -> obj
+// Walk and morph a dom tree
 function walk (newNode, oldNode) {
+  // if (DEBUG) {
+  //   console.log(
+  //   'walk\nold\n  %s\nnew\n  %s',
+  //   oldNode && oldNode.outerHTML,
+  //   newNode && newNode.outerHTML
+  // )
+  // }
   if (!oldNode) {
     return newNode
   } else if (!newNode) {
@@ -9451,49 +9132,97 @@ function walk (newNode, oldNode) {
   }
 }
 
-// update the children of elements
+// Update the children of elements
 // (obj, obj) -> null
 function updateChildren (newNode, oldNode) {
-  var oldChildren = oldNode.childNodes
-  var newChildren = newNode.childNodes
-  if (!newChildren || !oldChildren) return
+  // if (DEBUG) {
+  //   console.log(
+  //   'updateChildren\nold\n  %s\nnew\n  %s',
+  //   oldNode && oldNode.outerHTML,
+  //   newNode && newNode.outerHTML
+  // )
+  // }
+  var oldChild, newChild, morphed, oldMatch
 
-  var newIndex = 0
-  for (var oldIndex = 0; oldIndex < oldChildren.length; oldIndex++) {
-    var oldChildNode = oldChildren[oldIndex]
-    var oldId = oldChildNode.id
-    var newStartIndex = newIndex
-    findNewChild()
-  }
-  while (newChildren[newIndex]) oldNode.appendChild(newChildren[newIndex])
+  // The offset is only ever increased, and used for [i - offset] in the loop
+  var offset = 0
 
-  function findNewChild () {
-    for (; newIndex < newChildren.length; newIndex++) {
-      var currentChild = newChildren[newIndex]
+  for (var i = 0; ; i++) {
+    oldChild = oldNode.childNodes[i]
+    newChild = newNode.childNodes[i - offset]
+    // if (DEBUG) {
+    //   console.log(
+    //   '===\n- old\n  %s\n- new\n  %s',
+    //   oldChild && oldChild.outerHTML,
+    //   newChild && newChild.outerHTML
+    // )
+    // }
+    // Both nodes are empty, do nothing
+    if (!oldChild && !newChild) {
+      break
 
-      if (oldId === currentChild.id) {
-        // found child in new list, add the missing ones
-        var retChildNode = walk(currentChild, oldChildNode)
-        if (retChildNode !== oldChildNode) {
-          oldNode.replaceChild(retChildNode, oldChildNode)
-          newIndex--
+    // There is no new child, remove old
+    } else if (!newChild) {
+      oldNode.removeChild(oldChild)
+      i--
+
+    // There is no old child, add new
+    } else if (!oldChild) {
+      oldNode.appendChild(newChild)
+      offset++
+
+    // Both nodes are the same, morph
+    } else if (same(newChild, oldChild)) {
+      morphed = walk(newChild, oldChild)
+      if (morphed !== oldChild) {
+        oldNode.replaceChild(morphed, oldChild)
+        offset++
+      }
+
+    // Both nodes do not share an ID or a placeholder, try reorder
+    } else {
+      oldMatch = null
+
+      // Try and find a similar node somewhere in the tree
+      for (var j = i; j < oldNode.childNodes.length; j++) {
+        if (same(oldNode.childNodes[j], newChild)) {
+          oldMatch = oldNode.childNodes[j]
+          break
         }
-        for (; newStartIndex < newIndex; newStartIndex++) {
-          oldNode.insertBefore(newChildren[newStartIndex], oldChildNode)
-          newIndex--
-          oldIndex++
+      }
+
+      // If there was a node with the same ID or placeholder in the old list
+      if (oldMatch) {
+        morphed = walk(newChild, oldMatch)
+        if (morphed !== oldMatch) offset++
+        oldNode.insertBefore(morphed, oldChild)
+
+      // It's safe to morph two nodes in-place if neither has an ID
+      } else if (!newChild.id && !oldChild.id) {
+        morphed = walk(newChild, oldChild)
+        if (morphed !== oldChild) {
+          oldNode.replaceChild(morphed, oldChild)
+          offset++
         }
-        newIndex++
-        return
+
+      // Insert the node at the index if we couldn't morph or find a matching node
+      } else {
+        oldNode.insertBefore(newChild, oldChild)
+        offset++
       }
     }
-    oldNode.removeChild(oldChildNode)
-    oldIndex--
-    newIndex = newStartIndex
   }
 }
 
-},{"./lib/morph":67,"assert":1}],66:[function(require,module,exports){
+function same (a, b) {
+  if (a.id) return a.id === b.id
+  if (a.isSameNode) return a.isSameNode(b)
+  if (a.tagName !== b.tagName) return false
+  if (a.type === TEXT_NODE) return a.nodeValue === b.nodeValue
+  return false
+}
+
+},{"./lib/morph":66,"assert":10}],65:[function(require,module,exports){
 module.exports = [
   // attribute events (can be set with attributes)
   'onclick',
@@ -9533,7 +9262,7 @@ module.exports = [
   'onfocusout'
 ]
 
-},{}],67:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 var events = require('./events')
 var eventsLength = events.length
 
@@ -9697,7 +9426,7 @@ function updateAttribute (newNode, oldNode, name) {
   }
 }
 
-},{"./events":66}],68:[function(require,module,exports){
+},{"./events":65}],67:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -9851,7 +9580,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],69:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 var nanotiming = require('nanotiming')
 var assert = require('assert')
 
@@ -9999,7 +9728,7 @@ Nanobus.prototype._emit = function (arr, eventName, data) {
   }
 }
 
-},{"assert":1,"nanotiming":80}],70:[function(require,module,exports){
+},{"assert":10,"nanotiming":79}],69:[function(require,module,exports){
 var onload = require('on-load')
 var assert = require('assert')
 
@@ -10085,7 +9814,7 @@ Nanocomponent.prototype._createPlaceholder = function () {
   return el
 }
 
-},{"assert":1,"on-load":81}],71:[function(require,module,exports){
+},{"assert":10,"on-load":81}],70:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = history
@@ -10099,7 +9828,7 @@ function history (cb) {
   }
 }
 
-},{"assert":1}],72:[function(require,module,exports){
+},{"assert":10}],71:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = href
@@ -10135,8 +9864,12 @@ function href (cb, root) {
   }
 }
 
-},{"assert":1}],73:[function(require,module,exports){
+},{"assert":10}],72:[function(require,module,exports){
+var assert = require('assert')
+var xtend = require('xtend')
+
 var emojis = {
+  trace: '🔍',
   debug: '🐛',
   info: '✨',
   warn: '⚠️',
@@ -10145,6 +9878,7 @@ var emojis = {
 }
 
 var levels = {
+  trace: 10,
   debug: 20,
   info: 30,
   warn: 40,
@@ -10152,7 +9886,7 @@ var levels = {
   fatal: 60
 }
 
-var colors = {
+var defaultColors = {
   foreground: '#d3c0c8',
   background: '#2d2d2d',
   black: '#2d2d2d',
@@ -10168,10 +9902,14 @@ var colors = {
 
 module.exports = Nanologger
 
-function Nanologger (name) {
-  if (!(this instanceof Nanologger)) return new Nanologger(name)
+function Nanologger (name, opts) {
+  opts = opts || {}
+  if (!(this instanceof Nanologger)) return new Nanologger(name, opts)
+
+  assert.equal(typeof opts, 'object', 'nanologger: opts should be type object')
 
   this._name = name || ''
+  this._colors = xtend(defaultColors, opts.colors || {})
 
   try {
     this.logLevel = window.localStorage.getItem('logLevel') || 'info'
@@ -10180,6 +9918,12 @@ function Nanologger (name) {
   }
 
   this._logLevel = levels[this.logLevel]
+}
+
+Nanologger.prototype.trace = function () {
+  var args = [ 'trace' ]
+  for (var i = 0, len = arguments.length; i < len; i++) args.push(arguments[i])
+  this._print.apply(this, args)
 }
 
 Nanologger.prototype.debug = function () {
@@ -10220,17 +9964,17 @@ Nanologger.prototype._print = function (level) {
   var name = this._name || 'unknown'
 
   var msgColor = (level === 'error' || level.fatal)
-    ? colors.red
+    ? this._colors.red
     : level === 'warn'
-      ? colors.yellow
-      : colors.green
+      ? this._colors.yellow
+      : this._colors.green
 
   var objs = []
   var args = [ null ]
   var msg = '%c%s ' + emoji + ' %c%s'
 
-  args.push(color(colors.brightBlack), time)
-  args.push(color(colors.magenta), name)
+  args.push(color(this._colors.brightBlack), time)
+  args.push(color(this._colors.magenta), name)
 
   for (var i = 1, len = arguments.length; i < len; i++) {
     var arg = arguments[i]
@@ -10243,17 +9987,17 @@ Nanologger.prototype._print = function (level) {
       } else if (/ms$/.test(arg)) {
         // arguments finishing with 'ms', grey out
         msg += ' %c%s'
-        args.push(color(colors.brightBlack))
+        args.push(color(this._colors.brightBlack))
         args.push(arg)
       } else {
         // normal colors
         msg += ' %c%s'
-        args.push(color(colors.white))
+        args.push(color(this._colors.white))
         args.push(arg)
       }
     } else if (typeof arg === 'number') {
       msg += ' %c%d'
-      args.push(color(colors.magenta))
+      args.push(color(this._colors.magenta))
       args.push(arg)
     } else {
       objs.push(arg)
@@ -10284,7 +10028,7 @@ function pad (str) {
   return str.length !== 2 ? 0 + str : str
 }
 
-},{}],74:[function(require,module,exports){
+},{"assert":10,"xtend":140}],73:[function(require,module,exports){
 var assert = require('assert')
 var morph = require('./lib/morph')
 var rootLabelRegex = /^data-onloadid/
@@ -10379,9 +10123,9 @@ function persistStatefulRoot (newNode, oldNode) {
   }
 }
 
-},{"./lib/morph":76,"assert":1}],75:[function(require,module,exports){
-arguments[4][66][0].apply(exports,arguments)
-},{"dup":66}],76:[function(require,module,exports){
+},{"./lib/morph":75,"assert":10}],74:[function(require,module,exports){
+arguments[4][65][0].apply(exports,arguments)
+},{"dup":65}],75:[function(require,module,exports){
 var events = require('./events')
 var eventsLength = events.length
 
@@ -10556,7 +10300,7 @@ function updateAttribute (newNode, oldNode, name) {
   }
 }
 
-},{"./events":75}],77:[function(require,module,exports){
+},{"./events":74}],76:[function(require,module,exports){
 var nanomorph = require('nanomorph')
 var assert = require('assert')
 
@@ -10578,7 +10322,7 @@ function nanomount (target, newTree) {
     target.outerHTML.nodeName + '.')
 }
 
-},{"assert":1,"nanomorph":74}],78:[function(require,module,exports){
+},{"assert":10,"nanomorph":73}],77:[function(require,module,exports){
 'use strict'
 
 var assert = require('assert')
@@ -10615,7 +10359,7 @@ function nanoraf (render, raf) {
   }
 }
 
-},{"assert":1}],79:[function(require,module,exports){
+},{"assert":10}],78:[function(require,module,exports){
 var wayfarer = require('wayfarer')
 
 var isLocalFile = (/file:\/\//.test(typeof window === 'object' &&
@@ -10675,7 +10419,7 @@ function pathname (route, isElectron) {
   return route.replace(suffix, '').replace(normalize, '/')
 }
 
-},{"wayfarer":121}],80:[function(require,module,exports){
+},{"wayfarer":129}],79:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = Nanotiming
@@ -10701,7 +10445,32 @@ Nanotiming.prototype.end = function (partial) {
   window.performance.measure(name, name + '-start', name + '-end')
 }
 
-},{"assert":1}],81:[function(require,module,exports){
+},{"assert":10}],80:[function(require,module,exports){
+var assert = require('assert')
+
+var dftOpts = {}
+var hasWindow = typeof window !== 'undefined'
+var hasIdle = hasWindow && window.requestIdleCallback
+
+module.exports = onIdle
+
+function onIdle (cb, opts) {
+  opts = opts || dftOpts
+  var timerId
+
+  assert.equal(typeof cb, 'function', 'on-idle: cb should be type function')
+  assert.equal(typeof opts, 'object', 'on-idle: opts should be type object')
+
+  if (hasIdle) {
+    timerId = window.requestIdleCallback(cb, opts)
+    return window.cancelIdleCallback.bind(window, timerId)
+  } else if (hasWindow) {
+    timerId = setTimeout(cb, 0)
+    return clearTimeout.bind(window, timerId)
+  }
+}
+
+},{"assert":10}],81:[function(require,module,exports){
 /* global MutationObserver */
 var document = require('global/document')
 var window = require('global/window')
@@ -10790,7 +10559,7 @@ function eachMutation (nodes, fn) {
   }
 }
 
-},{"global/document":51,"global/window":52}],82:[function(require,module,exports){
+},{"global/document":49,"global/window":50}],82:[function(require,module,exports){
 (function (global){
 /**
  * JSON parse.
@@ -10906,6 +10675,43 @@ module.exports = function parseuri(str) {
 };
 
 },{}],85:[function(require,module,exports){
+module.exports = plucker
+
+function plucker(path, object) {
+  return arguments.length >= 2
+    ? pluck(path)(object)
+    : pluck(path)
+}
+
+function pluck(path) {
+  path = typeof path === 'string'
+    ? String(path).trim().split('.')
+    : path
+
+  if (path.length < 2) {
+    path = path[0]
+    return pluckSingle
+  } else {
+    var l = path.length
+    return pluckPath
+  }
+
+  function pluckSingle(object) {
+    return object[path]
+  }
+
+  function pluckPath(object) {
+    for (var i = 0; i < l; i++) {
+      if (typeof object === 'undefined') break
+
+      object = object[path[i]]
+    }
+
+    return object
+  }
+}
+
+},{}],86:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -10952,7 +10758,7 @@ function nextTick(fn, arg1, arg2, arg3) {
 }
 
 }).call(this,require('_process'))
-},{"_process":8}],86:[function(require,module,exports){
+},{"_process":17}],87:[function(require,module,exports){
 (function (process,global){
 'use strict'
 
@@ -10994,7 +10800,28 @@ function randomBytes (size, cb) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":8,"safe-buffer":95}],87:[function(require,module,exports){
+},{"_process":17,"safe-buffer":99}],88:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 // a duplex stream is just a stream that is both readable and writable.
 // Since JS doesn't have multiple prototypal inheritance, this class
 // prototypally inherits from Readable, and then parasitically from
@@ -11004,6 +10831,10 @@ function randomBytes (size, cb) {
 
 /*<replacement>*/
 
+var processNextTick = require('process-nextick-args');
+/*</replacement>*/
+
+/*<replacement>*/
 var objectKeys = Object.keys || function (obj) {
   var keys = [];
   for (var key in obj) {
@@ -11013,10 +10844,6 @@ var objectKeys = Object.keys || function (obj) {
 /*</replacement>*/
 
 module.exports = Duplex;
-
-/*<replacement>*/
-var processNextTick = require('process-nextick-args');
-/*</replacement>*/
 
 /*<replacement>*/
 var util = require('core-util-is');
@@ -11065,12 +10892,61 @@ function onEndNT(self) {
   self.end();
 }
 
+Object.defineProperty(Duplex.prototype, 'destroyed', {
+  get: function () {
+    if (this._readableState === undefined || this._writableState === undefined) {
+      return false;
+    }
+    return this._readableState.destroyed && this._writableState.destroyed;
+  },
+  set: function (value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (this._readableState === undefined || this._writableState === undefined) {
+      return;
+    }
+
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._readableState.destroyed = value;
+    this._writableState.destroyed = value;
+  }
+});
+
+Duplex.prototype._destroy = function (err, cb) {
+  this.push(null);
+  this.end();
+
+  processNextTick(cb, err);
+};
+
 function forEach(xs, f) {
   for (var i = 0, l = xs.length; i < l; i++) {
     f(xs[i], i);
   }
 }
-},{"./_stream_readable":89,"./_stream_writable":91,"core-util-is":31,"inherits":59,"process-nextick-args":85}],88:[function(require,module,exports){
+},{"./_stream_readable":90,"./_stream_writable":92,"core-util-is":27,"inherits":58,"process-nextick-args":86}],89:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 // a passthrough stream.
 // basically just the most minimal sort of Transform stream.
 // Every written chunk gets output as-is.
@@ -11097,15 +10973,37 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":90,"core-util-is":31,"inherits":59}],89:[function(require,module,exports){
-(function (process){
+},{"./_stream_transform":91,"core-util-is":27,"inherits":58}],90:[function(require,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 'use strict';
 
-module.exports = Readable;
-
 /*<replacement>*/
+
 var processNextTick = require('process-nextick-args');
 /*</replacement>*/
+
+module.exports = Readable;
 
 /*<replacement>*/
 var isArray = require('isarray');
@@ -11129,8 +11027,17 @@ var EElistenerCount = function (emitter, type) {
 var Stream = require('./internal/streams/stream');
 /*</replacement>*/
 
+// TODO(bmeurer): Change this back to const once hole checks are
+// properly optimized away early in Ignition+TurboFan.
 /*<replacement>*/
 var Buffer = require('safe-buffer').Buffer;
+var OurUint8Array = global.Uint8Array || function () {};
+function _uint8ArrayToBuffer(chunk) {
+  return Buffer.from(chunk);
+}
+function _isUint8Array(obj) {
+  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
+}
 /*</replacement>*/
 
 /*<replacement>*/
@@ -11149,6 +11056,7 @@ if (debugUtil && debugUtil.debuglog) {
 /*</replacement>*/
 
 var BufferList = require('./internal/streams/BufferList');
+var destroyImpl = require('./internal/streams/destroy');
 var StringDecoder;
 
 util.inherits(Readable, Stream);
@@ -11187,7 +11095,7 @@ function ReadableState(options, stream) {
   this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
 
   // cast to ints.
-  this.highWaterMark = ~~this.highWaterMark;
+  this.highWaterMark = Math.floor(this.highWaterMark);
 
   // A linked list is used to store data chunks instead of an array because the
   // linked list can remove elements from the beginning faster than
@@ -11201,10 +11109,10 @@ function ReadableState(options, stream) {
   this.endEmitted = false;
   this.reading = false;
 
-  // a flag to be able to tell if the onwrite cb is called immediately,
-  // or on a later tick.  We set this to true at first, because any
-  // actions that shouldn't happen until "later" should generally also
-  // not happen before the first write call.
+  // a flag to be able to tell if the event 'readable'/'data' is emitted
+  // immediately, or on a later tick.  We set this to true at first, because
+  // any actions that shouldn't happen until "later" should generally also
+  // not happen before the first read call.
   this.sync = true;
 
   // whenever we return null, then we set a flag to say
@@ -11214,14 +11122,13 @@ function ReadableState(options, stream) {
   this.readableListening = false;
   this.resumeScheduled = false;
 
+  // has it been destroyed
+  this.destroyed = false;
+
   // Crypto is kind of old and crusty.  Historically, its default string
   // encoding is 'binary' so we have to make this configurable.
   // Everything else in the universe uses 'utf8', though.
   this.defaultEncoding = options.defaultEncoding || 'utf8';
-
-  // when piping, we only care about 'readable' events that happen
-  // after read()ing all the bytes and not getting any pushback.
-  this.ranOut = false;
 
   // the number of writers that are awaiting a drain event in .pipe()s
   this.awaitDrain = 0;
@@ -11248,10 +11155,41 @@ function Readable(options) {
   // legacy
   this.readable = true;
 
-  if (options && typeof options.read === 'function') this._read = options.read;
+  if (options) {
+    if (typeof options.read === 'function') this._read = options.read;
+
+    if (typeof options.destroy === 'function') this._destroy = options.destroy;
+  }
 
   Stream.call(this);
 }
+
+Object.defineProperty(Readable.prototype, 'destroyed', {
+  get: function () {
+    if (this._readableState === undefined) {
+      return false;
+    }
+    return this._readableState.destroyed;
+  },
+  set: function (value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (!this._readableState) {
+      return;
+    }
+
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._readableState.destroyed = value;
+  }
+});
+
+Readable.prototype.destroy = destroyImpl.destroy;
+Readable.prototype._undestroy = destroyImpl.undestroy;
+Readable.prototype._destroy = function (err, cb) {
+  this.push(null);
+  cb(err);
+};
 
 // Manually shove something into the read() buffer.
 // This returns true if the highWaterMark has not been hit yet,
@@ -11259,74 +11197,85 @@ function Readable(options) {
 // write() some more.
 Readable.prototype.push = function (chunk, encoding) {
   var state = this._readableState;
+  var skipChunkCheck;
 
-  if (!state.objectMode && typeof chunk === 'string') {
-    encoding = encoding || state.defaultEncoding;
-    if (encoding !== state.encoding) {
-      chunk = Buffer.from(chunk, encoding);
-      encoding = '';
+  if (!state.objectMode) {
+    if (typeof chunk === 'string') {
+      encoding = encoding || state.defaultEncoding;
+      if (encoding !== state.encoding) {
+        chunk = Buffer.from(chunk, encoding);
+        encoding = '';
+      }
+      skipChunkCheck = true;
     }
+  } else {
+    skipChunkCheck = true;
   }
 
-  return readableAddChunk(this, state, chunk, encoding, false);
+  return readableAddChunk(this, chunk, encoding, false, skipChunkCheck);
 };
 
 // Unshift should *always* be something directly out of read()
 Readable.prototype.unshift = function (chunk) {
-  var state = this._readableState;
-  return readableAddChunk(this, state, chunk, '', true);
+  return readableAddChunk(this, chunk, null, true, false);
 };
 
-Readable.prototype.isPaused = function () {
-  return this._readableState.flowing === false;
-};
-
-function readableAddChunk(stream, state, chunk, encoding, addToFront) {
-  var er = chunkInvalid(state, chunk);
-  if (er) {
-    stream.emit('error', er);
-  } else if (chunk === null) {
+function readableAddChunk(stream, chunk, encoding, addToFront, skipChunkCheck) {
+  var state = stream._readableState;
+  if (chunk === null) {
     state.reading = false;
     onEofChunk(stream, state);
-  } else if (state.objectMode || chunk && chunk.length > 0) {
-    if (state.ended && !addToFront) {
-      var e = new Error('stream.push() after EOF');
-      stream.emit('error', e);
-    } else if (state.endEmitted && addToFront) {
-      var _e = new Error('stream.unshift() after end event');
-      stream.emit('error', _e);
-    } else {
-      var skipAdd;
-      if (state.decoder && !addToFront && !encoding) {
-        chunk = state.decoder.write(chunk);
-        skipAdd = !state.objectMode && chunk.length === 0;
+  } else {
+    var er;
+    if (!skipChunkCheck) er = chunkInvalid(state, chunk);
+    if (er) {
+      stream.emit('error', er);
+    } else if (state.objectMode || chunk && chunk.length > 0) {
+      if (typeof chunk !== 'string' && !state.objectMode && Object.getPrototypeOf(chunk) !== Buffer.prototype) {
+        chunk = _uint8ArrayToBuffer(chunk);
       }
 
-      if (!addToFront) state.reading = false;
-
-      // Don't add to the buffer if we've decoded to an empty string chunk and
-      // we're not in object mode
-      if (!skipAdd) {
-        // if we want the data now, just emit it.
-        if (state.flowing && state.length === 0 && !state.sync) {
-          stream.emit('data', chunk);
-          stream.read(0);
+      if (addToFront) {
+        if (state.endEmitted) stream.emit('error', new Error('stream.unshift() after end event'));else addChunk(stream, state, chunk, true);
+      } else if (state.ended) {
+        stream.emit('error', new Error('stream.push() after EOF'));
+      } else {
+        state.reading = false;
+        if (state.decoder && !encoding) {
+          chunk = state.decoder.write(chunk);
+          if (state.objectMode || chunk.length !== 0) addChunk(stream, state, chunk, false);else maybeReadMore(stream, state);
         } else {
-          // update the buffer info.
-          state.length += state.objectMode ? 1 : chunk.length;
-          if (addToFront) state.buffer.unshift(chunk);else state.buffer.push(chunk);
-
-          if (state.needReadable) emitReadable(stream);
+          addChunk(stream, state, chunk, false);
         }
       }
-
-      maybeReadMore(stream, state);
+    } else if (!addToFront) {
+      state.reading = false;
     }
-  } else if (!addToFront) {
-    state.reading = false;
   }
 
   return needMoreData(state);
+}
+
+function addChunk(stream, state, chunk, addToFront) {
+  if (state.flowing && state.length === 0 && !state.sync) {
+    stream.emit('data', chunk);
+    stream.read(0);
+  } else {
+    // update the buffer info.
+    state.length += state.objectMode ? 1 : chunk.length;
+    if (addToFront) state.buffer.unshift(chunk);else state.buffer.push(chunk);
+
+    if (state.needReadable) emitReadable(stream);
+  }
+  maybeReadMore(stream, state);
+}
+
+function chunkInvalid(state, chunk) {
+  var er;
+  if (!_isUint8Array(chunk) && typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
+    er = new TypeError('Invalid non-string/buffer chunk');
+  }
+  return er;
 }
 
 // if it's past the high water mark, we can push in some more.
@@ -11339,6 +11288,10 @@ function readableAddChunk(stream, state, chunk, encoding, addToFront) {
 function needMoreData(state) {
   return !state.ended && (state.needReadable || state.length < state.highWaterMark || state.length === 0);
 }
+
+Readable.prototype.isPaused = function () {
+  return this._readableState.flowing === false;
+};
 
 // backwards compatibility.
 Readable.prototype.setEncoding = function (enc) {
@@ -11488,14 +11441,6 @@ Readable.prototype.read = function (n) {
   return ret;
 };
 
-function chunkInvalid(state, chunk) {
-  var er = null;
-  if (!Buffer.isBuffer(chunk) && typeof chunk !== 'string' && chunk !== null && chunk !== undefined && !state.objectMode) {
-    er = new TypeError('Invalid non-string/buffer chunk');
-  }
-  return er;
-}
-
 function onEofChunk(stream, state) {
   if (state.ended) return;
   if (state.decoder) {
@@ -11587,10 +11532,13 @@ Readable.prototype.pipe = function (dest, pipeOpts) {
   if (state.endEmitted) processNextTick(endFn);else src.once('end', endFn);
 
   dest.on('unpipe', onunpipe);
-  function onunpipe(readable) {
+  function onunpipe(readable, unpipeInfo) {
     debug('onunpipe');
     if (readable === src) {
-      cleanup();
+      if (unpipeInfo && unpipeInfo.hasUnpiped === false) {
+        unpipeInfo.hasUnpiped = true;
+        cleanup();
+      }
     }
   }
 
@@ -11709,6 +11657,7 @@ function pipeOnDrain(src) {
 
 Readable.prototype.unpipe = function (dest) {
   var state = this._readableState;
+  var unpipeInfo = { hasUnpiped: false };
 
   // if we're not piping anywhere, then do nothing.
   if (state.pipesCount === 0) return this;
@@ -11724,7 +11673,7 @@ Readable.prototype.unpipe = function (dest) {
     state.pipes = null;
     state.pipesCount = 0;
     state.flowing = false;
-    if (dest) dest.emit('unpipe', this);
+    if (dest) dest.emit('unpipe', this, unpipeInfo);
     return this;
   }
 
@@ -11739,7 +11688,7 @@ Readable.prototype.unpipe = function (dest) {
     state.flowing = false;
 
     for (var i = 0; i < len; i++) {
-      dests[i].emit('unpipe', this);
+      dests[i].emit('unpipe', this, unpipeInfo);
     }return this;
   }
 
@@ -11751,7 +11700,7 @@ Readable.prototype.unpipe = function (dest) {
   state.pipesCount -= 1;
   if (state.pipesCount === 1) state.pipes = state.pipes[0];
 
-  dest.emit('unpipe', this);
+  dest.emit('unpipe', this, unpipeInfo);
 
   return this;
 };
@@ -11772,7 +11721,7 @@ Readable.prototype.on = function (ev, fn) {
       if (!state.reading) {
         processNextTick(nReadingNextTick, this);
       } else if (state.length) {
-        emitReadable(this, state);
+        emitReadable(this);
       }
     }
   }
@@ -12033,8 +11982,29 @@ function indexOf(xs, x) {
   }
   return -1;
 }
-}).call(this,require('_process'))
-},{"./_stream_duplex":87,"./internal/streams/BufferList":92,"./internal/streams/stream":93,"_process":8,"core-util-is":31,"events":5,"inherits":59,"isarray":61,"process-nextick-args":85,"safe-buffer":95,"string_decoder/":118,"util":3}],90:[function(require,module,exports){
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./_stream_duplex":88,"./internal/streams/BufferList":93,"./internal/streams/destroy":94,"./internal/streams/stream":95,"_process":17,"core-util-is":27,"events":45,"inherits":58,"isarray":96,"process-nextick-args":86,"safe-buffer":99,"string_decoder/":123,"util":16}],91:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 // a transform stream is a readable/writable stream where you do
 // something with the data.  Sometimes it's called a "filter",
 // but that's not a great name for it, since that implies a thing where
@@ -12108,7 +12078,9 @@ function afterTransform(stream, er, data) {
 
   var cb = ts.writecb;
 
-  if (!cb) return stream.emit('error', new Error('no writecb in Transform class'));
+  if (!cb) {
+    return stream.emit('error', new Error('write callback called multiple times'));
+  }
 
   ts.writechunk = null;
   ts.writecb = null;
@@ -12201,6 +12173,15 @@ Transform.prototype._read = function (n) {
   }
 };
 
+Transform.prototype._destroy = function (err, cb) {
+  var _this = this;
+
+  Duplex.prototype._destroy.call(this, err, function (err2) {
+    cb(err2);
+    _this.emit('close');
+  });
+};
+
 function done(stream, er, data) {
   if (er) return stream.emit('error', er);
 
@@ -12217,19 +12198,62 @@ function done(stream, er, data) {
 
   return stream.push(null);
 }
-},{"./_stream_duplex":87,"core-util-is":31,"inherits":59}],91:[function(require,module,exports){
-(function (process){
+},{"./_stream_duplex":88,"core-util-is":27,"inherits":58}],92:[function(require,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 // A bit simpler than readable streams.
 // Implement an async ._write(chunk, encoding, cb), and it'll handle all
 // the drain event emission and buffering.
 
 'use strict';
 
-module.exports = Writable;
-
 /*<replacement>*/
+
 var processNextTick = require('process-nextick-args');
 /*</replacement>*/
+
+module.exports = Writable;
+
+/* <replacement> */
+function WriteReq(chunk, encoding, cb) {
+  this.chunk = chunk;
+  this.encoding = encoding;
+  this.callback = cb;
+  this.next = null;
+}
+
+// It seems a linked list but it is not
+// there will be only 2 of these for each stream
+function CorkedRequest(state) {
+  var _this = this;
+
+  this.next = null;
+  this.entry = null;
+  this.finish = function () {
+    onCorkedFinish(_this, state);
+  };
+}
+/* </replacement> */
 
 /*<replacement>*/
 var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version.slice(0, 5)) > -1 ? setImmediate : processNextTick;
@@ -12258,18 +12282,20 @@ var Stream = require('./internal/streams/stream');
 
 /*<replacement>*/
 var Buffer = require('safe-buffer').Buffer;
+var OurUint8Array = global.Uint8Array || function () {};
+function _uint8ArrayToBuffer(chunk) {
+  return Buffer.from(chunk);
+}
+function _isUint8Array(obj) {
+  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
+}
 /*</replacement>*/
+
+var destroyImpl = require('./internal/streams/destroy');
 
 util.inherits(Writable, Stream);
 
 function nop() {}
-
-function WriteReq(chunk, encoding, cb) {
-  this.chunk = chunk;
-  this.encoding = encoding;
-  this.callback = cb;
-  this.next = null;
-}
 
 function WritableState(options, stream) {
   Duplex = Duplex || require('./_stream_duplex');
@@ -12290,7 +12316,10 @@ function WritableState(options, stream) {
   this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
 
   // cast to ints.
-  this.highWaterMark = ~~this.highWaterMark;
+  this.highWaterMark = Math.floor(this.highWaterMark);
+
+  // if _final has been called
+  this.finalCalled = false;
 
   // drain event flag.
   this.needDrain = false;
@@ -12300,6 +12329,9 @@ function WritableState(options, stream) {
   this.ended = false;
   // when 'finish' is emitted
   this.finished = false;
+
+  // has it been destroyed
+  this.destroyed = false;
 
   // should we decode strings into buffers before passing to _write?
   // this is here so that some node-core streams can optimize string
@@ -12382,7 +12414,7 @@ WritableState.prototype.getBuffer = function getBuffer() {
     Object.defineProperty(WritableState.prototype, 'buffer', {
       get: internalUtil.deprecate(function () {
         return this.getBuffer();
-      }, '_writableState.buffer is deprecated. Use _writableState.getBuffer ' + 'instead.')
+      }, '_writableState.buffer is deprecated. Use _writableState.getBuffer ' + 'instead.', 'DEP0003')
     });
   } catch (_) {}
 })();
@@ -12428,6 +12460,10 @@ function Writable(options) {
     if (typeof options.write === 'function') this._write = options.write;
 
     if (typeof options.writev === 'function') this._writev = options.writev;
+
+    if (typeof options.destroy === 'function') this._destroy = options.destroy;
+
+    if (typeof options.final === 'function') this._final = options.final;
   }
 
   Stream.call(this);
@@ -12468,7 +12504,11 @@ function validChunk(stream, state, chunk, cb) {
 Writable.prototype.write = function (chunk, encoding, cb) {
   var state = this._writableState;
   var ret = false;
-  var isBuf = Buffer.isBuffer(chunk);
+  var isBuf = _isUint8Array(chunk) && !state.objectMode;
+
+  if (isBuf && !Buffer.isBuffer(chunk)) {
+    chunk = _uint8ArrayToBuffer(chunk);
+  }
 
   if (typeof encoding === 'function') {
     cb = encoding;
@@ -12523,8 +12563,12 @@ function decodeChunk(state, chunk, encoding) {
 // If we return false, then we need a drain event, so set that flag.
 function writeOrBuffer(stream, state, isBuf, chunk, encoding, cb) {
   if (!isBuf) {
-    chunk = decodeChunk(state, chunk, encoding);
-    if (Buffer.isBuffer(chunk)) encoding = 'buffer';
+    var newChunk = decodeChunk(state, chunk, encoding);
+    if (chunk !== newChunk) {
+      isBuf = true;
+      encoding = 'buffer';
+      chunk = newChunk;
+    }
   }
   var len = state.objectMode ? 1 : chunk.length;
 
@@ -12536,7 +12580,13 @@ function writeOrBuffer(stream, state, isBuf, chunk, encoding, cb) {
 
   if (state.writing || state.corked) {
     var last = state.lastBufferedRequest;
-    state.lastBufferedRequest = new WriteReq(chunk, encoding, cb);
+    state.lastBufferedRequest = {
+      chunk: chunk,
+      encoding: encoding,
+      isBuf: isBuf,
+      callback: cb,
+      next: null
+    };
     if (last) {
       last.next = state.lastBufferedRequest;
     } else {
@@ -12561,10 +12611,26 @@ function doWrite(stream, state, writev, len, chunk, encoding, cb) {
 
 function onwriteError(stream, state, sync, er, cb) {
   --state.pendingcb;
-  if (sync) processNextTick(cb, er);else cb(er);
 
-  stream._writableState.errorEmitted = true;
-  stream.emit('error', er);
+  if (sync) {
+    // defer the callback if we are being called synchronously
+    // to avoid piling up things on the stack
+    processNextTick(cb, er);
+    // this can emit finish, and it will always happen
+    // after error
+    processNextTick(finishMaybe, stream, state);
+    stream._writableState.errorEmitted = true;
+    stream.emit('error', er);
+  } else {
+    // the caller expect this to happen before if
+    // it is async
+    cb(er);
+    stream._writableState.errorEmitted = true;
+    stream.emit('error', er);
+    // this can emit finish, but finish must
+    // always follow error
+    finishMaybe(stream, state);
+  }
 }
 
 function onwriteStateUpdate(state) {
@@ -12629,11 +12695,14 @@ function clearBuffer(stream, state) {
     holder.entry = entry;
 
     var count = 0;
+    var allBuffers = true;
     while (entry) {
       buffer[count] = entry;
+      if (!entry.isBuf) allBuffers = false;
       entry = entry.next;
       count += 1;
     }
+    buffer.allBuffers = allBuffers;
 
     doWrite(stream, state, true, state.length, buffer, '', holder.finish);
 
@@ -12707,23 +12776,37 @@ Writable.prototype.end = function (chunk, encoding, cb) {
 function needFinish(state) {
   return state.ending && state.length === 0 && state.bufferedRequest === null && !state.finished && !state.writing;
 }
-
-function prefinish(stream, state) {
-  if (!state.prefinished) {
+function callFinal(stream, state) {
+  stream._final(function (err) {
+    state.pendingcb--;
+    if (err) {
+      stream.emit('error', err);
+    }
     state.prefinished = true;
     stream.emit('prefinish');
+    finishMaybe(stream, state);
+  });
+}
+function prefinish(stream, state) {
+  if (!state.prefinished && !state.finalCalled) {
+    if (typeof stream._final === 'function') {
+      state.pendingcb++;
+      state.finalCalled = true;
+      processNextTick(callFinal, stream, state);
+    } else {
+      state.prefinished = true;
+      stream.emit('prefinish');
+    }
   }
 }
 
 function finishMaybe(stream, state) {
   var need = needFinish(state);
   if (need) {
+    prefinish(stream, state);
     if (state.pendingcb === 0) {
-      prefinish(stream, state);
       state.finished = true;
       stream.emit('finish');
-    } else {
-      prefinish(stream, state);
     }
   }
   return need;
@@ -12739,99 +12822,203 @@ function endWritable(stream, state, cb) {
   stream.writable = false;
 }
 
-// It seems a linked list but it is not
-// there will be only 2 of these for each stream
-function CorkedRequest(state) {
-  var _this = this;
-
-  this.next = null;
-  this.entry = null;
-  this.finish = function (err) {
-    var entry = _this.entry;
-    _this.entry = null;
-    while (entry) {
-      var cb = entry.callback;
-      state.pendingcb--;
-      cb(err);
-      entry = entry.next;
-    }
-    if (state.corkedRequestsFree) {
-      state.corkedRequestsFree.next = _this;
-    } else {
-      state.corkedRequestsFree = _this;
-    }
-  };
+function onCorkedFinish(corkReq, state, err) {
+  var entry = corkReq.entry;
+  corkReq.entry = null;
+  while (entry) {
+    var cb = entry.callback;
+    state.pendingcb--;
+    cb(err);
+    entry = entry.next;
+  }
+  if (state.corkedRequestsFree) {
+    state.corkedRequestsFree.next = corkReq;
+  } else {
+    state.corkedRequestsFree = corkReq;
+  }
 }
-}).call(this,require('_process'))
-},{"./_stream_duplex":87,"./internal/streams/stream":93,"_process":8,"core-util-is":31,"inherits":59,"process-nextick-args":85,"safe-buffer":95,"util-deprecate":120}],92:[function(require,module,exports){
+
+Object.defineProperty(Writable.prototype, 'destroyed', {
+  get: function () {
+    if (this._writableState === undefined) {
+      return false;
+    }
+    return this._writableState.destroyed;
+  },
+  set: function (value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (!this._writableState) {
+      return;
+    }
+
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._writableState.destroyed = value;
+  }
+});
+
+Writable.prototype.destroy = destroyImpl.destroy;
+Writable.prototype._undestroy = destroyImpl.undestroy;
+Writable.prototype._destroy = function (err, cb) {
+  this.end();
+  cb(err);
+};
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./_stream_duplex":88,"./internal/streams/destroy":94,"./internal/streams/stream":95,"_process":17,"core-util-is":27,"inherits":58,"process-nextick-args":86,"safe-buffer":99,"util-deprecate":125}],93:[function(require,module,exports){
 'use strict';
 
 /*<replacement>*/
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 var Buffer = require('safe-buffer').Buffer;
 /*</replacement>*/
 
-module.exports = BufferList;
-
-function BufferList() {
-  this.head = null;
-  this.tail = null;
-  this.length = 0;
+function copyBuffer(src, target, offset) {
+  src.copy(target, offset);
 }
 
-BufferList.prototype.push = function (v) {
-  var entry = { data: v, next: null };
-  if (this.length > 0) this.tail.next = entry;else this.head = entry;
-  this.tail = entry;
-  ++this.length;
-};
+module.exports = function () {
+  function BufferList() {
+    _classCallCheck(this, BufferList);
 
-BufferList.prototype.unshift = function (v) {
-  var entry = { data: v, next: this.head };
-  if (this.length === 0) this.tail = entry;
-  this.head = entry;
-  ++this.length;
-};
-
-BufferList.prototype.shift = function () {
-  if (this.length === 0) return;
-  var ret = this.head.data;
-  if (this.length === 1) this.head = this.tail = null;else this.head = this.head.next;
-  --this.length;
-  return ret;
-};
-
-BufferList.prototype.clear = function () {
-  this.head = this.tail = null;
-  this.length = 0;
-};
-
-BufferList.prototype.join = function (s) {
-  if (this.length === 0) return '';
-  var p = this.head;
-  var ret = '' + p.data;
-  while (p = p.next) {
-    ret += s + p.data;
-  }return ret;
-};
-
-BufferList.prototype.concat = function (n) {
-  if (this.length === 0) return Buffer.alloc(0);
-  if (this.length === 1) return this.head.data;
-  var ret = Buffer.allocUnsafe(n >>> 0);
-  var p = this.head;
-  var i = 0;
-  while (p) {
-    p.data.copy(ret, i);
-    i += p.data.length;
-    p = p.next;
+    this.head = null;
+    this.tail = null;
+    this.length = 0;
   }
-  return ret;
+
+  BufferList.prototype.push = function push(v) {
+    var entry = { data: v, next: null };
+    if (this.length > 0) this.tail.next = entry;else this.head = entry;
+    this.tail = entry;
+    ++this.length;
+  };
+
+  BufferList.prototype.unshift = function unshift(v) {
+    var entry = { data: v, next: this.head };
+    if (this.length === 0) this.tail = entry;
+    this.head = entry;
+    ++this.length;
+  };
+
+  BufferList.prototype.shift = function shift() {
+    if (this.length === 0) return;
+    var ret = this.head.data;
+    if (this.length === 1) this.head = this.tail = null;else this.head = this.head.next;
+    --this.length;
+    return ret;
+  };
+
+  BufferList.prototype.clear = function clear() {
+    this.head = this.tail = null;
+    this.length = 0;
+  };
+
+  BufferList.prototype.join = function join(s) {
+    if (this.length === 0) return '';
+    var p = this.head;
+    var ret = '' + p.data;
+    while (p = p.next) {
+      ret += s + p.data;
+    }return ret;
+  };
+
+  BufferList.prototype.concat = function concat(n) {
+    if (this.length === 0) return Buffer.alloc(0);
+    if (this.length === 1) return this.head.data;
+    var ret = Buffer.allocUnsafe(n >>> 0);
+    var p = this.head;
+    var i = 0;
+    while (p) {
+      copyBuffer(p.data, ret, i);
+      i += p.data.length;
+      p = p.next;
+    }
+    return ret;
+  };
+
+  return BufferList;
+}();
+},{"safe-buffer":99}],94:[function(require,module,exports){
+'use strict';
+
+/*<replacement>*/
+
+var processNextTick = require('process-nextick-args');
+/*</replacement>*/
+
+// undocumented cb() API, needed for core, not for public API
+function destroy(err, cb) {
+  var _this = this;
+
+  var readableDestroyed = this._readableState && this._readableState.destroyed;
+  var writableDestroyed = this._writableState && this._writableState.destroyed;
+
+  if (readableDestroyed || writableDestroyed) {
+    if (cb) {
+      cb(err);
+    } else if (err && (!this._writableState || !this._writableState.errorEmitted)) {
+      processNextTick(emitErrorNT, this, err);
+    }
+    return;
+  }
+
+  // we set destroyed to true before firing error callbacks in order
+  // to make it re-entrance safe in case destroy() is called within callbacks
+
+  if (this._readableState) {
+    this._readableState.destroyed = true;
+  }
+
+  // if this is a duplex stream mark the writable part as destroyed as well
+  if (this._writableState) {
+    this._writableState.destroyed = true;
+  }
+
+  this._destroy(err || null, function (err) {
+    if (!cb && err) {
+      processNextTick(emitErrorNT, _this, err);
+      if (_this._writableState) {
+        _this._writableState.errorEmitted = true;
+      }
+    } else if (cb) {
+      cb(err);
+    }
+  });
+}
+
+function undestroy() {
+  if (this._readableState) {
+    this._readableState.destroyed = false;
+    this._readableState.reading = false;
+    this._readableState.ended = false;
+    this._readableState.endEmitted = false;
+  }
+
+  if (this._writableState) {
+    this._writableState.destroyed = false;
+    this._writableState.ended = false;
+    this._writableState.ending = false;
+    this._writableState.finished = false;
+    this._writableState.errorEmitted = false;
+  }
+}
+
+function emitErrorNT(self, err) {
+  self.emit('error', err);
+}
+
+module.exports = {
+  destroy: destroy,
+  undestroy: undestroy
 };
-},{"safe-buffer":95}],93:[function(require,module,exports){
+},{"process-nextick-args":86}],95:[function(require,module,exports){
 module.exports = require('events').EventEmitter;
 
-},{"events":5}],94:[function(require,module,exports){
+},{"events":45}],96:[function(require,module,exports){
+arguments[4][52][0].apply(exports,arguments)
+},{"dup":52}],97:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = exports;
 exports.Readable = exports;
@@ -12840,10 +13027,101 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":87,"./lib/_stream_passthrough.js":88,"./lib/_stream_readable.js":89,"./lib/_stream_transform.js":90,"./lib/_stream_writable.js":91}],95:[function(require,module,exports){
-module.exports = require('buffer')
+},{"./lib/_stream_duplex.js":88,"./lib/_stream_passthrough.js":89,"./lib/_stream_readable.js":90,"./lib/_stream_transform.js":91,"./lib/_stream_writable.js":92}],98:[function(require,module,exports){
+'use strict'
 
-},{"buffer":4}],96:[function(require,module,exports){
+/**
+ * Remove a range of items from an array
+ *
+ * @function removeItems
+ * @param {Array<*>} arr The target array
+ * @param {number} startIdx The index to begin removing from (inclusive)
+ * @param {number} removeCount How many items to remove
+ */
+module.exports = function removeItems(arr, startIdx, removeCount)
+{
+  var i, length = arr.length
+
+  if (startIdx >= length || removeCount === 0) {
+    return
+  }
+
+  removeCount = (startIdx + removeCount > length ? length - startIdx : removeCount)
+
+  var len = length - removeCount
+
+  for (i = startIdx; i < len; ++i) {
+    arr[i] = arr[i + removeCount]
+  }
+
+  arr.length = len
+}
+
+},{}],99:[function(require,module,exports){
+/* eslint-disable node/no-deprecated-api */
+var buffer = require('buffer')
+var Buffer = buffer.Buffer
+
+// alternative to using Object.keys for old browsers
+function copyProps (src, dst) {
+  for (var key in src) {
+    dst[key] = src[key]
+  }
+}
+if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow) {
+  module.exports = buffer
+} else {
+  // Copy properties from require('buffer')
+  copyProps(buffer, exports)
+  exports.Buffer = SafeBuffer
+}
+
+function SafeBuffer (arg, encodingOrOffset, length) {
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+// Copy static methods from Buffer
+copyProps(Buffer, SafeBuffer)
+
+SafeBuffer.from = function (arg, encodingOrOffset, length) {
+  if (typeof arg === 'number') {
+    throw new TypeError('Argument must not be a number')
+  }
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+SafeBuffer.alloc = function (size, fill, encoding) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  var buf = Buffer(size)
+  if (fill !== undefined) {
+    if (typeof encoding === 'string') {
+      buf.fill(fill, encoding)
+    } else {
+      buf.fill(fill)
+    }
+  } else {
+    buf.fill(0)
+  }
+  return buf
+}
+
+SafeBuffer.allocUnsafe = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return Buffer(size)
+}
+
+SafeBuffer.allocUnsafeSlow = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return buffer.SlowBuffer(size)
+}
+
+},{"buffer":18}],100:[function(require,module,exports){
  /* eslint-env node */
 'use strict';
 
@@ -13451,14 +13729,14 @@ SDPUtils.isRejected = function(mediaSection) {
 // Expose public methods.
 module.exports = SDPUtils;
 
-},{}],97:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 module.exports = require('insert-css')
 
-},{"insert-css":60}],98:[function(require,module,exports){
+},{"insert-css":59}],102:[function(require,module,exports){
 'use strict';
 module.exports = require('./lib/index');
 
-},{"./lib/index":103}],99:[function(require,module,exports){
+},{"./lib/index":107}],103:[function(require,module,exports){
 'use strict';
 
 var randomFromSeed = require('./random/random-from-seed');
@@ -13558,7 +13836,7 @@ module.exports = {
     shuffled: getShuffled
 };
 
-},{"./random/random-from-seed":106}],100:[function(require,module,exports){
+},{"./random/random-from-seed":110}],104:[function(require,module,exports){
 'use strict';
 
 var encode = require('./encode');
@@ -13608,7 +13886,7 @@ function build(clusterWorkerId) {
 
 module.exports = build;
 
-},{"./alphabet":99,"./encode":102}],101:[function(require,module,exports){
+},{"./alphabet":103,"./encode":106}],105:[function(require,module,exports){
 'use strict';
 var alphabet = require('./alphabet');
 
@@ -13627,7 +13905,7 @@ function decode(id) {
 
 module.exports = decode;
 
-},{"./alphabet":99}],102:[function(require,module,exports){
+},{"./alphabet":103}],106:[function(require,module,exports){
 'use strict';
 
 var randomByte = require('./random/random-byte');
@@ -13648,7 +13926,7 @@ function encode(lookup, number) {
 
 module.exports = encode;
 
-},{"./random/random-byte":105}],103:[function(require,module,exports){
+},{"./random/random-byte":109}],107:[function(require,module,exports){
 'use strict';
 
 var alphabet = require('./alphabet');
@@ -13715,7 +13993,7 @@ module.exports.characters = characters;
 module.exports.decode = decode;
 module.exports.isValid = isValid;
 
-},{"./alphabet":99,"./build":100,"./decode":101,"./encode":102,"./is-valid":104,"./util/cluster-worker-id":107}],104:[function(require,module,exports){
+},{"./alphabet":103,"./build":104,"./decode":105,"./encode":106,"./is-valid":108,"./util/cluster-worker-id":111}],108:[function(require,module,exports){
 'use strict';
 var alphabet = require('./alphabet');
 
@@ -13736,7 +14014,7 @@ function isShortId(id) {
 
 module.exports = isShortId;
 
-},{"./alphabet":99}],105:[function(require,module,exports){
+},{"./alphabet":103}],109:[function(require,module,exports){
 'use strict';
 
 var crypto = typeof window === 'object' && (window.crypto || window.msCrypto); // IE 11 uses window.msCrypto
@@ -13752,7 +14030,7 @@ function randomByte() {
 
 module.exports = randomByte;
 
-},{}],106:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 'use strict';
 
 // Found this seed-based random generator somewhere
@@ -13779,12 +14057,12 @@ module.exports = {
     seed: setSeed
 };
 
-},{}],107:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 'use strict';
 
 module.exports = 0;
 
-},{}],108:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 (function (Buffer){
 module.exports = Peer
 
@@ -13833,6 +14111,7 @@ function Peer (opts) {
   self.sdpTransform = opts.sdpTransform || function (sdp) { return sdp }
   self.stream = opts.stream || false
   self.trickle = opts.trickle !== undefined ? opts.trickle : true
+  self._earlyMessage = null
 
   self.destroyed = false
   self.connected = false
@@ -14053,6 +14332,7 @@ Peer.prototype._destroy = function (err, onclose) {
   self._pcReady = false
   self._channelReady = false
   self._previousStreams = null
+  self._earlyMessage = null
 
   clearInterval(self._interval)
   clearTimeout(self._reconnectTimeout)
@@ -14118,13 +14398,18 @@ Peer.prototype._setupData = function (event) {
   self.channelName = self._channel.label
 
   self._channel.onmessage = function (event) {
-    self._onChannelMessage(event)
+    if (!self._channelReady) { // HACK: Workaround for Chrome not firing "open" between tabs
+      self._earlyMessage = event
+      self._onChannelOpen()
+    } else {
+      self._onChannelMessage(event)
+    }
   }
   self._channel.onbufferedamountlow = function () {
     self._onChannelBufferedAmountLow()
   }
   self._channel.onopen = function () {
-    self._onChannelOpen()
+    if (!self._channelReady) self._onChannelOpen()
   }
   self._channel.onclose = function () {
     self._onChannelClose()
@@ -14437,6 +14722,10 @@ Peer.prototype._maybeReady = function () {
 
     self._debug('connect')
     self.emit('connect')
+    if (self._earlyMessage) { // HACK: Workaround for Chrome not firing "open" between tabs
+      self._onChannelMessage(self._earlyMessage)
+      self._earlyMessage = null
+    }
   })
 }
 
@@ -14579,7 +14868,7 @@ Peer.prototype._transformConstraints = function (constraints) {
 function noop () {}
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":4,"debug":32,"get-browser-rtc":49,"inherits":59,"randombytes":86,"readable-stream":94}],109:[function(require,module,exports){
+},{"buffer":18,"debug":28,"get-browser-rtc":47,"inherits":58,"randombytes":87,"readable-stream":97}],113:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -14675,7 +14964,7 @@ exports.connect = lookup;
 exports.Manager = require('./manager');
 exports.Socket = require('./socket');
 
-},{"./manager":110,"./socket":112,"./url":113,"debug":32,"socket.io-parser":115}],110:[function(require,module,exports){
+},{"./manager":114,"./socket":116,"./url":117,"debug":28,"socket.io-parser":119}],114:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -15250,7 +15539,7 @@ Manager.prototype.onreconnect = function () {
   this.emitAll('reconnect', attempt);
 };
 
-},{"./on":111,"./socket":112,"backo2":20,"component-bind":28,"component-emitter":29,"debug":32,"engine.io-client":35,"indexof":58,"socket.io-parser":115}],111:[function(require,module,exports){
+},{"./on":115,"./socket":116,"backo2":11,"component-bind":23,"component-emitter":24,"debug":28,"engine.io-client":31,"indexof":57,"socket.io-parser":119}],115:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -15276,7 +15565,7 @@ function on (obj, ev, fn) {
   };
 }
 
-},{}],112:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -15696,7 +15985,7 @@ Socket.prototype.compress = function (compress) {
   return this;
 };
 
-},{"./on":111,"component-bind":28,"component-emitter":29,"debug":32,"parseqs":83,"socket.io-parser":115,"to-array":119}],113:[function(require,module,exports){
+},{"./on":115,"component-bind":23,"component-emitter":24,"debug":28,"parseqs":83,"socket.io-parser":119,"to-array":124}],117:[function(require,module,exports){
 (function (global){
 
 /**
@@ -15775,7 +16064,7 @@ function url (uri, loc) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"debug":32,"parseuri":84}],114:[function(require,module,exports){
+},{"debug":28,"parseuri":84}],118:[function(require,module,exports){
 (function (global){
 /*global Blob,File*/
 
@@ -15920,7 +16209,7 @@ exports.removeBlobs = function(data, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./is-buffer":116,"isarray":117}],115:[function(require,module,exports){
+},{"./is-buffer":120,"isarray":121}],119:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -16322,7 +16611,7 @@ function error() {
   };
 }
 
-},{"./binary":114,"./is-buffer":116,"component-emitter":29,"debug":32,"has-binary2":53}],116:[function(require,module,exports){
+},{"./binary":118,"./is-buffer":120,"component-emitter":24,"debug":28,"has-binary2":51}],120:[function(require,module,exports){
 (function (global){
 
 module.exports = isBuf;
@@ -16339,9 +16628,27 @@ function isBuf(obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],117:[function(require,module,exports){
-arguments[4][54][0].apply(exports,arguments)
-},{"dup":54}],118:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
+arguments[4][52][0].apply(exports,arguments)
+},{"dup":52}],122:[function(require,module,exports){
+var fastSafeStringify = require('fast-safe-stringify')
+var copy = require('copy-text-to-clipboard')
+
+function tryStringify (obj) {
+  try {
+    return JSON.stringify(obj)
+  } catch (e) {}
+}
+
+function stateCopy (obj) {
+  var str = tryStringify(obj) || fastSafeStringify(obj)
+  copy(str)
+}
+
+module.exports = stateCopy
+
+
+},{"copy-text-to-clipboard":26,"fast-safe-stringify":46}],123:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('safe-buffer').Buffer;
@@ -16614,7 +16921,7 @@ function simpleWrite(buf) {
 function simpleEnd(buf) {
   return buf && buf.length ? this.write(buf) : '';
 }
-},{"safe-buffer":95}],119:[function(require,module,exports){
+},{"safe-buffer":99}],124:[function(require,module,exports){
 module.exports = toArray
 
 function toArray(list, index) {
@@ -16629,7 +16936,7 @@ function toArray(list, index) {
     return array
 }
 
-},{}],120:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 (function (global){
 
 /**
@@ -16700,7 +17007,606 @@ function config (name) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],121:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"dup":58}],127:[function(require,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],128:[function(require,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = require('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = require('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":127,"_process":17,"inherits":126}],129:[function(require,module,exports){
 var assert = require('assert')
 var trie = require('./trie')
 
@@ -16767,7 +17673,7 @@ function Wayfarer (dft) {
   }
 }
 
-},{"./trie":122,"assert":1}],122:[function(require,module,exports){
+},{"./trie":130,"assert":10}],130:[function(require,module,exports){
 var mutate = require('xtend/mutable')
 var assert = require('assert')
 var xtend = require('xtend')
@@ -16840,6 +17746,14 @@ Trie.prototype.match = function (route) {
     if (trie.nodes.hasOwnProperty(thisRoute)) {
       // match regular routes first
       return search(index + 1, trie.nodes[thisRoute])
+    } else if (trie.name) {
+      // match named routes
+      try {
+        params[trie.name] = decodeURIComponent(thisRoute)
+      } catch (e) {
+        return search(index, undefined)
+      }
+      return search(index + 1, trie.nodes['$$'])
     } else if (trie.wildcard) {
       // match wildcards
       try {
@@ -16849,15 +17763,6 @@ Trie.prototype.match = function (route) {
       }
       // return early, or else search may keep recursing through the wildcard
       return trie.nodes['$$']
-    } else if (trie.name) {
-      // match named routes
-      try {
-        params[trie.name] = decodeURIComponent(thisRoute)
-      } catch (e) {
-        console.log('must throw')
-        return search(index, undefined)
-      }
-      return search(index + 1, trie.nodes['$$'])
     } else {
       // no matches found
       return search(index + 1)
@@ -16907,7 +17812,7 @@ Trie.prototype.mount = function (route, trie) {
   }
 }
 
-},{"assert":1,"xtend":132,"xtend/mutable":133}],123:[function(require,module,exports){
+},{"assert":10,"xtend":140,"xtend/mutable":141}],131:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -17001,7 +17906,7 @@ Trie.prototype.mount = function (route, trie) {
   }
 })();
 
-},{"./chrome/chrome_shim":124,"./edge/edge_shim":126,"./firefox/firefox_shim":128,"./safari/safari_shim":130,"./utils":131}],124:[function(require,module,exports){
+},{"./chrome/chrome_shim":132,"./edge/edge_shim":134,"./firefox/firefox_shim":136,"./safari/safari_shim":138,"./utils":139}],132:[function(require,module,exports){
 
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
@@ -17268,7 +18173,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils.js":131,"./getusermedia":125}],125:[function(require,module,exports){
+},{"../utils.js":139,"./getusermedia":133}],133:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -17468,7 +18373,7 @@ module.exports = function() {
   }
 };
 
-},{"../utils.js":131}],126:[function(require,module,exports){
+},{"../utils.js":139}],134:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -18597,7 +19502,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils":131,"./getusermedia":127,"sdp":96}],127:[function(require,module,exports){
+},{"../utils":139,"./getusermedia":135,"sdp":100}],135:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -18631,7 +19536,7 @@ module.exports = function() {
   };
 };
 
-},{}],128:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -18795,7 +19700,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils":131,"./getusermedia":129}],129:[function(require,module,exports){
+},{"../utils":139,"./getusermedia":137}],137:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -18958,7 +19863,7 @@ module.exports = function() {
   };
 };
 
-},{"../utils":131}],130:[function(require,module,exports){
+},{"../utils":139}],138:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -18988,7 +19893,7 @@ module.exports = {
   // shimPeerConnection: safariShim.shimPeerConnection
 };
 
-},{}],131:[function(require,module,exports){
+},{}],139:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -19121,7 +20026,7 @@ module.exports = {
   extractVersion: utils.extractVersion
 };
 
-},{}],132:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -19142,7 +20047,7 @@ function extend() {
     return target
 }
 
-},{}],133:[function(require,module,exports){
+},{}],141:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -19161,7 +20066,7 @@ function extend(target) {
     return target
 }
 
-},{}],134:[function(require,module,exports){
+},{}],142:[function(require,module,exports){
 'use strict';
 
 var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')
@@ -19231,7 +20136,81 @@ yeast.encode = encode;
 yeast.decode = decode;
 module.exports = yeast;
 
-},{}],135:[function(require,module,exports){
+},{}],143:[function(require,module,exports){
+'use strict'
+
+const html = require('choo/html')
+const Modal = require('./components/modal.js')
+const Dropdown = require('./components/dropdown.js')
+const VideoEl = require('./components/VideoContainer.js')
+
+module.exports = addBroadcast
+
+const deviceDropdown = Dropdown()
+const previewVid = VideoEl()
+
+function addBroadcast (state, emit) {
+  var bState = state.devices.addBroadcast
+  var deviceOptions
+  var defaultLabel = ''
+  if(bState.kind==="audio") {
+    defaultLabel = bState.deviceId === null ? '' : state.devices.audioinput.byId[bState.deviceId].label
+    deviceOptions = state.devices.audioinput.all.map((id) => (
+      {
+        value: id,
+        label: state.devices.audioinput.byId[id].label
+      }
+    ))
+  } else {
+    defaultLabel = bState.deviceId === null ? '' : state.devices.videoinput.byId[bState.deviceId].label
+    deviceOptions = state.devices.videoinput.all.map((id) => (
+      {
+        value: id,
+        label: state.devices.videoinput.byId[id].label
+      }
+    ))
+  }
+  return html`
+
+    ${Modal({
+    //  show: state.user.modalAddBroadcast,
+      show: true,
+      header: "Add Broadcast",
+      contents: html`<div>
+            <input type="radio" name="kind" checked=${bState.kind==="audio"? "true": "false"} onclick=${setBroadcastKind} value="audio"> audio
+            <input type="radio" name="kind" checked=${bState.kind==="audio"? "false": "true"} onclick=${setBroadcastKind} value="video"> video
+            ${deviceDropdown.render({
+              value: 'Device:  ' + defaultLabel,
+              options: deviceOptions,
+              onchange: (value) => {
+                emit('devices:setBroadcastDevice', value)
+              }
+            })}
+        </div>`,
+      close: () => (emit('user:modalAddBroadcast', false))
+    })}
+
+    `
+    function setBroadcastKind(e){
+      emit('devices:setBroadcastKind', e.target.value)
+    }
+}
+
+
+// ${deviceDropdown.render({
+//   value: 'Device:  ' + (defaultAudio === null ? '' : audioinput.byId[defaultAudio].label),
+//   options: audioinput.all.map((id) => (
+//     {
+//       value: id,
+//       label: audioinput.byId[id].label
+//     }
+//   )),
+//   onchange: (value) => {
+//     emit('devices:setDefaultAudio', value)
+//   }
+// })}
+
+},{"./components/VideoContainer.js":148,"./components/dropdown.js":145,"./components/modal.js":147,"choo/html":21}],144:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const VideoEl = require('./components/VideoContainer.js')
@@ -19274,50 +20253,7 @@ function communicationView (state, emit) {
     `
 }
 
-},{"./components/VideoContainer.js":136,"choo/html":26}],136:[function(require,module,exports){
-'use strict'
-
-const html = require('choo/html')
-const xtend = require('xtend')
-var Nano = require('nanocomponent')
-
-module.exports = VideoContainer
-
-// Video container component that accepts a mediaStreamTrack as well as display parameters
-function VideoContainer () {
-  if (!(this instanceof VideoContainer)) return new VideoContainer()
-  Nano.call(this)
-}
-
-VideoContainer.prototype = Object.create(Nano.prototype)
-
-VideoContainer.prototype._render = function () {
-  if (!this.element) {
-    var defaultHtmlProps = {
-      autoplay: 'autoplay',
-      muted: 'muted'
-    }
-    var _htmlProps = xtend(defaultHtmlProps, this.props.htmlProps)
-    this.element = html`<video ${_htmlProps}></video>`
-  }
-
-  if (this.props.track && this.props.track != null) {
-    console.log("TRACK ", this.props)
-    var tracks = []
-    tracks.push(this.props.track.track)
-    this._stream = new MediaStream(tracks) // stream must be initialized with tracks, even though documentation says otherwise
-    this.element.srcObject = this._stream
-  }
-
-  return this.element
-}
-
-// call "render" if track property has changed
-VideoContainer.prototype._update = function (props) {
-  return this.props.track !== props.track
-}
-
-},{"choo/html":26,"nanocomponent":70,"xtend":132}],137:[function(require,module,exports){
+},{"./components/VideoContainer.js":148,"choo/html":21}],145:[function(require,module,exports){
 const microcomponent = require('microcomponent')
 const css = 0
 const html = require('choo/html')
@@ -19386,7 +20322,7 @@ function Dropdown () {
     this.render(this.props)
   }
 }
-},{"choo/html":26,"juliangruber-shallow-equal/objects":62,"microcomponent":64,"sheetify/insert":97}],138:[function(require,module,exports){
+},{"choo/html":21,"juliangruber-shallow-equal/objects":61,"microcomponent":63,"sheetify/insert":101}],146:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -19414,7 +20350,84 @@ function inputElement (name, defaultText, opts) {
   </div>`
 }
 
-},{"choo/html":26,"xtend":132}],139:[function(require,module,exports){
+},{"choo/html":21,"xtend":140}],147:[function(require,module,exports){
+'use strict'
+
+const html = require('choo/html')
+const xtend = require('xtend')
+const assert = require('assert')
+
+module.exports = Modal
+
+// reusable input element
+function Modal (opts) {
+  assert.equal(typeof opts, 'object', 'Modal: opts should be type object')
+
+  if (opts.show=== true) {
+
+    // to do: utf-8 special character is not working, ideally would be &times; for close button
+    return html`
+
+        <div class="fixed vh-100 dt w-100 bg-black top-0 left-0" style="background-color: rgba(0, 0, 0, 0.5)">
+          <div class="dib w-60 h-50 bg-dark-gray" style="position:absolute;left:50%;top:50%;transform:translate(-50%, -50%)">
+            <div class="bg-gray pv2 ph3">
+              <span class="fr f4 fw4" onclick=${opts.close}> x </span>
+              <h3 class="f4 fw2 pa0 ma0"> ${opts.header} </h3>
+            </div>
+            ${opts.contents}
+          </div>
+        </div>
+
+    `
+  } else {
+    return null;
+  }
+}
+
+},{"assert":10,"choo/html":21,"xtend":140}],148:[function(require,module,exports){
+'use strict'
+
+const html = require('choo/html')
+const xtend = require('xtend')
+var Nano = require('nanocomponent')
+
+module.exports = VideoContainer
+
+// Video container component that accepts a mediaStreamTrack as well as display parameters
+function VideoContainer () {
+  if (!(this instanceof VideoContainer)) return new VideoContainer()
+  Nano.call(this)
+}
+
+VideoContainer.prototype = Object.create(Nano.prototype)
+
+VideoContainer.prototype._render = function () {
+  if (!this.element) {
+    var defaultHtmlProps = {
+      autoplay: 'autoplay',
+      muted: 'muted'
+    }
+    var _htmlProps = xtend(defaultHtmlProps, this.props.htmlProps)
+    this.element = html`<video ${_htmlProps}></video>`
+  }
+
+  if (this.props.track && this.props.track != null) {
+    console.log("TRACK ", this.props)
+    var tracks = []
+    tracks.push(this.props.track.track)
+    this._stream = new MediaStream(tracks) // stream must be initialized with tracks, even though documentation says otherwise
+    this.element.srcObject = this._stream
+  }
+
+  return this.element
+}
+
+// call "render" if track property has changed
+VideoContainer.prototype._update = function (props) {
+  return this.props.track !== props.track
+}
+
+},{"choo/html":21,"nanocomponent":69,"xtend":140}],149:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -19434,8 +20447,8 @@ function loginView (state, emit) {
 
   var audioinput = state.devices.audioinput
   var videoinput = state.devices.videoinput
-  var defaultAudio = state.devices.default.audioinput
-  var defaultVideo = state.devices.default.videoinput
+  var defaultAudio = state.devices.default.inputDevices.audio
+  var defaultVideo = state.devices.default.inputDevices.video
 
   return html`
   <div>
@@ -19444,7 +20457,9 @@ function loginView (state, emit) {
        htmlProps: {
          class: 'w-100 h-100'
        },
-       track: state.media.byId[state.media.default.video]
+       track: (state.devices.default.previewTracks.video === null ? null : {
+         track: state.devices.default.previewTracks.video
+       })
      })}
     </div>
     <div class="vh-100 dt w-100 fixed top-0 left-0">
@@ -19509,34 +20524,39 @@ function loginView (state, emit) {
   }
 }
 
-},{"./components/VideoContainer.js":136,"./components/dropdown.js":137,"./components/input.js":138,"choo/html":26}],140:[function(require,module,exports){
+},{"./components/VideoContainer.js":148,"./components/dropdown.js":145,"./components/input.js":146,"choo/html":21}],150:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
 const login = require('./login.js')
 const communication = require('./communication.js')
 const mediaList = require('./mediaList.js')
+const AddBroadcast = require('./addBroadcast.js')
 
 module.exports = mainView
-
+//  <!--${AddBroadcast(state, emit)}-->
 function mainView (state, emit) {
   if (!state.user.loggedIn) {
     return html`
     <div>
     ${login(state, emit)}
+
     </div>
     `
   } else {
+
     return html`
     <div>
       ${communication(state, emit)}
       ${mediaList(state, emit)}
+
     </div>
+
     `
   }
 }
 
-},{"./communication.js":135,"./login.js":139,"./mediaList.js":141,"choo/html":26}],141:[function(require,module,exports){
+},{"./addBroadcast.js":143,"./communication.js":144,"./login.js":149,"./mediaList.js":151,"choo/html":21}],151:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 
@@ -19564,9 +20584,9 @@ function mediaListView (state, emit) {
             `
           })}
       </table>
-
+        <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('user:modalAddBroadcast', true))}>+ Add Broadcast</div>
     </div>
     `
 }
 
-},{"choo/html":26}]},{},[12]);
+},{"choo/html":21}]},{},[1]);
