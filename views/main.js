@@ -13,7 +13,7 @@ function mainView (state, emit) {
     return html`
     <div>
     ${login(state, emit)}
-  
+    ${AddBroadcast(state, emit)}
     </div>
     `
   } else {

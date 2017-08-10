@@ -26,8 +26,7 @@ function devicesModel (state, bus) {
     },
     addBroadcast: {
       active: false,
-      stream: null,
-      kind: "video",
+      kind: "audio",
       audio: {
         deviceId: null
       },
@@ -82,7 +81,7 @@ function devicesModel (state, bus) {
 
   bus.on('devices:setDefaultAudio', function (val) {
     setDefaultAudio(val)
-    
+
   })
 
   bus.on('devices:setDefaultVideo', function (val) {
