@@ -29,8 +29,7 @@ function loginView (state, emit) {
        },
        track: state.devices.default.previewTracks.video,
        id: state.devices.default.previewTracks.video === null ? null : state.devices.default.previewTracks.video.id
-       })
-     })}
+       })}
     </div>
     <div class="vh-100 dt w-100 fixed top-0 left-0">
       <div class="dtc v-mid">

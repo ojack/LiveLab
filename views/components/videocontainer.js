@@ -17,8 +17,8 @@ function VideoContainer () {
 
 VideoContainer.prototype = Object.create(Nano.prototype)
 
-VideoContainer.prototype.createElement = function () {
-
+VideoContainer.prototype.createElement = function (props) {
+    this.props = props
     var defaultHtmlProps = {
       autoplay: 'autoplay',
       muted: 'muted'
@@ -30,10 +30,12 @@ VideoContainer.prototype.createElement = function () {
 
 }
 
-// call "render" if track property has changed
+// update streamß if track id has changed
 VideoContainer.prototype.update = function (props) {
-this.props.htmlProps = props.htmlProps
-
+  // if(props.htmlProps != this.props.htmlProps) {
+  //   return true
+  // }
+console.log("VIDEO", this.props)
   if (props.track && props.track != null && props.id !== this.props.id) {
     this.props.track = props.track
     this.props.id = props.id
