@@ -24,25 +24,30 @@ VideoContainer.prototype.createElement = function (props) {
       muted: 'muted'
     }
     var _htmlProps = xtend(defaultHtmlProps, this.props.htmlProps)
-    return html`<video ${_htmlProps}></video>`
 
-
+    var el = html`<video ${_htmlProps}></video>`
+    if(this.props.id && this.props.track) addTrackToElement(this.props.track, el)
+    return el
 
 }
 
+function addTrackToElement(track, element){
+  var tracks = []
+  tracks.push(track)
+  var stream = new MediaStream(tracks) // stream must be initialized with tracks, even though documentation says otherwise
+  element.srcObject = stream
+}
 // update streamß if track id has changed
 VideoContainer.prototype.update = function (props) {
   // if(props.htmlProps != this.props.htmlProps) {
   //   return true
   // }
-console.log("VIDEO", this.props)
+console.log("VIDEO", this.props.id, props.id)
   if (props.track && props.track != null && props.id !== this.props.id) {
+    console.log("updating video", this.props)
     this.props.track = props.track
     this.props.id = props.id
-    var tracks = []
-    tracks.push(this.props.track)
-    this._stream = new MediaStream(tracks) // stream must be initialized with tracks, even though documentation says otherwise
-    this.element.srcObject = this._stream
+    addTrackToElement(this.props.track, this.element)
   }
 
   return false
