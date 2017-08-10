@@ -25,7 +25,7 @@ function devicesModel (state, bus) {
       all: []
     },
     addBroadcast: {
-      active: false,
+      active: true,
       kind: "audio",
       audio: {
         deviceId: null

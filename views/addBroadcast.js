@@ -4,31 +4,32 @@ const html = require('choo/html')
 const Modal = require('./components/modal.js')
 const Dropdown = require('./components/dropdown-nano.js')
 const VideoEl = require('./components/VideoContainer.js')
+const settings = require('./../models/availableConstraints.json')
 
 module.exports = addBroadcast
 
 const deviceDropdown = Dropdown()
 const previewVid = VideoEl()
 
-function addBroadcast (state, emit) {
-  var bState = state.devices.addBroadcast
+function addBroadcast (devices, emit) {
+  var bState = devices.addBroadcast
   var constraintOptions
 
   var defaultLabel = ''
   if(bState[bState.kind].deviceId !== null){
     var selectedDevice = bState[bState.kind].deviceId
-    defaultLabel += state.devices[bState.kind+'input'].byId[selectedDevice].label
+    defaultLabel += devices[bState.kind+'input'].byId[selectedDevice].label
   }
 
   if(bState.kind==="audio") {
     constraintOptions = html`
-    <div id="audio-constraints">
+    <div id="audio-constraints" >
       ${deviceDropdown.render({
         value: 'Device:  ' + defaultLabel,
-        options: state.devices.audioinput.all.map((id) => (
+        options: devices.audioinput.all.map((id) => (
           {
             value: id,
-            label: state.devices.audioinput.byId[id].label
+            label: devices.audioinput.byId[id].label
           }
         )),
         onchange: (value) => {
@@ -57,10 +58,10 @@ function addBroadcast (state, emit) {
     <div id="video-constraints">
       ${deviceDropdown.render({
         value: 'Device:  ' + defaultLabel,
-        options: state.devices.videoinput.all.map((id) => (
+        options: devices.videoinput.all.map((id) => (
           {
             value: id,
-            label: state.devices.videoinput.byId[id].label
+            label: devices.videoinput.byId[id].label
           }
         )),
         onchange: (value) => {
@@ -72,13 +73,12 @@ function addBroadcast (state, emit) {
   return html`
 
     ${Modal({
-    //  show: state.user.modalAddBroadcast,
-      show: true,
+      show: state.user.modalAddBroadcast,
       header: "Add Broadcast",
-      contents: html`<div id="add broadcast">
+      contents: html`<div id="add broadcast" class="pa3 f6 fw3">
             ${radioEl(
               {
-                label: "",
+                label: "kind:",
                 options:  [
                   { name: "kind",
                     checked: bState.kind==="audio"? "true": "false",
@@ -95,8 +95,8 @@ function addBroadcast (state, emit) {
         </div>`,
       close: () => (emit('user:modalAddBroadcast', false))
     })}
-
     `
+
     function setBroadcastKind(e){
       emit('devices:setBroadcastKind', e.target.value)
     }
@@ -114,12 +114,16 @@ function addBroadcast (state, emit) {
     }
 
     function radioEl(opts){
-      return html`<div>
+      return html`<div  class="mv3">
         <span> ${opts.label} </span>
         ${opts.options.map((opt)=>(
-          html`<span><input type="radio" checked=${opt.checked} onclick=${opts.onChange} value=${opt.value} name=${opt.name}></input> ${opt.value}</span>`
+          html`<span ><input class="ml3 mr2" type="radio" checked=${opt.checked} onclick=${opts.onChange} value=${opt.value} name=${opt.name}></input> ${opt.value}</span>`
         ))}
       </div>`
+    }
+
+    function slider(opts){
+
     }
 }
 

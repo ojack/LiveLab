@@ -14,7 +14,7 @@ function mainView (state, emit) {
     return html`
     <div>
 
-    ${AddBroadcast(state, emit)}
+    ${AddBroadcast(state.devices, emit)}
     </div>
     `
   } else {
