@@ -25,7 +25,7 @@ function devicesModel (state, bus) {
       all: []
     },
     addBroadcast: {
-      active: true,
+      active: false,
       kind: "audio",
       audio: {
         deviceId: null
@@ -61,6 +61,7 @@ function devicesModel (state, bus) {
     updateBroadcastPreview()
     bus.emit('render')
   })
+
   //accepts an object containing the properties to update and their new values. e.g.
   // { echoCancellation : { value: true}}
   bus.on('devices:updateBroadcastConstraints', function(obj){
@@ -69,10 +70,12 @@ function devicesModel (state, bus) {
           xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind][key], obj[key])
       }
     )
-
-    //setBroadcastDevice(val, state.devices.addBroadcast.kind)
-    console.log(state.devices.addBroadcast[state.devices.addBroadcast.kind])
     updateBroadcastPreview()
+    bus.emit('render')
+  })
+
+  bus.on('devices:toggleAddBroadcast', function(val){
+    state.devices.addBroadcast.active = val
     bus.emit('render')
   })
 

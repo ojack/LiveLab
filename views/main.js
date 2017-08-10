@@ -13,8 +13,8 @@ function mainView (state, emit) {
   if (!state.user.loggedIn) {
     return html`
     <div>
+    ${login(state, emit)}
 
-    ${AddBroadcast(state.devices, emit, true)}
     </div>
     `
   } else {
@@ -23,7 +23,7 @@ function mainView (state, emit) {
     <div>
       ${communication(state, emit)}
       ${mediaList(state, emit)}
-
+      ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
     </div>
 
     `

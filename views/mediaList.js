@@ -25,7 +25,7 @@ function mediaListView (state, emit) {
             `
           })}
       </table>
-        <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('user:modalAddBroadcast', true))}>+ Add Broadcast</div>
+        <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div>
     </div>
     `
 }

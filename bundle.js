@@ -21,7 +21,7 @@ app.route('/', require('./views/main.js'))
 
 app.mount('body div')
 
-},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/userModel.js":7,"./views/main.js":151,"choo":22,"choo-expose":19,"choo-log":20}],2:[function(require,module,exports){
+},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/userModel.js":7,"./views/main.js":152,"choo":22,"choo-expose":19,"choo-log":20}],2:[function(require,module,exports){
 // Module for handling connections to multiple peers
 
 var io = require('socket.io-client')
@@ -205,7 +205,7 @@ function devicesModel (state, bus) {
       all: []
     },
     addBroadcast: {
-      active: true,
+      active: false,
       kind: "audio",
       audio: {
         deviceId: null
@@ -241,6 +241,7 @@ function devicesModel (state, bus) {
     updateBroadcastPreview()
     bus.emit('render')
   })
+
   //accepts an object containing the properties to update and their new values. e.g.
   // { echoCancellation : { value: true}}
   bus.on('devices:updateBroadcastConstraints', function(obj){
@@ -249,10 +250,12 @@ function devicesModel (state, bus) {
           xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind][key], obj[key])
       }
     )
-
-    //setBroadcastDevice(val, state.devices.addBroadcast.kind)
-    console.log(state.devices.addBroadcast[state.devices.addBroadcast.kind])
     updateBroadcastPreview()
+    bus.emit('render')
+  })
+
+  bus.on('devices:toggleAddBroadcast', function(val){
+    state.devices.addBroadcast.active = val
     bus.emit('render')
   })
 
@@ -20163,6 +20166,11 @@ function addBroadcast (devices, emit, showElement) {
           emit('devices:updateBroadcastDevice', {deviceId: value})
         }
       })}
+      ${settingsUI({
+          onChange: updateBroadcastConstraints,
+          settings: bState.video
+        })
+      }
     </div`
   }
   return html`
@@ -20188,7 +20196,7 @@ function addBroadcast (devices, emit, showElement) {
 
             ${constraintOptions}
         </div>`,
-      close: () => (emit('user:modalAddBroadcast', false))
+      close: () => (emit('devices:toggleAddBroadcast', false))
     })}
     `
 
@@ -20203,7 +20211,7 @@ function addBroadcast (devices, emit, showElement) {
 
 }
 
-},{"./components/VideoContainer.js":149,"./components/dropdown.js":144,"./components/modal.js":146,"./components/radioSelect.js":147,"./components/settingsUI.js":148,"choo/html":21}],143:[function(require,module,exports){
+},{"./components/VideoContainer.js":150,"./components/dropdown.js":144,"./components/modal.js":146,"./components/radioSelect.js":147,"./components/settingsUI.js":148,"choo/html":21}],143:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const VideoEl = require('./components/VideoContainer.js')
@@ -20247,7 +20255,7 @@ function communicationView (state, emit) {
     `
 }
 
-},{"./components/VideoContainer.js":149,"choo/html":21}],144:[function(require,module,exports){
+},{"./components/VideoContainer.js":150,"choo/html":21}],144:[function(require,module,exports){
 const Nano = require('nanocomponent')
 const css = 0
 const html = require('choo/html')
@@ -20410,6 +20418,8 @@ function radioSelect(opts){
 const html = require('choo/html')
 const xtend = require('xtend')
 const radioSelect = require("./radioSelect.js")
+const slider = require("./slider.js")
+
 module.exports = settingsUI
 
 // generate ui based on JSON object
@@ -20420,6 +20430,18 @@ function settingsUI (opts) {
       var obj = opts.settings[key]
       if(obj.type==="boolean"){
         uiArray.push(createBooleanElement(key, obj, opts.onChange))
+      } else if(obj.type === "range"){
+        uiArray.push(
+          slider(
+            {
+              label: key,
+              onChange: handleSettingChange.bind(obj, opts.onChange),
+              value: obj.value,
+              min: obj.min,
+              max: obj.max
+            }
+          )
+        )
       }
     }
   }
@@ -20429,14 +20451,13 @@ function settingsUI (opts) {
 }
 
 function handleSettingChange(callback, e){
-  console.log("e", e)
-  console.log("cb", callback)
-  console.log("this", this)
   var update = {}
   var val = e.target.value
   //convert from string to bool if type = boolean
   if(this.type==="boolean"){
     val = (val === "true")
+  } else if(this.type==="range"){
+    val = parseFloat(val)
   }
   update[e.target.name] = {
     value: val
@@ -20460,7 +20481,23 @@ function createBooleanElement(label, obj, callback){
   })
 }
 
-},{"./radioSelect.js":147,"choo/html":21,"xtend":139}],149:[function(require,module,exports){
+},{"./radioSelect.js":147,"./slider.js":149,"choo/html":21,"xtend":139}],149:[function(require,module,exports){
+'use strict'
+
+const html = require('choo/html')
+
+module.exports = slider
+
+
+function slider(opts){
+  return html`<div  class="mv3">
+    <span> ${opts.label} : ${opts.value} </span>
+    <input class="ml3 mr2" type="range" min=${opts.min} max=${opts.max} value=${opts.value} onchange=${opts.onChange} name=${opts.label}></input>
+
+  </div>`
+}
+
+},{"choo/html":21}],150:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20513,7 +20550,7 @@ VideoContainer.prototype.update = function (props) {
   return false
 }
 
-},{"choo/html":21,"nanocomponent":65,"xtend":139}],150:[function(require,module,exports){
+},{"choo/html":21,"nanocomponent":65,"xtend":139}],151:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20609,7 +20646,7 @@ function loginView (state, emit) {
   }
 }
 
-},{"./components/dropdown.js":144,"./components/input.js":145,"./components/videocontainer.js":149,"choo/html":21}],151:[function(require,module,exports){
+},{"./components/dropdown.js":144,"./components/input.js":145,"./components/videocontainer.js":150,"choo/html":21}],152:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20625,8 +20662,8 @@ function mainView (state, emit) {
   if (!state.user.loggedIn) {
     return html`
     <div>
+    ${login(state, emit)}
 
-    ${AddBroadcast(state.devices, emit, true)}
     </div>
     `
   } else {
@@ -20635,14 +20672,14 @@ function mainView (state, emit) {
     <div>
       ${communication(state, emit)}
       ${mediaList(state, emit)}
-
+      ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
     </div>
 
     `
   }
 }
 
-},{"./addBroadcast.js":142,"./communication.js":143,"./login.js":150,"./mediaList.js":152,"choo/html":21}],152:[function(require,module,exports){
+},{"./addBroadcast.js":142,"./communication.js":143,"./login.js":151,"./mediaList.js":153,"choo/html":21}],153:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 
@@ -20670,7 +20707,7 @@ function mediaListView (state, emit) {
             `
           })}
       </table>
-        <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('user:modalAddBroadcast', true))}>+ Add Broadcast</div>
+        <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div>
     </div>
     `
 }

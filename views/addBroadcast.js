@@ -60,6 +60,11 @@ function addBroadcast (devices, emit, showElement) {
           emit('devices:updateBroadcastDevice', {deviceId: value})
         }
       })}
+      ${settingsUI({
+          onChange: updateBroadcastConstraints,
+          settings: bState.video
+        })
+      }
     </div`
   }
   return html`
@@ -85,7 +90,7 @@ function addBroadcast (devices, emit, showElement) {
 
             ${constraintOptions}
         </div>`,
-      close: () => (emit('user:modalAddBroadcast', false))
+      close: () => (emit('devices:toggleAddBroadcast', false))
     })}
     `
 
