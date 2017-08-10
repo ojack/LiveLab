@@ -21,7 +21,7 @@ app.route('/', require('./views/main.js'))
 
 app.mount('body div')
 
-},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/userModel.js":7,"./views/main.js":150,"choo":22,"choo-expose":19,"choo-log":20}],2:[function(require,module,exports){
+},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/userModel.js":7,"./views/main.js":155,"choo":22,"choo-expose":19,"choo-log":20}],2:[function(require,module,exports){
 // Module for handling connections to multiple peers
 
 var io = require('socket.io-client')
@@ -133,7 +133,7 @@ MultiPeer.prototype._attachPeerEvents = function (p, _id) {
 
 module.exports = MultiPeer
 
-},{"events":45,"inherits":58,"simple-peer":112,"socket.io-client":113}],3:[function(require,module,exports){
+},{"events":45,"inherits":58,"simple-peer":116,"socket.io-client":117}],3:[function(require,module,exports){
 module.exports=/*
   Options for constraints as defined in: https://w3c.github.io/mediacapture-main/getusermedia.html
   constraints not added: latency, facingMode, sampleRate, sampleSize, volume
@@ -681,7 +681,7 @@ function userModel (state, bus) {
   }
 }
 
-},{"./../lib/MultiPeer.js":2,"shortid":102}],8:[function(require,module,exports){
+},{"./../lib/MultiPeer.js":2,"shortid":106}],8:[function(require,module,exports){
 module.exports = after
 
 function after(count, callback, err_cb) {
@@ -1236,7 +1236,7 @@ var objectKeys = Object.keys || function (obj) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"util/":128}],11:[function(require,module,exports){
+},{"util/":132}],11:[function(require,module,exports){
 
 /**
  * Expose `Backoff`.
@@ -1663,7 +1663,7 @@ module.exports = hyperx(belCreateElement, {comments: true})
 module.exports.default = module.exports
 module.exports.createElement = belCreateElement
 
-},{"global/document":49,"hyperx":55,"on-load":81}],15:[function(require,module,exports){
+},{"global/document":49,"hyperx":55,"on-load":85}],15:[function(require,module,exports){
 (function (global){
 /**
  * Create a blob builder even when vendor prefixes exist
@@ -3733,7 +3733,7 @@ function Event (name, data) {
   this.data = data
 }
 
-},{"on-idle":80,"plucker":85,"remove-array-items":98,"state-copy":122}],20:[function(require,module,exports){
+},{"on-idle":84,"plucker":89,"remove-array-items":102,"state-copy":126}],20:[function(require,module,exports){
 var nanologger = require('nanologger')
 
 module.exports = logger
@@ -3806,7 +3806,7 @@ function logger (opts) {
   }
 }
 
-},{"nanologger":72}],21:[function(require,module,exports){
+},{"nanologger":76}],21:[function(require,module,exports){
 module.exports = require('bel')
 
 },{"bel":14}],22:[function(require,module,exports){
@@ -3949,7 +3949,7 @@ function createLocation () {
   return pathname + hash
 }
 
-},{"assert":10,"document-ready":30,"nanobus":68,"nanohistory":70,"nanohref":71,"nanomorph":73,"nanomount":76,"nanoraf":77,"nanorouter":78}],23:[function(require,module,exports){
+},{"assert":10,"document-ready":30,"nanobus":69,"nanohistory":74,"nanohref":75,"nanomorph":77,"nanomount":80,"nanoraf":81,"nanorouter":82}],23:[function(require,module,exports){
 /**
  * Slice reference.
  */
@@ -4690,7 +4690,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":67}],30:[function(require,module,exports){
+},{"ms":68}],30:[function(require,module,exports){
 'use strict'
 
 var assert = require('assert')
@@ -5473,7 +5473,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./transport":34,"./transports/index":35,"component-emitter":24,"debug":28,"engine.io-parser":41,"indexof":57,"parsejson":82,"parseqs":83,"parseuri":84}],34:[function(require,module,exports){
+},{"./transport":34,"./transports/index":35,"component-emitter":24,"debug":28,"engine.io-parser":41,"indexof":57,"parsejson":86,"parseqs":87,"parseuri":88}],34:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -6588,7 +6588,7 @@ Polling.prototype.uri = function () {
   return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
 };
 
-},{"../transport":34,"component-inherit":25,"debug":28,"engine.io-parser":41,"parseqs":83,"xmlhttprequest-ssl":40,"yeast":142}],39:[function(require,module,exports){
+},{"../transport":34,"component-inherit":25,"debug":28,"engine.io-parser":41,"parseqs":87,"xmlhttprequest-ssl":40,"yeast":146}],39:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -6878,7 +6878,7 @@ WS.prototype.check = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../transport":34,"component-inherit":25,"debug":28,"engine.io-parser":41,"parseqs":83,"ws":16,"yeast":142}],40:[function(require,module,exports){
+},{"../transport":34,"component-inherit":25,"debug":28,"engine.io-parser":41,"parseqs":87,"ws":16,"yeast":146}],40:[function(require,module,exports){
 (function (global){
 // browser shim for xmlhttprequest module
 
@@ -8310,7 +8310,7 @@ module.exports = function (constraints, cb) {
     });
 };
 
-},{"webrtc-adapter":131}],49:[function(require,module,exports){
+},{"webrtc-adapter":135}],49:[function(require,module,exports){
 (function (global){
 var topLevel = typeof global !== 'undefined' ? global :
     typeof window !== 'undefined' ? window : {}
@@ -9072,7 +9072,95 @@ Microcomponent.prototype.emit = function (eventname) {
   return this['_' + eventname].apply(this, args)
 }
 
-},{"assert":10,"juliangruber-shallow-equal/objects":61,"nanocomponent":69,"nanologger":72,"nanomorph":64}],64:[function(require,module,exports){
+},{"assert":10,"juliangruber-shallow-equal/objects":61,"nanocomponent":64,"nanologger":76,"nanomorph":65}],64:[function(require,module,exports){
+var onload = require('on-load')
+var assert = require('assert')
+
+var KEY = 'ncid-' + (new Date() % 9e6).toString(36)
+var INDEX = 0
+
+module.exports = Nanocomponent
+
+function Nanocomponent () {
+  this._hasWindow = typeof window !== 'undefined'
+  this._ID = KEY + '-' + INDEX++
+  this._placeholder = null
+  this._onload = onload
+  this._element = null
+  this._loaded = false
+  this.props = {}
+  this.oldProps = null
+  this.state = {}
+}
+
+Nanocomponent.prototype._ensureID = function () {
+  // Get ID - needed for nanomorph child element reordering
+  var id = this._element.getAttribute('id')
+  if (!id) this._element.setAttribute('id', this._ID)
+  else this._ID = id
+}
+
+Nanocomponent.prototype._rerender = function (props) {
+  this.oldProps = this.props
+  this.props = props
+  this._element = this._render()
+  this._ensureID()
+}
+
+Nanocomponent.prototype.render = function (props) {
+  assert.equal(typeof this._render, 'function', 'nanocomponent: this._render should be implemented')
+  assert.equal(typeof this._update, 'function', 'nanocomponent: this._update should be implemented')
+
+  var self = this
+  var len = arguments.length
+  var args = new Array(len)
+  for (var i = 0; i < len; i++) args[i] = arguments[i]
+
+  if (!this._hasWindow) {
+    this._rerender(props)
+    return this._element
+  } else if (!this._element) {
+    this._rerender(props)
+    this._onload(this._element, function () {
+      if (self._loaded) return
+      self._loaded = true
+      if (self._load) {
+        window.requestAnimationFrame(function () {
+          self._load()
+        })
+      }
+    }, function () {
+      if (document.body.contains(self._element)) return
+      self._loaded = false
+      if (self._unload) {
+        window.requestAnimationFrame(function () {
+          self._unload()
+        })
+      }
+    }, this._ID)
+    return this._element
+  } else {
+    var shouldUpdate = this._update(props)
+    if (shouldUpdate) {
+      this._rerender(props)
+    }
+    if (!this._placeholder) this._placeholder = this._createPlaceholder()
+    return this._placeholder
+  }
+}
+
+Nanocomponent.prototype._createPlaceholder = function () {
+  var el = document.createElement('div')
+  el.setAttribute('data-nanocomponent', '')
+  el.setAttribute('id', this._ID)
+  var self = this
+  el.isSameNode = function (el) {
+    return el === self._element
+  }
+  return el
+}
+
+},{"assert":10,"on-load":85}],65:[function(require,module,exports){
 var assert = require('assert')
 var morph = require('./lib/morph')
 
@@ -9223,7 +9311,7 @@ function same (a, b) {
   return false
 }
 
-},{"./lib/morph":66,"assert":10}],65:[function(require,module,exports){
+},{"./lib/morph":67,"assert":10}],66:[function(require,module,exports){
 module.exports = [
   // attribute events (can be set with attributes)
   'onclick',
@@ -9263,7 +9351,7 @@ module.exports = [
   'onfocusout'
 ]
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 var events = require('./events')
 var eventsLength = events.length
 
@@ -9427,7 +9515,7 @@ function updateAttribute (newNode, oldNode, name) {
   }
 }
 
-},{"./events":65}],67:[function(require,module,exports){
+},{"./events":66}],68:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -9581,7 +9669,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 var nanotiming = require('nanotiming')
 var assert = require('assert')
 
@@ -9729,93 +9817,131 @@ Nanobus.prototype._emit = function (arr, eventName, data) {
   }
 }
 
-},{"assert":10,"nanotiming":79}],69:[function(require,module,exports){
+},{"assert":10,"nanotiming":83}],70:[function(require,module,exports){
+var document = require('global/document')
+var morph = require('nanomorph')
 var onload = require('on-load')
 var assert = require('assert')
 
-var KEY = 'ncid-' + (new Date() % 9e6).toString(36)
-var INDEX = 0
-
 module.exports = Nanocomponent
+
+function makeID () {
+  return 'ncid-' + Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
+}
 
 function Nanocomponent () {
   this._hasWindow = typeof window !== 'undefined'
-  this._ID = KEY + '-' + INDEX++
-  this._placeholder = null
-  this._onload = onload
-  this._element = null
-  this._loaded = false
-  this.props = {}
-  this.oldProps = null
-  this.state = {}
-}
+  this._id = null // represents the id of the root node
+  this._ncID = null // internal nanocomponent id
+  this._proxy = null
+  this._loaded = false // Used to debounce on-load when child-reordering
+  this._rootNodeName = null
 
-Nanocomponent.prototype._ensureID = function () {
-  // Get ID - needed for nanomorph child element reordering
-  var id = this._element.getAttribute('id')
-  if (!id) this._element.setAttribute('id', this._ID)
-  else this._ID = id
-}
-
-Nanocomponent.prototype._rerender = function (props) {
-  this.oldProps = this.props
-  this.props = props
-  this._element = this._render()
-  this._ensureID()
-}
-
-Nanocomponent.prototype.render = function (props) {
-  assert.equal(typeof this._render, 'function', 'nanocomponent: this._render should be implemented')
-  assert.equal(typeof this._update, 'function', 'nanocomponent: this._update should be implemented')
+  this._handleLoad = this._handleLoad.bind(this)
+  this._handleUnload = this._handleUnload.bind(this)
 
   var self = this
-  var len = arguments.length
-  var args = new Array(len)
-  for (var i = 0; i < len; i++) args[i] = arguments[i]
 
-  if (!this._hasWindow) {
-    this._rerender(props)
-    return this._element
-  } else if (!this._element) {
-    this._rerender(props)
-    this._onload(this._element, function () {
-      self._loaded = true
-      if (self._load) {
-        window.requestAnimationFrame(function () {
-          self._load()
-        })
-      }
-    }, function () {
-      self._loaded = false
-      if (self._unload) {
-        window.requestAnimationFrame(function () {
-          self._unload()
-        })
-      }
-    })
-    return this._element
-  } else {
-    var shouldUpdate = this._update(props)
-    if (shouldUpdate) {
-      this._rerender(props)
+  Object.defineProperty(this, 'element', {
+    get: function () {
+      var el = document.getElementById(self._id)
+      if (el) return el.dataset.nanocomponent === self._ncID ? el : undefined
     }
-    if (!this._placeholder) this._placeholder = this._createPlaceholder()
-    return this._placeholder
-  }
+  })
 }
 
-Nanocomponent.prototype._createPlaceholder = function () {
-  var el = document.createElement('div')
-  el.setAttribute('data-nanocomponent', '')
-  el.setAttribute('id', this._ID)
+Nanocomponent.prototype.render = function () {
   var self = this
-  el.isSameNode = function (el) {
-    return el === self._element
+  var args = new Array(arguments.length)
+  for (var i = 0; i < arguments.length; i++) args[i] = arguments[i]
+  if (!this._hasWindow) {
+    return this.createElement.apply(this, args)
+  } else if (this.element) {
+    var shouldUpdate = this.update.apply(this, args)
+    if (shouldUpdate) {
+      morph(this.element, this._handleRender(args))
+      if (this.afterupdate) this.afterupdate(this.element)
+    }
+    if (!this._proxy) { this._proxy = this._createProxy() }
+    return this._proxy
+  } else {
+    this._reset()
+    var el = this._handleRender(args)
+    if (this.beforerender) this.beforerender(el)
+    if (this.load || this.unload) {
+      onload(el, self._handleLoad, self._handleUnload, self)
+    }
+    return el
   }
-  return el
 }
 
-},{"assert":10,"on-load":81}],70:[function(require,module,exports){
+Nanocomponent.prototype._handleRender = function (args) {
+  var el = this.createElement.apply(this, args)
+  if (!this._rootNodeName) this._rootNodeName = el.nodeName
+  assert(el instanceof window.HTMLElement, 'nanocomponent: createElement should return a DOM node')
+  assert.equal(this._rootNodeName, el.nodeName, 'nanocomponent: root node types cannot differ between re-renders')
+  return this._brandNode(this._ensureID(el))
+}
+
+Nanocomponent.prototype._createProxy = function () {
+  var proxy = document.createElement('div')
+  var self = this
+  this._brandNode(proxy)
+  proxy.id = this._id
+  proxy.setAttribute('data-proxy', '')
+  proxy.isSameNode = function (el) {
+    return (el && el.dataset.nanocomponent === self._ncID)
+  }
+  return proxy
+}
+
+Nanocomponent.prototype._reset = function () {
+  this._ncID = makeID()
+  this._id = null
+  this._proxy = null
+  this._rootNodeName = null
+}
+
+Nanocomponent.prototype._brandNode = function (node) {
+  node.setAttribute('data-nanocomponent', this._ncID)
+  return node
+}
+
+Nanocomponent.prototype._ensureID = function (node) {
+  if (node.id) this._id = node.id
+  else node.id = this._id = this._ncID
+  return node
+}
+
+Nanocomponent.prototype._handleLoad = function () {
+  var self = this
+  if (this._loaded) return // Debounce child-reorders
+  this._loaded = true
+  if (this.load) window.requestAnimationFrame(function () { self.load() })
+}
+
+Nanocomponent.prototype._handleUnload = function () {
+  var self = this
+  if (this.element) return // Debounce child-reorders
+  this._loaded = false
+  if (this.unload) window.requestAnimationFrame(function () { self.unload() })
+}
+
+Nanocomponent.prototype.createElement = function () {
+  throw new Error('nanocomponent: createElement should be implemented!')
+}
+
+Nanocomponent.prototype.update = function () {
+  throw new Error('nanocomponent: update should be implemented!')
+}
+
+},{"assert":10,"global/document":49,"nanomorph":71,"on-load":85}],71:[function(require,module,exports){
+arguments[4][65][0].apply(exports,arguments)
+},{"./lib/morph":73,"assert":10,"dup":65}],72:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"dup":66}],73:[function(require,module,exports){
+arguments[4][67][0].apply(exports,arguments)
+},{"./events":72,"dup":67}],74:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = history
@@ -9829,7 +9955,7 @@ function history (cb) {
   }
 }
 
-},{"assert":10}],71:[function(require,module,exports){
+},{"assert":10}],75:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = href
@@ -9865,7 +9991,7 @@ function href (cb, root) {
   }
 }
 
-},{"assert":10}],72:[function(require,module,exports){
+},{"assert":10}],76:[function(require,module,exports){
 var assert = require('assert')
 var xtend = require('xtend')
 
@@ -10029,7 +10155,7 @@ function pad (str) {
   return str.length !== 2 ? 0 + str : str
 }
 
-},{"assert":10,"xtend":140}],73:[function(require,module,exports){
+},{"assert":10,"xtend":144}],77:[function(require,module,exports){
 var assert = require('assert')
 var morph = require('./lib/morph')
 var rootLabelRegex = /^data-onloadid/
@@ -10124,9 +10250,9 @@ function persistStatefulRoot (newNode, oldNode) {
   }
 }
 
-},{"./lib/morph":75,"assert":10}],74:[function(require,module,exports){
-arguments[4][65][0].apply(exports,arguments)
-},{"dup":65}],75:[function(require,module,exports){
+},{"./lib/morph":79,"assert":10}],78:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"dup":66}],79:[function(require,module,exports){
 var events = require('./events')
 var eventsLength = events.length
 
@@ -10301,7 +10427,7 @@ function updateAttribute (newNode, oldNode, name) {
   }
 }
 
-},{"./events":74}],76:[function(require,module,exports){
+},{"./events":78}],80:[function(require,module,exports){
 var nanomorph = require('nanomorph')
 var assert = require('assert')
 
@@ -10323,7 +10449,7 @@ function nanomount (target, newTree) {
     target.outerHTML.nodeName + '.')
 }
 
-},{"assert":10,"nanomorph":73}],77:[function(require,module,exports){
+},{"assert":10,"nanomorph":77}],81:[function(require,module,exports){
 'use strict'
 
 var assert = require('assert')
@@ -10360,7 +10486,7 @@ function nanoraf (render, raf) {
   }
 }
 
-},{"assert":10}],78:[function(require,module,exports){
+},{"assert":10}],82:[function(require,module,exports){
 var wayfarer = require('wayfarer')
 
 var isLocalFile = (/file:\/\//.test(typeof window === 'object' &&
@@ -10420,7 +10546,7 @@ function pathname (route, isElectron) {
   return route.replace(suffix, '').replace(normalize, '/')
 }
 
-},{"wayfarer":129}],79:[function(require,module,exports){
+},{"wayfarer":133}],83:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = Nanotiming
@@ -10446,7 +10572,7 @@ Nanotiming.prototype.end = function (partial) {
   window.performance.measure(name, name + '-start', name + '-end')
 }
 
-},{"assert":10}],80:[function(require,module,exports){
+},{"assert":10}],84:[function(require,module,exports){
 var assert = require('assert')
 
 var dftOpts = {}
@@ -10471,7 +10597,7 @@ function onIdle (cb, opts) {
   }
 }
 
-},{"assert":10}],81:[function(require,module,exports){
+},{"assert":10}],85:[function(require,module,exports){
 /* global MutationObserver */
 var document = require('global/document')
 var window = require('global/window')
@@ -10560,7 +10686,7 @@ function eachMutation (nodes, fn) {
   }
 }
 
-},{"global/document":49,"global/window":50}],82:[function(require,module,exports){
+},{"global/document":49,"global/window":50}],86:[function(require,module,exports){
 (function (global){
 /**
  * JSON parse.
@@ -10595,7 +10721,7 @@ module.exports = function parsejson(data) {
   }
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],83:[function(require,module,exports){
+},{}],87:[function(require,module,exports){
 /**
  * Compiles a querystring
  * Returns string representation of the object
@@ -10634,7 +10760,7 @@ exports.decode = function(qs){
   return qry;
 };
 
-},{}],84:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 /**
  * Parses an URI
  *
@@ -10675,7 +10801,7 @@ module.exports = function parseuri(str) {
     return uri;
 };
 
-},{}],85:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 module.exports = plucker
 
 function plucker(path, object) {
@@ -10712,7 +10838,7 @@ function pluck(path) {
   }
 }
 
-},{}],86:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -10759,7 +10885,7 @@ function nextTick(fn, arg1, arg2, arg3) {
 }
 
 }).call(this,require('_process'))
-},{"_process":17}],87:[function(require,module,exports){
+},{"_process":17}],91:[function(require,module,exports){
 (function (process,global){
 'use strict'
 
@@ -10801,7 +10927,7 @@ function randomBytes (size, cb) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":17,"safe-buffer":99}],88:[function(require,module,exports){
+},{"_process":17,"safe-buffer":103}],92:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -10926,7 +11052,7 @@ function forEach(xs, f) {
     f(xs[i], i);
   }
 }
-},{"./_stream_readable":90,"./_stream_writable":92,"core-util-is":27,"inherits":58,"process-nextick-args":86}],89:[function(require,module,exports){
+},{"./_stream_readable":94,"./_stream_writable":96,"core-util-is":27,"inherits":58,"process-nextick-args":90}],93:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -10974,7 +11100,7 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":91,"core-util-is":27,"inherits":58}],90:[function(require,module,exports){
+},{"./_stream_transform":95,"core-util-is":27,"inherits":58}],94:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -11984,7 +12110,7 @@ function indexOf(xs, x) {
   return -1;
 }
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_stream_duplex":88,"./internal/streams/BufferList":93,"./internal/streams/destroy":94,"./internal/streams/stream":95,"_process":17,"core-util-is":27,"events":45,"inherits":58,"isarray":96,"process-nextick-args":86,"safe-buffer":99,"string_decoder/":123,"util":16}],91:[function(require,module,exports){
+},{"./_stream_duplex":92,"./internal/streams/BufferList":97,"./internal/streams/destroy":98,"./internal/streams/stream":99,"_process":17,"core-util-is":27,"events":45,"inherits":58,"isarray":100,"process-nextick-args":90,"safe-buffer":103,"string_decoder/":127,"util":16}],95:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -12199,7 +12325,7 @@ function done(stream, er, data) {
 
   return stream.push(null);
 }
-},{"./_stream_duplex":88,"core-util-is":27,"inherits":58}],92:[function(require,module,exports){
+},{"./_stream_duplex":92,"core-util-is":27,"inherits":58}],96:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -12866,7 +12992,7 @@ Writable.prototype._destroy = function (err, cb) {
   cb(err);
 };
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_stream_duplex":88,"./internal/streams/destroy":94,"./internal/streams/stream":95,"_process":17,"core-util-is":27,"inherits":58,"process-nextick-args":86,"safe-buffer":99,"util-deprecate":125}],93:[function(require,module,exports){
+},{"./_stream_duplex":92,"./internal/streams/destroy":98,"./internal/streams/stream":99,"_process":17,"core-util-is":27,"inherits":58,"process-nextick-args":90,"safe-buffer":103,"util-deprecate":129}],97:[function(require,module,exports){
 'use strict';
 
 /*<replacement>*/
@@ -12941,7 +13067,7 @@ module.exports = function () {
 
   return BufferList;
 }();
-},{"safe-buffer":99}],94:[function(require,module,exports){
+},{"safe-buffer":103}],98:[function(require,module,exports){
 'use strict';
 
 /*<replacement>*/
@@ -13014,12 +13140,12 @@ module.exports = {
   destroy: destroy,
   undestroy: undestroy
 };
-},{"process-nextick-args":86}],95:[function(require,module,exports){
+},{"process-nextick-args":90}],99:[function(require,module,exports){
 module.exports = require('events').EventEmitter;
 
-},{"events":45}],96:[function(require,module,exports){
+},{"events":45}],100:[function(require,module,exports){
 arguments[4][52][0].apply(exports,arguments)
-},{"dup":52}],97:[function(require,module,exports){
+},{"dup":52}],101:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = exports;
 exports.Readable = exports;
@@ -13028,7 +13154,7 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":88,"./lib/_stream_passthrough.js":89,"./lib/_stream_readable.js":90,"./lib/_stream_transform.js":91,"./lib/_stream_writable.js":92}],98:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":92,"./lib/_stream_passthrough.js":93,"./lib/_stream_readable.js":94,"./lib/_stream_transform.js":95,"./lib/_stream_writable.js":96}],102:[function(require,module,exports){
 'use strict'
 
 /**
@@ -13058,7 +13184,7 @@ module.exports = function removeItems(arr, startIdx, removeCount)
   arr.length = len
 }
 
-},{}],99:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
 var Buffer = buffer.Buffer
@@ -13122,7 +13248,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":18}],100:[function(require,module,exports){
+},{"buffer":18}],104:[function(require,module,exports){
  /* eslint-env node */
 'use strict';
 
@@ -13730,14 +13856,14 @@ SDPUtils.isRejected = function(mediaSection) {
 // Expose public methods.
 module.exports = SDPUtils;
 
-},{}],101:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 module.exports = require('insert-css')
 
-},{"insert-css":59}],102:[function(require,module,exports){
+},{"insert-css":59}],106:[function(require,module,exports){
 'use strict';
 module.exports = require('./lib/index');
 
-},{"./lib/index":107}],103:[function(require,module,exports){
+},{"./lib/index":111}],107:[function(require,module,exports){
 'use strict';
 
 var randomFromSeed = require('./random/random-from-seed');
@@ -13837,7 +13963,7 @@ module.exports = {
     shuffled: getShuffled
 };
 
-},{"./random/random-from-seed":110}],104:[function(require,module,exports){
+},{"./random/random-from-seed":114}],108:[function(require,module,exports){
 'use strict';
 
 var encode = require('./encode');
@@ -13887,7 +14013,7 @@ function build(clusterWorkerId) {
 
 module.exports = build;
 
-},{"./alphabet":103,"./encode":106}],105:[function(require,module,exports){
+},{"./alphabet":107,"./encode":110}],109:[function(require,module,exports){
 'use strict';
 var alphabet = require('./alphabet');
 
@@ -13906,7 +14032,7 @@ function decode(id) {
 
 module.exports = decode;
 
-},{"./alphabet":103}],106:[function(require,module,exports){
+},{"./alphabet":107}],110:[function(require,module,exports){
 'use strict';
 
 var randomByte = require('./random/random-byte');
@@ -13927,7 +14053,7 @@ function encode(lookup, number) {
 
 module.exports = encode;
 
-},{"./random/random-byte":109}],107:[function(require,module,exports){
+},{"./random/random-byte":113}],111:[function(require,module,exports){
 'use strict';
 
 var alphabet = require('./alphabet');
@@ -13994,7 +14120,7 @@ module.exports.characters = characters;
 module.exports.decode = decode;
 module.exports.isValid = isValid;
 
-},{"./alphabet":103,"./build":104,"./decode":105,"./encode":106,"./is-valid":108,"./util/cluster-worker-id":111}],108:[function(require,module,exports){
+},{"./alphabet":107,"./build":108,"./decode":109,"./encode":110,"./is-valid":112,"./util/cluster-worker-id":115}],112:[function(require,module,exports){
 'use strict';
 var alphabet = require('./alphabet');
 
@@ -14015,7 +14141,7 @@ function isShortId(id) {
 
 module.exports = isShortId;
 
-},{"./alphabet":103}],109:[function(require,module,exports){
+},{"./alphabet":107}],113:[function(require,module,exports){
 'use strict';
 
 var crypto = typeof window === 'object' && (window.crypto || window.msCrypto); // IE 11 uses window.msCrypto
@@ -14031,7 +14157,7 @@ function randomByte() {
 
 module.exports = randomByte;
 
-},{}],110:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 'use strict';
 
 // Found this seed-based random generator somewhere
@@ -14058,12 +14184,12 @@ module.exports = {
     seed: setSeed
 };
 
-},{}],111:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 'use strict';
 
 module.exports = 0;
 
-},{}],112:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 (function (Buffer){
 module.exports = Peer
 
@@ -14869,7 +14995,7 @@ Peer.prototype._transformConstraints = function (constraints) {
 function noop () {}
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":18,"debug":28,"get-browser-rtc":47,"inherits":58,"randombytes":87,"readable-stream":97}],113:[function(require,module,exports){
+},{"buffer":18,"debug":28,"get-browser-rtc":47,"inherits":58,"randombytes":91,"readable-stream":101}],117:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -14965,7 +15091,7 @@ exports.connect = lookup;
 exports.Manager = require('./manager');
 exports.Socket = require('./socket');
 
-},{"./manager":114,"./socket":116,"./url":117,"debug":28,"socket.io-parser":119}],114:[function(require,module,exports){
+},{"./manager":118,"./socket":120,"./url":121,"debug":28,"socket.io-parser":123}],118:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -15540,7 +15666,7 @@ Manager.prototype.onreconnect = function () {
   this.emitAll('reconnect', attempt);
 };
 
-},{"./on":115,"./socket":116,"backo2":11,"component-bind":23,"component-emitter":24,"debug":28,"engine.io-client":31,"indexof":57,"socket.io-parser":119}],115:[function(require,module,exports){
+},{"./on":119,"./socket":120,"backo2":11,"component-bind":23,"component-emitter":24,"debug":28,"engine.io-client":31,"indexof":57,"socket.io-parser":123}],119:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -15566,7 +15692,7 @@ function on (obj, ev, fn) {
   };
 }
 
-},{}],116:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -15986,7 +16112,7 @@ Socket.prototype.compress = function (compress) {
   return this;
 };
 
-},{"./on":115,"component-bind":23,"component-emitter":24,"debug":28,"parseqs":83,"socket.io-parser":119,"to-array":124}],117:[function(require,module,exports){
+},{"./on":119,"component-bind":23,"component-emitter":24,"debug":28,"parseqs":87,"socket.io-parser":123,"to-array":128}],121:[function(require,module,exports){
 (function (global){
 
 /**
@@ -16065,7 +16191,7 @@ function url (uri, loc) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"debug":28,"parseuri":84}],118:[function(require,module,exports){
+},{"debug":28,"parseuri":88}],122:[function(require,module,exports){
 (function (global){
 /*global Blob,File*/
 
@@ -16210,7 +16336,7 @@ exports.removeBlobs = function(data, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./is-buffer":120,"isarray":121}],119:[function(require,module,exports){
+},{"./is-buffer":124,"isarray":125}],123:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -16612,7 +16738,7 @@ function error() {
   };
 }
 
-},{"./binary":118,"./is-buffer":120,"component-emitter":24,"debug":28,"has-binary2":51}],120:[function(require,module,exports){
+},{"./binary":122,"./is-buffer":124,"component-emitter":24,"debug":28,"has-binary2":51}],124:[function(require,module,exports){
 (function (global){
 
 module.exports = isBuf;
@@ -16629,9 +16755,9 @@ function isBuf(obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],121:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 arguments[4][52][0].apply(exports,arguments)
-},{"dup":52}],122:[function(require,module,exports){
+},{"dup":52}],126:[function(require,module,exports){
 var fastSafeStringify = require('fast-safe-stringify')
 var copy = require('copy-text-to-clipboard')
 
@@ -16649,7 +16775,7 @@ function stateCopy (obj) {
 module.exports = stateCopy
 
 
-},{"copy-text-to-clipboard":26,"fast-safe-stringify":46}],123:[function(require,module,exports){
+},{"copy-text-to-clipboard":26,"fast-safe-stringify":46}],127:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('safe-buffer').Buffer;
@@ -16922,7 +17048,7 @@ function simpleWrite(buf) {
 function simpleEnd(buf) {
   return buf && buf.length ? this.write(buf) : '';
 }
-},{"safe-buffer":99}],124:[function(require,module,exports){
+},{"safe-buffer":103}],128:[function(require,module,exports){
 module.exports = toArray
 
 function toArray(list, index) {
@@ -16937,7 +17063,7 @@ function toArray(list, index) {
     return array
 }
 
-},{}],125:[function(require,module,exports){
+},{}],129:[function(require,module,exports){
 (function (global){
 
 /**
@@ -17008,16 +17134,16 @@ function config (name) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],126:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 arguments[4][58][0].apply(exports,arguments)
-},{"dup":58}],127:[function(require,module,exports){
+},{"dup":58}],131:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],128:[function(require,module,exports){
+},{}],132:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -17607,7 +17733,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":127,"_process":17,"inherits":126}],129:[function(require,module,exports){
+},{"./support/isBuffer":131,"_process":17,"inherits":130}],133:[function(require,module,exports){
 var assert = require('assert')
 var trie = require('./trie')
 
@@ -17674,7 +17800,7 @@ function Wayfarer (dft) {
   }
 }
 
-},{"./trie":130,"assert":10}],130:[function(require,module,exports){
+},{"./trie":134,"assert":10}],134:[function(require,module,exports){
 var mutate = require('xtend/mutable')
 var assert = require('assert')
 var xtend = require('xtend')
@@ -17813,7 +17939,7 @@ Trie.prototype.mount = function (route, trie) {
   }
 }
 
-},{"assert":10,"xtend":140,"xtend/mutable":141}],131:[function(require,module,exports){
+},{"assert":10,"xtend":144,"xtend/mutable":145}],135:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -17907,7 +18033,7 @@ Trie.prototype.mount = function (route, trie) {
   }
 })();
 
-},{"./chrome/chrome_shim":132,"./edge/edge_shim":134,"./firefox/firefox_shim":136,"./safari/safari_shim":138,"./utils":139}],132:[function(require,module,exports){
+},{"./chrome/chrome_shim":136,"./edge/edge_shim":138,"./firefox/firefox_shim":140,"./safari/safari_shim":142,"./utils":143}],136:[function(require,module,exports){
 
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
@@ -18174,7 +18300,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils.js":139,"./getusermedia":133}],133:[function(require,module,exports){
+},{"../utils.js":143,"./getusermedia":137}],137:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -18374,7 +18500,7 @@ module.exports = function() {
   }
 };
 
-},{"../utils.js":139}],134:[function(require,module,exports){
+},{"../utils.js":143}],138:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -19503,7 +19629,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils":139,"./getusermedia":135,"sdp":100}],135:[function(require,module,exports){
+},{"../utils":143,"./getusermedia":139,"sdp":104}],139:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -19537,7 +19663,7 @@ module.exports = function() {
   };
 };
 
-},{}],136:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -19701,7 +19827,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils":139,"./getusermedia":137}],137:[function(require,module,exports){
+},{"../utils":143,"./getusermedia":141}],141:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -19864,7 +19990,7 @@ module.exports = function() {
   };
 };
 
-},{"../utils":139}],138:[function(require,module,exports){
+},{"../utils":143}],142:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -19894,7 +20020,7 @@ module.exports = {
   // shimPeerConnection: safariShim.shimPeerConnection
 };
 
-},{}],139:[function(require,module,exports){
+},{}],143:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -20027,7 +20153,7 @@ module.exports = {
   extractVersion: utils.extractVersion
 };
 
-},{}],140:[function(require,module,exports){
+},{}],144:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -20048,7 +20174,7 @@ function extend() {
     return target
 }
 
-},{}],141:[function(require,module,exports){
+},{}],145:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -20067,7 +20193,7 @@ function extend(target) {
     return target
 }
 
-},{}],142:[function(require,module,exports){
+},{}],146:[function(require,module,exports){
 'use strict';
 
 var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')
@@ -20137,7 +20263,7 @@ yeast.encode = encode;
 yeast.decode = decode;
 module.exports = yeast;
 
-},{}],143:[function(require,module,exports){
+},{}],147:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20275,7 +20401,7 @@ function addBroadcast (state, emit) {
 //   }
 // })}
 
-},{"./components/VideoContainer.js":148,"./components/dropdown.js":145,"./components/modal.js":147,"choo/html":21}],144:[function(require,module,exports){
+},{"./components/VideoContainer.js":153,"./components/dropdown.js":150,"./components/modal.js":152,"choo/html":21}],148:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const VideoEl = require('./components/VideoContainer.js')
@@ -20319,7 +20445,83 @@ function communicationView (state, emit) {
     `
 }
 
-},{"./components/VideoContainer.js":148,"choo/html":21}],145:[function(require,module,exports){
+},{"./components/VideoContainer.js":153,"choo/html":21}],149:[function(require,module,exports){
+const Nano = require('nanocomponent')
+const css = 0
+const html = require('choo/html')
+const xtend = require('xtend')
+const shallowEqual = require('juliangruber-shallow-equal/objects')
+
+module.exports = Dropdown
+/* using microcomponent in order to create an element that keeps track of
+its own state. custom dropdown based on:
+https://tympanus.net/codrops/2012/10/04/custom-drop-down-list-styling/
+ */
+
+function Dropdown () {
+  if (!(this instanceof Dropdown)) return new Dropdown()
+  this.state = {
+    active: false
+  }
+  this.props = {}
+  Nano.call(this)
+}
+
+Dropdown.prototype = Object.create(Nano.prototype)
+
+Dropdown.prototype.createElement = function (props) {
+  console.log("rendering", this.props)
+  this.props = props
+  const style = ((require('sheetify/insert')("._11f683ea {\n  /* Size and position */\n  position: relative; /* Enable absolute positioning for children and pseudo elements */\n  width: 400px;\n  padding: 10px;\n  margin-top: 5px;\n  margin-bottom: 5px;\n  /*margin: 0 auto;*/\n\n  /* Styles */\n  /*background: #9bc7de;\n  color: #fff;*/\n  background: #555555;\n  outline: none;\n  cursor: pointer;\n\n  /* Font settings */\n /* font-weight: bold;*/\n }\n\n ._11f683ea:after {\n  content: \"\";\n  width: 0;\n  height: 0;\n  position: absolute;\n  right: 16px;\n  top: 50%;\n  margin-top: -6px;\n  border-width: 4px 0 4px 4px;\n  border-style: solid;\n  border-color: transparent #fff;\n }\n\n ._11f683ea .dropdown {\n  /* Size & position */\n  position: absolute;\n  top: 100%;\n  left: 0; /* Size */\n  right: 0; /* Size */\n  margin: 0px;\n  padding: 0px;\n  /* Styles */\n  background: #fff;\n  font-weight: normal; /* Overwrites previous font-weight: bold; */\n\n  /* Hiding */\n  opacity: 0;\n  pointer-events: none;\n  z-index: 100\n }\n\n ._11f683ea .dropdown li {\n  list-style-type: none;\n  display: block;\n  text-decoration: none;\n  color: #9e9e9e;\n  padding: 10px 20px;\n\n }\n\n  /* Hover state */\n  ._11f683ea .dropdown li:hover {\n      background: #f3f8f8;\n  }\n\n  ._11f683ea.active .dropdown {\n    opacity: 1;\n    pointer-events: auto;\n  }\n\n  ._11f683ea.active:after {\n      border-color: #9bc7de transparent;\n      border-width: 4px 4px 0 4px ;\n      margin-top: -3px;\n  }\n\n  ._11f683ea.active {\n    background: #555555;\n    background: linear-gradient(to right, #9bc7de 0%, #9bc7de 78%, #ffffff 78%, #ffffff 100%);\n  }") || true) && "_11f683ea")
+
+  var { onchange, value, options } = this.props
+ // console.log("rendering ", this.state.active)
+
+ // var activeStyles = ""
+  var tachyonsStyles = ' bg-mid-gray f6'
+
+
+      return html`<div class=${style + tachyonsStyles +(this.state.active===true ? ' active': '')} tabindex="0" onclick=${this.toggleActive.bind(this)} onblur=${this.deactivate.bind(this)}>
+    <span>${value}</span>
+
+    <ul class="dropdown">
+        ${options.map((item)=>
+           html`<li data-value=${item.value} onclick=${this.handleclick.bind(this)} >${item.label}</li>`
+        )}
+
+      </ul>
+
+   </div>`
+
+}
+
+
+Dropdown.prototype.handleclick = function (e){
+  //console.log(e)
+  console.log("handling", this)
+  this.props.onchange(e.target.dataset.value)
+}
+
+Dropdown.prototype.toggleActive = function (){
+  console.log("clicked")
+  this.state.active = !this.state.active
+  this.state.needsUpdate = true
+  this.render(this.props)
+}
+
+Dropdown.prototype.deactivate = function (){
+  this.state.active = false
+  this.state.needsUpdate = true
+  this.render(this.props)
+}
+
+Dropdown.prototype.update = function (props) {
+
+  return !shallowEqual(props, this.props) || this.state.needsUpdate
+
+}
+
+},{"choo/html":21,"juliangruber-shallow-equal/objects":61,"nanocomponent":70,"sheetify/insert":105,"xtend":144}],150:[function(require,module,exports){
 const microcomponent = require('microcomponent')
 const css = 0
 const html = require('choo/html')
@@ -20348,7 +20550,7 @@ function Dropdown () {
   function render() {
     this.state.needsUpdate = false
     //  console.log("THIS", this)
-     const style = ((require('sheetify/insert')("._1145b9f2 {\n    /* Size and position */\n    position: relative; /* Enable absolute positioning for children and pseudo elements */\n    width: 400px;\n    padding: 10px;\n    margin-top: 5px;\n    margin-bottom: 5px;\n    /*margin: 0 auto;*/\n\n    /* Styles */\n    /*background: #9bc7de;\n    color: #fff;*/\n    background: #555555;\n    outline: none;\n    cursor: pointer;\n\n    /* Font settings */\n   /* font-weight: bold;*/\n  }\n\n  ._1145b9f2:after {\n    content: \"\";\n    width: 0;\n    height: 0;\n    position: absolute;\n    right: 16px;\n    top: 50%;\n    margin-top: -6px;\n    border-width: 4px 0 4px 4px;\n    border-style: solid;\n    border-color: transparent #fff;    \n  }\n\n  ._1145b9f2 .dropdown {\n    /* Size & position */\n    position: absolute;\n    top: 100%;\n    left: 0; /* Size */\n    right: 0; /* Size */\n    margin: 0px;\n    padding: 0px;\n    /* Styles */\n    background: #fff;\n    font-weight: normal; /* Overwrites previous font-weight: bold; */\n\n    /* Hiding */\n    opacity: 0;\n    pointer-events: none;\n    z-index: 100\n  }\n\n  ._1145b9f2 .dropdown li {\n    list-style-type: none;\n    display: block;\n    text-decoration: none;\n    color: #9e9e9e;\n    padding: 10px 20px;\n\n  }\n\n    /* Hover state */\n    ._1145b9f2 .dropdown li:hover {\n        background: #f3f8f8;\n    }\n\n    ._1145b9f2.active .dropdown {\n      opacity: 1;\n      pointer-events: auto;\n    }\n\n    ._1145b9f2.active:after {\n        border-color: #9bc7de transparent;\n        border-width: 4px 4px 0 4px ;\n        margin-top: -3px;\n    }\n\n    ._1145b9f2.active {\n      background: #555555;\n      background: linear-gradient(to right, #9bc7de 0%, #9bc7de 78%, #ffffff 78%, #ffffff 100%);\n    }") || true) && "_1145b9f2")
+     const style = ((require('sheetify/insert')("._a31566a2 {\n    /* Size and position */\n    position: relative; /* Enable absolute positioning for children and pseudo elements */\n    width: 400px;\n    padding: 10px;\n    margin-top: 5px;\n    margin-bottom: 5px;\n    /*margin: 0 auto;*/\n\n    /* Styles */\n    /*background: #9bc7de;\n    color: #fff;*/\n    background: #555555;\n    outline: none;\n    cursor: pointer;\n\n    /* Font settings */\n   /* font-weight: bold;*/\n  }\n\n  ._a31566a2:after {\n    content: \"\";\n    width: 0;\n    height: 0;\n    position: absolute;\n    right: 16px;\n    top: 50%;\n    margin-top: -6px;\n    border-width: 4px 0 4px 4px;\n    border-style: solid;\n    border-color: transparent #fff;\n  }\n\n  ._a31566a2 .dropdown {\n    /* Size & position */\n    position: absolute;\n    top: 100%;\n    left: 0; /* Size */\n    right: 0; /* Size */\n    margin: 0px;\n    padding: 0px;\n    /* Styles */\n    background: #fff;\n    font-weight: normal; /* Overwrites previous font-weight: bold; */\n\n    /* Hiding */\n    opacity: 0;\n    pointer-events: none;\n    z-index: 100\n  }\n\n  ._a31566a2 .dropdown li {\n    list-style-type: none;\n    display: block;\n    text-decoration: none;\n    color: #9e9e9e;\n    padding: 10px 20px;\n\n  }\n\n    /* Hover state */\n    ._a31566a2 .dropdown li:hover {\n        background: #f3f8f8;\n    }\n\n    ._a31566a2.active .dropdown {\n      opacity: 1;\n      pointer-events: auto;\n    }\n\n    ._a31566a2.active:after {\n        border-color: #9bc7de transparent;\n        border-width: 4px 4px 0 4px ;\n        margin-top: -3px;\n    }\n\n    ._a31566a2.active {\n      background: #555555;\n      background: linear-gradient(to right, #9bc7de 0%, #9bc7de 78%, #ffffff 78%, #ffffff 100%);\n    }") || true) && "_a31566a2")
 
     var { onchange, value, options } = this.props
    // console.log("rendering ", this.state.active)
@@ -20361,11 +20563,11 @@ function Dropdown () {
       ${options.map((item)=>
          html`<li data-value=${item.value} onclick=${handleclick} >${item.label}</li>`
       )}
-      
+
     </ul>
   </div>`
-   
-   
+
+
   }
 
   function update(props){
@@ -20388,7 +20590,8 @@ function Dropdown () {
     this.render(this.props)
   }
 }
-},{"choo/html":21,"juliangruber-shallow-equal/objects":61,"microcomponent":63,"sheetify/insert":101}],146:[function(require,module,exports){
+
+},{"choo/html":21,"juliangruber-shallow-equal/objects":61,"microcomponent":63,"sheetify/insert":105}],151:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20416,7 +20619,7 @@ function inputElement (name, defaultText, opts) {
   </div>`
 }
 
-},{"choo/html":21,"xtend":140}],147:[function(require,module,exports){
+},{"choo/html":21,"xtend":144}],152:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20450,7 +20653,7 @@ function Modal (opts) {
   }
 }
 
-},{"assert":10,"choo/html":21,"xtend":140}],148:[function(require,module,exports){
+},{"assert":10,"choo/html":21,"xtend":144}],153:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20462,45 +20665,49 @@ module.exports = VideoContainer
 // Video container component that accepts a mediaStreamTrack as well as display parameters
 function VideoContainer () {
   if (!(this instanceof VideoContainer)) return new VideoContainer()
+  this.props = {
+    htmlProps: {}
+  }
   Nano.call(this)
 }
 
 VideoContainer.prototype = Object.create(Nano.prototype)
 
-VideoContainer.prototype._render = function () {
-  if (!this.element) {
+VideoContainer.prototype.createElement = function () {
+
     var defaultHtmlProps = {
       autoplay: 'autoplay',
       muted: 'muted'
     }
     var _htmlProps = xtend(defaultHtmlProps, this.props.htmlProps)
-    this.element = html`<video ${_htmlProps}></video>`
-  }
+    return html`<video ${_htmlProps}></video>`
 
-  if (this.props.track && this.props.track != null) {
-    console.log("TRACK ", this.props)
+
+
+}
+
+// call "render" if track property has changed
+VideoContainer.prototype.update = function (props) {
+this.props.htmlProps = props.htmlProps
+
+  if (props.track && props.track != null && props.id !== this.props.id) {
+    this.props.track = props.track
+    this.props.id = props.id
     var tracks = []
     tracks.push(this.props.track)
     this._stream = new MediaStream(tracks) // stream must be initialized with tracks, even though documentation says otherwise
     this.element.srcObject = this._stream
   }
 
-  return this.element
+  return false
 }
 
-// call "render" if track property has changed
-VideoContainer.prototype._update = function (props) {
-  console.log("CHECKING UPDATE", this.props.track, props.track)
-
-  return this.props.id !== props.id
-}
-
-},{"choo/html":21,"nanocomponent":69,"xtend":140}],149:[function(require,module,exports){
+},{"choo/html":21,"nanocomponent":70,"xtend":144}],154:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
 const input = require('./components/input.js')
-const Dropdown = require('./components/dropdown.js')
+const Dropdown = require('./components/dropdown-nano.js')
 const VideoEl = require('./components/VideoContainer.js')
 
 module.exports = loginView
@@ -20592,7 +20799,7 @@ function loginView (state, emit) {
   }
 }
 
-},{"./components/VideoContainer.js":148,"./components/dropdown.js":145,"./components/input.js":146,"choo/html":21}],150:[function(require,module,exports){
+},{"./components/VideoContainer.js":153,"./components/dropdown-nano.js":149,"./components/input.js":151,"choo/html":21}],155:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20608,7 +20815,7 @@ function mainView (state, emit) {
     return html`
     <div>
     ${login(state, emit)}
-    ${AddBroadcast(state, emit)}
+  
     </div>
     `
   } else {
@@ -20624,7 +20831,7 @@ function mainView (state, emit) {
   }
 }
 
-},{"./addBroadcast.js":143,"./communication.js":144,"./login.js":149,"./mediaList.js":151,"choo/html":21}],151:[function(require,module,exports){
+},{"./addBroadcast.js":147,"./communication.js":148,"./login.js":154,"./mediaList.js":156,"choo/html":21}],156:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 

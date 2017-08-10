@@ -57,7 +57,7 @@ function Dropdown () {
     margin-top: -6px;
     border-width: 4px 0 4px 4px;
     border-style: solid;
-    border-color: transparent #fff;    
+    border-color: transparent #fff;
   }
 
   :host .dropdown {
@@ -106,7 +106,7 @@ function Dropdown () {
     :host.active {
       background: #555555;
       background: linear-gradient(to right, #9bc7de 0%, #9bc7de 78%, #ffffff 78%, #ffffff 100%);
-    }   
+    }
 
   `
 
@@ -121,11 +121,11 @@ function Dropdown () {
       ${options.map((item)=>
          html`<li data-value=${item.value} onclick=${handleclick} >${item.label}</li>`
       )}
-      
+
     </ul>
   </div>`
-   
-   
+
+
   }
 
   function update(props){

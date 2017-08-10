@@ -39,7 +39,7 @@
     "juliangruber-shallow-equal": "^1.0.4",
     "microcomponent": "^3.1.6",
     "modal-element": "^2.0.0",
-    "nanocomponent": "5.0.1",
+    "nanocomponent": "^6.0.0",
     "sheetify": "^6.1.0",
     "shortid": "^2.2.8",
     "simple-peer": "^8.1.0",
