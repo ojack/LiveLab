@@ -1,5 +1,5 @@
 const enumerateDevices = require('enumerate-devices')
-const constraints = require('./availableConstraints.json')
+const constraintsJSON = require('./availableConstraints.json')
 const getUserMedia = require('getusermedia')
 const xtend = Object.assign
 
@@ -49,15 +49,29 @@ function devicesModel (state, bus) {
 // TO DO: put this function somewhere else
   window.onload = function () {
     getDevices()
+    loadConstraints()
+    console.log("DEVICE STATE", state.devices)
     bus.emit('peers:updatePeer', {
       peerId: state.user.uuid
     })
   }
 
-  bus.on('devices:updateBroadcastConstraints', function(obj){
+  bus.on('devices:updateBroadcastDevice', function(obj){
     xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind], obj)
-    //setBroadcastDevice(val, state.devices.addBroadcast.kind)
+    updateBroadcastPreview()
+    bus.emit('render')
+  })
+  //accepts an object containing the properties to update and their new values. e.g.
+  // { echoCancellation : { value: true}}
+  bus.on('devices:updateBroadcastConstraints', function(obj){
+    Object.keys(obj).forEach(key =>
+      {
+          xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind][key], obj[key])
+      }
+    )
 
+    //setBroadcastDevice(val, state.devices.addBroadcast.kind)
+    console.log(state.devices.addBroadcast[state.devices.addBroadcast.kind])
     updateBroadcastPreview()
     bus.emit('render')
   })
@@ -70,7 +84,11 @@ function devicesModel (state, bus) {
     bus.emit('render')
   })
 
-
+//add available constraint options to devices model
+  function loadConstraints(){
+    xtend(state.devices.addBroadcast.audio, constraintsJSON.audio)
+    xtend(state.devices.addBroadcast.video, constraintsJSON.video)
+  }
 
   function updateBroadcastPreview() {
       var bState = state.devices.addBroadcast

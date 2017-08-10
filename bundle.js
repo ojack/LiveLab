@@ -21,7 +21,7 @@ app.route('/', require('./views/main.js'))
 
 app.mount('body div')
 
-},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/userModel.js":7,"./views/main.js":149,"choo":22,"choo-expose":19,"choo-log":20}],2:[function(require,module,exports){
+},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/userModel.js":7,"./views/main.js":151,"choo":22,"choo-expose":19,"choo-log":20}],2:[function(require,module,exports){
 // Module for handling connections to multiple peers
 
 var io = require('socket.io-client')
@@ -179,7 +179,7 @@ module.exports=/*
 
 },{}],4:[function(require,module,exports){
 const enumerateDevices = require('enumerate-devices')
-const constraints = require('./availableConstraints.json')
+const constraintsJSON = require('./availableConstraints.json')
 const getUserMedia = require('getusermedia')
 const xtend = Object.assign
 
@@ -229,15 +229,29 @@ function devicesModel (state, bus) {
 // TO DO: put this function somewhere else
   window.onload = function () {
     getDevices()
+    loadConstraints()
+    console.log("DEVICE STATE", state.devices)
     bus.emit('peers:updatePeer', {
       peerId: state.user.uuid
     })
   }
 
-  bus.on('devices:updateBroadcastConstraints', function(obj){
+  bus.on('devices:updateBroadcastDevice', function(obj){
     xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind], obj)
-    //setBroadcastDevice(val, state.devices.addBroadcast.kind)
+    updateBroadcastPreview()
+    bus.emit('render')
+  })
+  //accepts an object containing the properties to update and their new values. e.g.
+  // { echoCancellation : { value: true}}
+  bus.on('devices:updateBroadcastConstraints', function(obj){
+    Object.keys(obj).forEach(key =>
+      {
+          xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind][key], obj[key])
+      }
+    )
 
+    //setBroadcastDevice(val, state.devices.addBroadcast.kind)
+    console.log(state.devices.addBroadcast[state.devices.addBroadcast.kind])
     updateBroadcastPreview()
     bus.emit('render')
   })
@@ -250,7 +264,11 @@ function devicesModel (state, bus) {
     bus.emit('render')
   })
 
-
+//add available constraint options to devices model
+  function loadConstraints(){
+    xtend(state.devices.addBroadcast.audio, constraintsJSON.audio)
+    xtend(state.devices.addBroadcast.video, constraintsJSON.video)
+  }
 
   function updateBroadcastPreview() {
       var bState = state.devices.addBroadcast
@@ -20087,16 +20105,17 @@ module.exports = yeast;
 
 const html = require('choo/html')
 const Modal = require('./components/modal.js')
-const Dropdown = require('./components/dropdown-nano.js')
+const Dropdown = require('./components/dropdown.js')
 const VideoEl = require('./components/VideoContainer.js')
-const settings = require('./../models/availableConstraints.json')
+const radioSelect = require('./components/radioSelect.js')
+const settingsUI = require('./components/settingsUI.js')
 
 module.exports = addBroadcast
 
 const deviceDropdown = Dropdown()
 const previewVid = VideoEl()
 
-function addBroadcast (devices, emit) {
+function addBroadcast (devices, emit, showElement) {
   var bState = devices.addBroadcast
   var constraintOptions
 
@@ -20109,33 +20128,24 @@ function addBroadcast (devices, emit) {
   if(bState.kind==="audio") {
     constraintOptions = html`
     <div id="audio-constraints" >
-      ${deviceDropdown.render({
-        value: 'Device:  ' + defaultLabel,
-        options: devices.audioinput.all.map((id) => (
-          {
-            value: id,
-            label: devices.audioinput.byId[id].label
+          ${deviceDropdown.render({
+            value: 'Device:  ' + defaultLabel,
+            options: devices.audioinput.all.map((id) => (
+              {
+                value: id,
+                label: devices.audioinput.byId[id].label
+              }
+            )),
+            onchange: (value) => {
+              emit('devices:updateBroadcastDevice', {deviceId: value})
+            }
+          })}
+          ${settingsUI({
+              onChange: updateBroadcastConstraints,
+              settings: bState.audio
+            })
           }
-        )),
-        onchange: (value) => {
-          emit('devices:updateBroadcastConstraints', {deviceId: value})
-        }
-      })}
-      ${radioEl(
-        {
-          label: "echo cancellation:",
-          options:  [
-            { name: "echoCancellation",
-              checked: bState.audio.echoCancellation,
-              value: "true" },
-            { name: "echoCancellation",
-                checked: !bState.audio.echoCancellation,
-                value: "false" }
-          ],
-          onChange: updateBroadcastConstraints
-        }
-      )}
-      </div>
+    </div>
 
     `
   } else {
@@ -20150,7 +20160,7 @@ function addBroadcast (devices, emit) {
           }
         )),
         onchange: (value) => {
-          emit('devices:updateBroadcastConstraints', {deviceId: value})
+          emit('devices:updateBroadcastDevice', {deviceId: value})
         }
       })}
     </div`
@@ -20158,10 +20168,10 @@ function addBroadcast (devices, emit) {
   return html`
 
     ${Modal({
-      show: state.user.modalAddBroadcast,
+      show: showElement,
       header: "Add Broadcast",
       contents: html`<div id="add broadcast" class="pa3 f6 fw3">
-            ${radioEl(
+            ${radioSelect(
               {
                 label: "kind:",
                 options:  [
@@ -20186,47 +20196,14 @@ function addBroadcast (devices, emit) {
       emit('devices:setBroadcastKind', e.target.value)
     }
 
-    function updateBroadcastConstraints(e){
-      var updateObj = {}
-      var val = e.target.value
-      console.log(val)
-      //convert string to bool
-      if(e.target.name==="echoCancellation"){
-        val = (val === "true")
-      }
-      updateObj[e.target.name] = val
-      emit('devices:updateBroadcastConstraints', updateObj)
+    function updateBroadcastConstraints(updateObject){
+      emit('devices:updateBroadcastConstraints', updateObject)
     }
 
-    function radioEl(opts){
-      return html`<div  class="mv3">
-        <span> ${opts.label} </span>
-        ${opts.options.map((opt)=>(
-          html`<span ><input class="ml3 mr2" type="radio" checked=${opt.checked} onclick=${opts.onChange} value=${opt.value} name=${opt.name}></input> ${opt.value}</span>`
-        ))}
-      </div>`
-    }
 
-    function slider(opts){
-
-    }
 }
 
-
-// ${deviceDropdown.render({
-//   value: 'Device:  ' + (defaultAudio === null ? '' : audioinput.byId[defaultAudio].label),
-//   options: audioinput.all.map((id) => (
-//     {
-//       value: id,
-//       label: audioinput.byId[id].label
-//     }
-//   )),
-//   onchange: (value) => {
-//     emit('devices:setDefaultAudio', value)
-//   }
-// })}
-
-},{"./../models/availableConstraints.json":3,"./components/VideoContainer.js":147,"./components/dropdown-nano.js":144,"./components/modal.js":146,"choo/html":21}],143:[function(require,module,exports){
+},{"./components/VideoContainer.js":149,"./components/dropdown.js":144,"./components/modal.js":146,"./components/radioSelect.js":147,"./components/settingsUI.js":148,"choo/html":21}],143:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const VideoEl = require('./components/VideoContainer.js')
@@ -20270,7 +20247,7 @@ function communicationView (state, emit) {
     `
 }
 
-},{"./components/VideoContainer.js":147,"choo/html":21}],144:[function(require,module,exports){
+},{"./components/VideoContainer.js":149,"choo/html":21}],144:[function(require,module,exports){
 const Nano = require('nanocomponent')
 const css = 0
 const html = require('choo/html')
@@ -20295,7 +20272,6 @@ function Dropdown () {
 Dropdown.prototype = Object.create(Nano.prototype)
 
 Dropdown.prototype.createElement = function (props) {
-  console.log("rendering", this.props, this.element)
   this.props = props
   const style = ((require('sheetify/insert')("._11f683ea {\n  /* Size and position */\n  position: relative; /* Enable absolute positioning for children and pseudo elements */\n  width: 400px;\n  padding: 10px;\n  margin-top: 5px;\n  margin-bottom: 5px;\n  /*margin: 0 auto;*/\n\n  /* Styles */\n  /*background: #9bc7de;\n  color: #fff;*/\n  background: #555555;\n  outline: none;\n  cursor: pointer;\n\n  /* Font settings */\n /* font-weight: bold;*/\n }\n\n ._11f683ea:after {\n  content: \"\";\n  width: 0;\n  height: 0;\n  position: absolute;\n  right: 16px;\n  top: 50%;\n  margin-top: -6px;\n  border-width: 4px 0 4px 4px;\n  border-style: solid;\n  border-color: transparent #fff;\n }\n\n ._11f683ea .dropdown {\n  /* Size & position */\n  position: absolute;\n  top: 100%;\n  left: 0; /* Size */\n  right: 0; /* Size */\n  margin: 0px;\n  padding: 0px;\n  /* Styles */\n  background: #fff;\n  font-weight: normal; /* Overwrites previous font-weight: bold; */\n\n  /* Hiding */\n  opacity: 0;\n  pointer-events: none;\n  z-index: 100\n }\n\n ._11f683ea .dropdown li {\n  list-style-type: none;\n  display: block;\n  text-decoration: none;\n  color: #9e9e9e;\n  padding: 10px 20px;\n\n }\n\n  /* Hover state */\n  ._11f683ea .dropdown li:hover {\n      background: #f3f8f8;\n  }\n\n  ._11f683ea.active .dropdown {\n    opacity: 1;\n    pointer-events: auto;\n  }\n\n  ._11f683ea.active:after {\n      border-color: #9bc7de transparent;\n      border-width: 4px 4px 0 4px ;\n      margin-top: -3px;\n  }\n\n  ._11f683ea.active {\n    background: #555555;\n    background: linear-gradient(to right, #9bc7de 0%, #9bc7de 78%, #ffffff 78%, #ffffff 100%);\n  }") || true) && "_11f683ea")
 
@@ -20323,22 +20299,15 @@ Dropdown.prototype.createElement = function (props) {
 
 }
 
-Dropdown.prototype.load = function(el){
-  console.log("loaded ", el)
-}
 
-Dropdown.prototype.unload = function(el){
-  console.log("unloaded ", el)
-}
 
 Dropdown.prototype.handleclick = function (e){
   //console.log(e)
-  console.log("handling", this)
+
   this.props.onchange(e.target.dataset.value)
 }
 
 Dropdown.prototype.toggleActive = function (){
-  console.log("clicked")
   this.state.active = !this.state.active
   this.state.needsUpdate = true
   this.render(this.props)
@@ -20422,6 +20391,79 @@ function Modal (opts) {
 'use strict'
 
 const html = require('choo/html')
+
+module.exports = radioSelect
+
+
+function radioSelect(opts){
+  return html`<div  class="mv3">
+    <span> ${opts.label} </span>
+    ${opts.options.map((opt)=>(
+      html`<span ><input class="ml3 mr2" type="radio" checked=${opt.checked} onclick=${opts.onChange} value=${opt.value} name=${opt.name}></input> ${opt.value}</span>`
+    ))}
+  </div>`
+}
+
+},{"choo/html":21}],148:[function(require,module,exports){
+'use strict'
+
+const html = require('choo/html')
+const xtend = require('xtend')
+const radioSelect = require("./radioSelect.js")
+module.exports = settingsUI
+
+// generate ui based on JSON object
+function settingsUI (opts) {
+  var uiArray = []
+  for(var key in opts.settings){
+    if(opts.settings[key] && opts.settings[key].type){
+      var obj = opts.settings[key]
+      if(obj.type==="boolean"){
+        uiArray.push(createBooleanElement(key, obj, opts.onChange))
+      }
+    }
+  }
+  return html`<div>
+    ${uiArray}
+    </div>`
+}
+
+function handleSettingChange(callback, e){
+  console.log("e", e)
+  console.log("cb", callback)
+  console.log("this", this)
+  var update = {}
+  var val = e.target.value
+  //convert from string to bool if type = boolean
+  if(this.type==="boolean"){
+    val = (val === "true")
+  }
+  update[e.target.name] = {
+    value: val
+  }
+  callback(update)
+}
+
+//to do: abstract into its own class that inherits from radio element
+function createBooleanElement(label, obj, callback){
+  return radioSelect({
+    label: label,
+    options:  [
+          { name: label,
+            checked: obj.value,
+            value: "true" },
+          { name: label,
+            checked: !obj.value,
+            value: "false" }
+        ],
+        onChange: handleSettingChange.bind(obj, callback)
+  })
+}
+
+},{"./radioSelect.js":147,"choo/html":21,"xtend":139}],149:[function(require,module,exports){
+'use strict'
+
+const html = require('choo/html')
 const xtend = require('xtend')
 var Nano = require('nanocomponent')
 
@@ -20458,14 +20500,11 @@ function addTrackToElement(track, element){
   var stream = new MediaStream(tracks) // stream must be initialized with tracks, even though documentation says otherwise
   element.srcObject = stream
 }
-// update streamß if track id has changed
+
+// update stream if track id has changed
 VideoContainer.prototype.update = function (props) {
-  // if(props.htmlProps != this.props.htmlProps) {
-  //   return true
-  // }
-console.log("VIDEO", this.props.id, props.id)
+
   if (props.track && props.track != null && props.id !== this.props.id) {
-    console.log("updating video", this.props)
     this.props.track = props.track
     this.props.id = props.id
     addTrackToElement(this.props.track, this.element)
@@ -20474,13 +20513,13 @@ console.log("VIDEO", this.props.id, props.id)
   return false
 }
 
-},{"choo/html":21,"nanocomponent":65,"xtend":139}],148:[function(require,module,exports){
+},{"choo/html":21,"nanocomponent":65,"xtend":139}],150:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
 const input = require('./components/input.js')
-const Dropdown = require('./components/dropdown-nano.js')
-const VideoEl = require('./components/VideoContainer.js')
+const Dropdown = require('./components/dropdown.js')
+const VideoEl = require('./components/videocontainer.js')
 
 module.exports = loginView
 
@@ -20570,7 +20609,7 @@ function loginView (state, emit) {
   }
 }
 
-},{"./components/VideoContainer.js":147,"./components/dropdown-nano.js":144,"./components/input.js":145,"choo/html":21}],149:[function(require,module,exports){
+},{"./components/dropdown.js":144,"./components/input.js":145,"./components/videocontainer.js":149,"choo/html":21}],151:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20587,7 +20626,7 @@ function mainView (state, emit) {
     return html`
     <div>
 
-    ${AddBroadcast(state.devices, emit)}
+    ${AddBroadcast(state.devices, emit, true)}
     </div>
     `
   } else {
@@ -20603,7 +20642,7 @@ function mainView (state, emit) {
   }
 }
 
-},{"./addBroadcast.js":142,"./communication.js":143,"./login.js":148,"./mediaList.js":150,"choo/html":21}],150:[function(require,module,exports){
+},{"./addBroadcast.js":142,"./communication.js":143,"./login.js":150,"./mediaList.js":152,"choo/html":21}],152:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 

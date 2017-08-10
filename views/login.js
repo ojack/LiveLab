@@ -2,8 +2,8 @@
 
 const html = require('choo/html')
 const input = require('./components/input.js')
-const Dropdown = require('./components/dropdown-nano.js')
-const VideoEl = require('./components/VideoContainer.js')
+const Dropdown = require('./components/dropdown.js')
+const VideoEl = require('./components/videocontainer.js')
 
 module.exports = loginView
 

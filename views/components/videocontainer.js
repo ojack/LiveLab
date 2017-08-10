@@ -37,14 +37,11 @@ function addTrackToElement(track, element){
   var stream = new MediaStream(tracks) // stream must be initialized with tracks, even though documentation says otherwise
   element.srcObject = stream
 }
-// update streamß if track id has changed
+
+// update stream if track id has changed
 VideoContainer.prototype.update = function (props) {
-  // if(props.htmlProps != this.props.htmlProps) {
-  //   return true
-  // }
-console.log("VIDEO", this.props.id, props.id)
+
   if (props.track && props.track != null && props.id !== this.props.id) {
-    console.log("updating video", this.props)
     this.props.track = props.track
     this.props.id = props.id
     addTrackToElement(this.props.track, this.element)
