@@ -2,7 +2,7 @@
 
 const html = require('choo/html')
 const Modal = require('./components/modal.js')
-const Dropdown = require('./components/dropdown.js')
+const Dropdown = require('./components/dropdown-nano.js')
 const VideoEl = require('./components/VideoContainer.js')
 
 module.exports = addBroadcast
@@ -22,7 +22,7 @@ function addBroadcast (state, emit) {
 
   if(bState.kind==="audio") {
     constraintOptions = html`
-    <div>
+    <div id="audio-constraints">
       ${deviceDropdown.render({
         value: 'Device:  ' + defaultLabel,
         options: state.devices.audioinput.all.map((id) => (
@@ -54,18 +54,20 @@ function addBroadcast (state, emit) {
     `
   } else {
     constraintOptions = html`
-    ${deviceDropdown.render({
-      value: 'Device:  ' + defaultLabel,
-      options: state.devices.videoinput.all.map((id) => (
-        {
-          value: id,
-          label: state.devices.videoinput.byId[id].label
+    <div id="video-constraints">
+      ${deviceDropdown.render({
+        value: 'Device:  ' + defaultLabel,
+        options: state.devices.videoinput.all.map((id) => (
+          {
+            value: id,
+            label: state.devices.videoinput.byId[id].label
+          }
+        )),
+        onchange: (value) => {
+          emit('devices:updateBroadcastConstraints', {deviceId: value})
         }
-      )),
-      onchange: (value) => {
-        emit('devices:updateBroadcastConstraints', {deviceId: value})
-      }
-    })}`
+      })}
+    </div`
   }
   return html`
 
@@ -73,7 +75,7 @@ function addBroadcast (state, emit) {
     //  show: state.user.modalAddBroadcast,
       show: true,
       header: "Add Broadcast",
-      contents: html`<div>
+      contents: html`<div id="add broadcast">
             ${radioEl(
               {
                 label: "",

@@ -8,12 +8,13 @@ const AddBroadcast = require('./addBroadcast.js')
 
 module.exports = mainView
 //  <!--${AddBroadcast(state, emit)}-->
+//  ${login(state, emit)}
 function mainView (state, emit) {
   if (!state.user.loggedIn) {
     return html`
     <div>
-    ${login(state, emit)}
-  
+
+    ${AddBroadcast(state, emit)}
     </div>
     `
   } else {

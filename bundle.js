@@ -21,7 +21,7 @@ app.route('/', require('./views/main.js'))
 
 app.mount('body div')
 
-},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/userModel.js":7,"./views/main.js":155,"choo":22,"choo-expose":19,"choo-log":20}],2:[function(require,module,exports){
+},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/userModel.js":7,"./views/main.js":149,"choo":22,"choo-expose":19,"choo-log":20}],2:[function(require,module,exports){
 // Module for handling connections to multiple peers
 
 var io = require('socket.io-client')
@@ -133,7 +133,7 @@ MultiPeer.prototype._attachPeerEvents = function (p, _id) {
 
 module.exports = MultiPeer
 
-},{"events":45,"inherits":58,"simple-peer":116,"socket.io-client":117}],3:[function(require,module,exports){
+},{"events":45,"inherits":58,"simple-peer":111,"socket.io-client":112}],3:[function(require,module,exports){
 module.exports=/*
   Options for constraints as defined in: https://w3c.github.io/mediacapture-main/getusermedia.html
   constraints not added: latency, facingMode, sampleRate, sampleSize, volume
@@ -681,7 +681,7 @@ function userModel (state, bus) {
   }
 }
 
-},{"./../lib/MultiPeer.js":2,"shortid":106}],8:[function(require,module,exports){
+},{"./../lib/MultiPeer.js":2,"shortid":101}],8:[function(require,module,exports){
 module.exports = after
 
 function after(count, callback, err_cb) {
@@ -1236,7 +1236,7 @@ var objectKeys = Object.keys || function (obj) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"util/":132}],11:[function(require,module,exports){
+},{"util/":127}],11:[function(require,module,exports){
 
 /**
  * Expose `Backoff`.
@@ -1663,7 +1663,7 @@ module.exports = hyperx(belCreateElement, {comments: true})
 module.exports.default = module.exports
 module.exports.createElement = belCreateElement
 
-},{"global/document":49,"hyperx":55,"on-load":85}],15:[function(require,module,exports){
+},{"global/document":49,"hyperx":55,"on-load":80}],15:[function(require,module,exports){
 (function (global){
 /**
  * Create a blob builder even when vendor prefixes exist
@@ -3733,7 +3733,7 @@ function Event (name, data) {
   this.data = data
 }
 
-},{"on-idle":84,"plucker":89,"remove-array-items":102,"state-copy":126}],20:[function(require,module,exports){
+},{"on-idle":79,"plucker":84,"remove-array-items":97,"state-copy":121}],20:[function(require,module,exports){
 var nanologger = require('nanologger')
 
 module.exports = logger
@@ -3806,7 +3806,7 @@ function logger (opts) {
   }
 }
 
-},{"nanologger":76}],21:[function(require,module,exports){
+},{"nanologger":71}],21:[function(require,module,exports){
 module.exports = require('bel')
 
 },{"bel":14}],22:[function(require,module,exports){
@@ -3949,7 +3949,7 @@ function createLocation () {
   return pathname + hash
 }
 
-},{"assert":10,"document-ready":30,"nanobus":69,"nanohistory":74,"nanohref":75,"nanomorph":77,"nanomount":80,"nanoraf":81,"nanorouter":82}],23:[function(require,module,exports){
+},{"assert":10,"document-ready":30,"nanobus":64,"nanohistory":69,"nanohref":70,"nanomorph":72,"nanomount":75,"nanoraf":76,"nanorouter":77}],23:[function(require,module,exports){
 /**
  * Slice reference.
  */
@@ -4690,7 +4690,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":68}],30:[function(require,module,exports){
+},{"ms":63}],30:[function(require,module,exports){
 'use strict'
 
 var assert = require('assert')
@@ -5473,7 +5473,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./transport":34,"./transports/index":35,"component-emitter":24,"debug":28,"engine.io-parser":41,"indexof":57,"parsejson":86,"parseqs":87,"parseuri":88}],34:[function(require,module,exports){
+},{"./transport":34,"./transports/index":35,"component-emitter":24,"debug":28,"engine.io-parser":41,"indexof":57,"parsejson":81,"parseqs":82,"parseuri":83}],34:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -6588,7 +6588,7 @@ Polling.prototype.uri = function () {
   return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
 };
 
-},{"../transport":34,"component-inherit":25,"debug":28,"engine.io-parser":41,"parseqs":87,"xmlhttprequest-ssl":40,"yeast":146}],39:[function(require,module,exports){
+},{"../transport":34,"component-inherit":25,"debug":28,"engine.io-parser":41,"parseqs":82,"xmlhttprequest-ssl":40,"yeast":141}],39:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -6878,7 +6878,7 @@ WS.prototype.check = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../transport":34,"component-inherit":25,"debug":28,"engine.io-parser":41,"parseqs":87,"ws":16,"yeast":146}],40:[function(require,module,exports){
+},{"../transport":34,"component-inherit":25,"debug":28,"engine.io-parser":41,"parseqs":82,"ws":16,"yeast":141}],40:[function(require,module,exports){
 (function (global){
 // browser shim for xmlhttprequest module
 
@@ -8310,7 +8310,7 @@ module.exports = function (constraints, cb) {
     });
 };
 
-},{"webrtc-adapter":135}],49:[function(require,module,exports){
+},{"webrtc-adapter":130}],49:[function(require,module,exports){
 (function (global){
 var topLevel = typeof global !== 'undefined' ? global :
     typeof window !== 'undefined' ? window : {}
@@ -8986,181 +8986,426 @@ module.exports = function is(a, b) {
 }
 
 },{}],63:[function(require,module,exports){
-var Nanocomponent = require('nanocomponent')
-var nanologger = require('nanologger')
-var nanomorph = require('nanomorph')
-var assert = require('assert')
-var shallowEqual = require('juliangruber-shallow-equal/objects')
+/**
+ * Helpers.
+ */
 
-var rootLabelRegex = /^data-onloadid/
+var s = 1000;
+var m = s * 60;
+var h = m * 60;
+var d = h * 24;
+var y = d * 365.25;
 
-module.exports = Microcomponent
+/**
+ * Parse or format the given `val`.
+ *
+ * Options:
+ *
+ *  - `long` verbose formatting [false]
+ *
+ * @param {String|Number} val
+ * @param {Object} [options]
+ * @throws {Error} throw an error if val is not a non-empty string or a number
+ * @return {String|Number}
+ * @api public
+ */
 
-function Microcomponent (opts) {
-  if (!(this instanceof Microcomponent)) return new Microcomponent(opts)
-  Nanocomponent.call(this)
+module.exports = function(val, options) {
+  options = options || {};
+  var type = typeof val;
+  if (type === 'string' && val.length > 0) {
+    return parse(val);
+  } else if (type === 'number' && isNaN(val) === false) {
+    return options.long ? fmtLong(val) : fmtShort(val);
+  }
+  throw new Error(
+    'val is not a non-empty string or a valid number. val=' +
+      JSON.stringify(val)
+  );
+};
 
-  opts = opts || {}
-  this.name = opts.name || 'component'
-  this.props = opts.props || {}
-  this.state = opts.state || {}
+/**
+ * Parse the given `str` and return milliseconds.
+ *
+ * @param {String} str
+ * @return {Number}
+ * @api private
+ */
 
-  this._log = nanologger(this.name)
-  this._log.debug('initialized')
-
-  if (opts.pure) {
-    this._update = function (props) {
-      return !shallowEqual(props, this.props)
-    }
+function parse(str) {
+  str = String(str);
+  if (str.length > 100) {
+    return;
+  }
+  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
+    str
+  );
+  if (!match) {
+    return;
+  }
+  var n = parseFloat(match[1]);
+  var type = (match[2] || 'ms').toLowerCase();
+  switch (type) {
+    case 'years':
+    case 'year':
+    case 'yrs':
+    case 'yr':
+    case 'y':
+      return n * y;
+    case 'days':
+    case 'day':
+    case 'd':
+      return n * d;
+    case 'hours':
+    case 'hour':
+    case 'hrs':
+    case 'hr':
+    case 'h':
+      return n * h;
+    case 'minutes':
+    case 'minute':
+    case 'mins':
+    case 'min':
+    case 'm':
+      return n * m;
+    case 'seconds':
+    case 'second':
+    case 'secs':
+    case 'sec':
+    case 's':
+      return n * s;
+    case 'milliseconds':
+    case 'millisecond':
+    case 'msecs':
+    case 'msec':
+    case 'ms':
+      return n;
+    default:
+      return undefined;
   }
 }
-Microcomponent.prototype = Object.create(Nanocomponent.prototype)
 
-Microcomponent.prototype.on = function (eventname, handler) {
-  assert.equal(typeof eventname, 'string', 'microcomponent.on eventname should be type string')
-  assert.equal(typeof handler, 'function', 'microcomponent.on handler should be type function')
+/**
+ * Short format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
 
-  if (eventname === 'render') {
-    this._render = function () {
-      return handler.call(this)
-    }
-    var render = this.render
-    this.render = function (props) {
-      this._log.debug(eventname, props)
-      var oldElement = this._element
-      var ret = render.call(this, props)
-      var newElement = this._element
-
-      if (oldElement) {
-        var oldAttrs = oldElement.attributes
-        var attr, name
-        for (var i = 0, len = oldAttrs.length; i < len; i++) {
-          attr = oldAttrs[i]
-          name = attr.name
-          if (rootLabelRegex.test(name)) {
-            newElement.setAttribute(name, attr.value)
-            break
-          }
-        }
-        nanomorph(oldElement, newElement)
-        this._element = oldElement
-      }
-
-      return ret
-    }
-  } else {
-    this['_' + eventname] = function () {
-      var len = arguments.length
-      var args = new Array(len)
-      for (var i = 0; i < len; i++) args[i] = arguments[i]
-      args.length
-        ? this._log.debug(eventname, args)
-        : this._log.debug(eventname)
-      var res = handler.apply(this, args)
-      return res
-    }
+function fmtShort(ms) {
+  if (ms >= d) {
+    return Math.round(ms / d) + 'd';
   }
+  if (ms >= h) {
+    return Math.round(ms / h) + 'h';
+  }
+  if (ms >= m) {
+    return Math.round(ms / m) + 'm';
+  }
+  if (ms >= s) {
+    return Math.round(ms / s) + 's';
+  }
+  return ms + 'ms';
+}
+
+/**
+ * Long format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtLong(ms) {
+  return plural(ms, d, 'day') ||
+    plural(ms, h, 'hour') ||
+    plural(ms, m, 'minute') ||
+    plural(ms, s, 'second') ||
+    ms + ' ms';
+}
+
+/**
+ * Pluralization helper.
+ */
+
+function plural(ms, n, name) {
+  if (ms < n) {
+    return;
+  }
+  if (ms < n * 1.5) {
+    return Math.floor(ms / n) + ' ' + name;
+  }
+  return Math.ceil(ms / n) + ' ' + name + 's';
+}
+
+},{}],64:[function(require,module,exports){
+var nanotiming = require('nanotiming')
+var assert = require('assert')
+
+module.exports = Nanobus
+
+function Nanobus (name) {
+  if (!(this instanceof Nanobus)) return new Nanobus(name)
+
+  this._name = name || 'nanobus'
+  this._starListeners = []
+  this._listeners = {}
+
+  this._timing = nanotiming(this._name)
+}
+
+Nanobus.prototype.emit = function (eventName, data) {
+  assert.equal(typeof eventName, 'string', 'nanobus.emit: eventName should be type string')
+
+  this._timing.start(eventName)
+  var listeners = this._listeners[eventName]
+  if (listeners && listeners.length > 0) {
+    this._emit(this._listeners[eventName], data)
+  }
+
+  if (this._starListeners.length > 0) {
+    this._emit(this._starListeners, eventName, data)
+  }
+  this._timing.end(eventName)
 
   return this
 }
 
-Microcomponent.prototype.emit = function (eventname) {
-  assert.equal(typeof eventname, 'string', 'microcomponent.emit eventname should be type string')
-  var len = arguments.length - 1
-  var args = new Array(len)
-  for (var i = 0; i < len; i++) args[i] = arguments[i + 1]
-  return this['_' + eventname].apply(this, args)
+Nanobus.prototype.on = Nanobus.prototype.addListener = function (eventName, listener) {
+  assert.equal(typeof eventName, 'string', 'nanobus.on: eventName should be type string')
+  assert.equal(typeof listener, 'function', 'nanobus.on: listener should be type function')
+
+  if (eventName === '*') {
+    this._starListeners.push(listener)
+  } else {
+    if (!this._listeners[eventName]) this._listeners[eventName] = []
+    this._listeners[eventName].push(listener)
+  }
+  return this
 }
 
-},{"assert":10,"juliangruber-shallow-equal/objects":61,"nanocomponent":64,"nanologger":76,"nanomorph":65}],64:[function(require,module,exports){
+Nanobus.prototype.prependListener = function (eventName, listener) {
+  assert.equal(typeof eventName, 'string', 'nanobus.prependListener: eventName should be type string')
+  assert.equal(typeof listener, 'function', 'nanobus.prependListener: listener should be type function')
+
+  if (eventName === '*') {
+    this._starListeners.unshift(listener)
+  } else {
+    if (!this._listeners[eventName]) this._listeners[eventName] = []
+    this._listeners[eventName].unshift(listener)
+  }
+  return this
+}
+
+Nanobus.prototype.once = function (eventName, listener) {
+  assert.equal(typeof eventName, 'string', 'nanobus.once: eventName should be type string')
+  assert.equal(typeof listener, 'function', 'nanobus.once: listener should be type function')
+
+  var self = this
+  this.on(eventName, once)
+  function once () {
+    listener.apply(self, arguments)
+    self.removeListener(eventName, once)
+  }
+  return this
+}
+
+Nanobus.prototype.prependOnceListener = function (eventName, listener) {
+  assert.equal(typeof eventName, 'string', 'nanobus.prependOnceListener: eventName should be type string')
+  assert.equal(typeof listener, 'function', 'nanobus.prependOnceListener: listener should be type function')
+
+  var self = this
+  this.prependListener(eventName, once)
+  function once () {
+    listener.apply(self, arguments)
+    self.removeListener(eventName, once)
+  }
+  return this
+}
+
+Nanobus.prototype.removeListener = function (eventName, listener) {
+  assert.equal(typeof eventName, 'string', 'nanobus.removeListener: eventName should be type string')
+  assert.equal(typeof listener, 'function', 'nanobus.removeListener: listener should be type function')
+
+  if (eventName === '*') {
+    this._starListeners = this._starListeners.slice()
+    return remove(this._starListeners, listener)
+  } else {
+    if (typeof this._listeners[eventName] !== 'undefined') {
+      this._listeners[eventName] = this._listeners[eventName].slice()
+    }
+
+    return remove(this._listeners[eventName], listener)
+  }
+
+  function remove (arr, listener) {
+    if (!arr) return
+    var index = arr.indexOf(listener)
+    if (index !== -1) {
+      arr.splice(index, 1)
+      return true
+    }
+  }
+}
+
+Nanobus.prototype.removeAllListeners = function (eventName) {
+  if (eventName) {
+    if (eventName === '*') {
+      this._starListeners = []
+    } else {
+      this._listeners[eventName] = []
+    }
+  } else {
+    this._starListeners = []
+    this._listeners = {}
+  }
+  return this
+}
+
+Nanobus.prototype.listeners = function (eventName) {
+  var listeners = (eventName !== '*') ? this._listeners[eventName] : this._starListeners
+  var ret = []
+  if (listeners) {
+    var ilength = listeners.length
+    for (var i = 0; i < ilength; i++) ret.push(listeners[i])
+  }
+  return ret
+}
+
+Nanobus.prototype._emit = function (arr, eventName, data) {
+  if (typeof arr === 'undefined') return
+  if (!data) {
+    data = eventName
+    eventName = null
+  }
+  var length = arr.length
+  for (var i = 0; i < length; i++) {
+    var listener = arr[i]
+    if (eventName) listener(eventName, data)
+    else listener(data)
+  }
+}
+
+},{"assert":10,"nanotiming":78}],65:[function(require,module,exports){
+var document = require('global/document')
+var morph = require('nanomorph')
 var onload = require('on-load')
 var assert = require('assert')
 
-var KEY = 'ncid-' + (new Date() % 9e6).toString(36)
-var INDEX = 0
-
 module.exports = Nanocomponent
+
+function makeID () {
+  return 'ncid-' + Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
+}
 
 function Nanocomponent () {
   this._hasWindow = typeof window !== 'undefined'
-  this._ID = KEY + '-' + INDEX++
-  this._placeholder = null
-  this._onload = onload
-  this._element = null
-  this._loaded = false
-  this.props = {}
-  this.oldProps = null
-  this.state = {}
-}
+  this._id = null // represents the id of the root node
+  this._ncID = null // internal nanocomponent id
+  this._proxy = null
+  this._loaded = false // Used to debounce on-load when child-reordering
+  this._rootNodeName = null
 
-Nanocomponent.prototype._ensureID = function () {
-  // Get ID - needed for nanomorph child element reordering
-  var id = this._element.getAttribute('id')
-  if (!id) this._element.setAttribute('id', this._ID)
-  else this._ID = id
-}
-
-Nanocomponent.prototype._rerender = function (props) {
-  this.oldProps = this.props
-  this.props = props
-  this._element = this._render()
-  this._ensureID()
-}
-
-Nanocomponent.prototype.render = function (props) {
-  assert.equal(typeof this._render, 'function', 'nanocomponent: this._render should be implemented')
-  assert.equal(typeof this._update, 'function', 'nanocomponent: this._update should be implemented')
+  this._handleLoad = this._handleLoad.bind(this)
+  this._handleUnload = this._handleUnload.bind(this)
 
   var self = this
-  var len = arguments.length
-  var args = new Array(len)
-  for (var i = 0; i < len; i++) args[i] = arguments[i]
 
-  if (!this._hasWindow) {
-    this._rerender(props)
-    return this._element
-  } else if (!this._element) {
-    this._rerender(props)
-    this._onload(this._element, function () {
-      if (self._loaded) return
-      self._loaded = true
-      if (self._load) {
-        window.requestAnimationFrame(function () {
-          self._load()
-        })
-      }
-    }, function () {
-      if (document.body.contains(self._element)) return
-      self._loaded = false
-      if (self._unload) {
-        window.requestAnimationFrame(function () {
-          self._unload()
-        })
-      }
-    }, this._ID)
-    return this._element
-  } else {
-    var shouldUpdate = this._update(props)
-    if (shouldUpdate) {
-      this._rerender(props)
+  Object.defineProperty(this, 'element', {
+    get: function () {
+      var el = document.getElementById(self._id)
+      if (el) return el.dataset.nanocomponent === self._ncID ? el : undefined
     }
-    if (!this._placeholder) this._placeholder = this._createPlaceholder()
-    return this._placeholder
-  }
+  })
 }
 
-Nanocomponent.prototype._createPlaceholder = function () {
-  var el = document.createElement('div')
-  el.setAttribute('data-nanocomponent', '')
-  el.setAttribute('id', this._ID)
+Nanocomponent.prototype.render = function () {
   var self = this
-  el.isSameNode = function (el) {
-    return el === self._element
+  var args = new Array(arguments.length)
+  for (var i = 0; i < arguments.length; i++) args[i] = arguments[i]
+  if (!this._hasWindow) {
+    return this.createElement.apply(this, args)
+  } else if (this.element) {
+    var shouldUpdate = this.update.apply(this, args)
+    if (shouldUpdate) {
+      morph(this.element, this._handleRender(args))
+      if (this.afterupdate) this.afterupdate(this.element)
+    }
+    if (!this._proxy) { this._proxy = this._createProxy() }
+    return this._proxy
+  } else {
+    this._reset()
+    var el = this._handleRender(args)
+    if (this.beforerender) this.beforerender(el)
+    if (this.load || this.unload) {
+      onload(el, self._handleLoad, self._handleUnload, self)
+    }
+    return el
   }
-  return el
 }
 
-},{"assert":10,"on-load":85}],65:[function(require,module,exports){
+Nanocomponent.prototype._handleRender = function (args) {
+  var el = this.createElement.apply(this, args)
+  if (!this._rootNodeName) this._rootNodeName = el.nodeName
+  assert(el instanceof window.HTMLElement, 'nanocomponent: createElement should return a DOM node')
+  assert.equal(this._rootNodeName, el.nodeName, 'nanocomponent: root node types cannot differ between re-renders')
+  return this._brandNode(this._ensureID(el))
+}
+
+Nanocomponent.prototype._createProxy = function () {
+  var proxy = document.createElement('div')
+  var self = this
+  this._brandNode(proxy)
+  proxy.id = this._id
+  proxy.setAttribute('data-proxy', '')
+  proxy.isSameNode = function (el) {
+    return (el && el.dataset.nanocomponent === self._ncID)
+  }
+  return proxy
+}
+
+Nanocomponent.prototype._reset = function () {
+  this._ncID = makeID()
+  this._id = null
+  this._proxy = null
+  this._rootNodeName = null
+}
+
+Nanocomponent.prototype._brandNode = function (node) {
+  node.setAttribute('data-nanocomponent', this._ncID)
+  return node
+}
+
+Nanocomponent.prototype._ensureID = function (node) {
+  if (node.id) this._id = node.id
+  else node.id = this._id = this._ncID
+  return node
+}
+
+Nanocomponent.prototype._handleLoad = function () {
+  var self = this
+  if (this._loaded) return // Debounce child-reorders
+  this._loaded = true
+  if (this.load) window.requestAnimationFrame(function () { self.load() })
+}
+
+Nanocomponent.prototype._handleUnload = function () {
+  var self = this
+  if (this.element) return // Debounce child-reorders
+  this._loaded = false
+  if (this.unload) window.requestAnimationFrame(function () { self.unload() })
+}
+
+Nanocomponent.prototype.createElement = function () {
+  throw new Error('nanocomponent: createElement should be implemented!')
+}
+
+Nanocomponent.prototype.update = function () {
+  throw new Error('nanocomponent: update should be implemented!')
+}
+
+},{"assert":10,"global/document":49,"nanomorph":66,"on-load":80}],66:[function(require,module,exports){
 var assert = require('assert')
 var morph = require('./lib/morph')
 
@@ -9311,7 +9556,7 @@ function same (a, b) {
   return false
 }
 
-},{"./lib/morph":67,"assert":10}],66:[function(require,module,exports){
+},{"./lib/morph":68,"assert":10}],67:[function(require,module,exports){
 module.exports = [
   // attribute events (can be set with attributes)
   'onclick',
@@ -9351,7 +9596,7 @@ module.exports = [
   'onfocusout'
 ]
 
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 var events = require('./events')
 var eventsLength = events.length
 
@@ -9515,433 +9760,7 @@ function updateAttribute (newNode, oldNode, name) {
   }
 }
 
-},{"./events":66}],68:[function(require,module,exports){
-/**
- * Helpers.
- */
-
-var s = 1000;
-var m = s * 60;
-var h = m * 60;
-var d = h * 24;
-var y = d * 365.25;
-
-/**
- * Parse or format the given `val`.
- *
- * Options:
- *
- *  - `long` verbose formatting [false]
- *
- * @param {String|Number} val
- * @param {Object} [options]
- * @throws {Error} throw an error if val is not a non-empty string or a number
- * @return {String|Number}
- * @api public
- */
-
-module.exports = function(val, options) {
-  options = options || {};
-  var type = typeof val;
-  if (type === 'string' && val.length > 0) {
-    return parse(val);
-  } else if (type === 'number' && isNaN(val) === false) {
-    return options.long ? fmtLong(val) : fmtShort(val);
-  }
-  throw new Error(
-    'val is not a non-empty string or a valid number. val=' +
-      JSON.stringify(val)
-  );
-};
-
-/**
- * Parse the given `str` and return milliseconds.
- *
- * @param {String} str
- * @return {Number}
- * @api private
- */
-
-function parse(str) {
-  str = String(str);
-  if (str.length > 100) {
-    return;
-  }
-  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
-    str
-  );
-  if (!match) {
-    return;
-  }
-  var n = parseFloat(match[1]);
-  var type = (match[2] || 'ms').toLowerCase();
-  switch (type) {
-    case 'years':
-    case 'year':
-    case 'yrs':
-    case 'yr':
-    case 'y':
-      return n * y;
-    case 'days':
-    case 'day':
-    case 'd':
-      return n * d;
-    case 'hours':
-    case 'hour':
-    case 'hrs':
-    case 'hr':
-    case 'h':
-      return n * h;
-    case 'minutes':
-    case 'minute':
-    case 'mins':
-    case 'min':
-    case 'm':
-      return n * m;
-    case 'seconds':
-    case 'second':
-    case 'secs':
-    case 'sec':
-    case 's':
-      return n * s;
-    case 'milliseconds':
-    case 'millisecond':
-    case 'msecs':
-    case 'msec':
-    case 'ms':
-      return n;
-    default:
-      return undefined;
-  }
-}
-
-/**
- * Short format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
-
-function fmtShort(ms) {
-  if (ms >= d) {
-    return Math.round(ms / d) + 'd';
-  }
-  if (ms >= h) {
-    return Math.round(ms / h) + 'h';
-  }
-  if (ms >= m) {
-    return Math.round(ms / m) + 'm';
-  }
-  if (ms >= s) {
-    return Math.round(ms / s) + 's';
-  }
-  return ms + 'ms';
-}
-
-/**
- * Long format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
-
-function fmtLong(ms) {
-  return plural(ms, d, 'day') ||
-    plural(ms, h, 'hour') ||
-    plural(ms, m, 'minute') ||
-    plural(ms, s, 'second') ||
-    ms + ' ms';
-}
-
-/**
- * Pluralization helper.
- */
-
-function plural(ms, n, name) {
-  if (ms < n) {
-    return;
-  }
-  if (ms < n * 1.5) {
-    return Math.floor(ms / n) + ' ' + name;
-  }
-  return Math.ceil(ms / n) + ' ' + name + 's';
-}
-
-},{}],69:[function(require,module,exports){
-var nanotiming = require('nanotiming')
-var assert = require('assert')
-
-module.exports = Nanobus
-
-function Nanobus (name) {
-  if (!(this instanceof Nanobus)) return new Nanobus(name)
-
-  this._name = name || 'nanobus'
-  this._starListeners = []
-  this._listeners = {}
-
-  this._timing = nanotiming(this._name)
-}
-
-Nanobus.prototype.emit = function (eventName, data) {
-  assert.equal(typeof eventName, 'string', 'nanobus.emit: eventName should be type string')
-
-  this._timing.start(eventName)
-  var listeners = this._listeners[eventName]
-  if (listeners && listeners.length > 0) {
-    this._emit(this._listeners[eventName], data)
-  }
-
-  if (this._starListeners.length > 0) {
-    this._emit(this._starListeners, eventName, data)
-  }
-  this._timing.end(eventName)
-
-  return this
-}
-
-Nanobus.prototype.on = Nanobus.prototype.addListener = function (eventName, listener) {
-  assert.equal(typeof eventName, 'string', 'nanobus.on: eventName should be type string')
-  assert.equal(typeof listener, 'function', 'nanobus.on: listener should be type function')
-
-  if (eventName === '*') {
-    this._starListeners.push(listener)
-  } else {
-    if (!this._listeners[eventName]) this._listeners[eventName] = []
-    this._listeners[eventName].push(listener)
-  }
-  return this
-}
-
-Nanobus.prototype.prependListener = function (eventName, listener) {
-  assert.equal(typeof eventName, 'string', 'nanobus.prependListener: eventName should be type string')
-  assert.equal(typeof listener, 'function', 'nanobus.prependListener: listener should be type function')
-
-  if (eventName === '*') {
-    this._starListeners.unshift(listener)
-  } else {
-    if (!this._listeners[eventName]) this._listeners[eventName] = []
-    this._listeners[eventName].unshift(listener)
-  }
-  return this
-}
-
-Nanobus.prototype.once = function (eventName, listener) {
-  assert.equal(typeof eventName, 'string', 'nanobus.once: eventName should be type string')
-  assert.equal(typeof listener, 'function', 'nanobus.once: listener should be type function')
-
-  var self = this
-  this.on(eventName, once)
-  function once () {
-    listener.apply(self, arguments)
-    self.removeListener(eventName, once)
-  }
-  return this
-}
-
-Nanobus.prototype.prependOnceListener = function (eventName, listener) {
-  assert.equal(typeof eventName, 'string', 'nanobus.prependOnceListener: eventName should be type string')
-  assert.equal(typeof listener, 'function', 'nanobus.prependOnceListener: listener should be type function')
-
-  var self = this
-  this.prependListener(eventName, once)
-  function once () {
-    listener.apply(self, arguments)
-    self.removeListener(eventName, once)
-  }
-  return this
-}
-
-Nanobus.prototype.removeListener = function (eventName, listener) {
-  assert.equal(typeof eventName, 'string', 'nanobus.removeListener: eventName should be type string')
-  assert.equal(typeof listener, 'function', 'nanobus.removeListener: listener should be type function')
-
-  if (eventName === '*') {
-    this._starListeners = this._starListeners.slice()
-    return remove(this._starListeners, listener)
-  } else {
-    if (typeof this._listeners[eventName] !== 'undefined') {
-      this._listeners[eventName] = this._listeners[eventName].slice()
-    }
-
-    return remove(this._listeners[eventName], listener)
-  }
-
-  function remove (arr, listener) {
-    if (!arr) return
-    var index = arr.indexOf(listener)
-    if (index !== -1) {
-      arr.splice(index, 1)
-      return true
-    }
-  }
-}
-
-Nanobus.prototype.removeAllListeners = function (eventName) {
-  if (eventName) {
-    if (eventName === '*') {
-      this._starListeners = []
-    } else {
-      this._listeners[eventName] = []
-    }
-  } else {
-    this._starListeners = []
-    this._listeners = {}
-  }
-  return this
-}
-
-Nanobus.prototype.listeners = function (eventName) {
-  var listeners = (eventName !== '*') ? this._listeners[eventName] : this._starListeners
-  var ret = []
-  if (listeners) {
-    var ilength = listeners.length
-    for (var i = 0; i < ilength; i++) ret.push(listeners[i])
-  }
-  return ret
-}
-
-Nanobus.prototype._emit = function (arr, eventName, data) {
-  if (typeof arr === 'undefined') return
-  if (!data) {
-    data = eventName
-    eventName = null
-  }
-  var length = arr.length
-  for (var i = 0; i < length; i++) {
-    var listener = arr[i]
-    if (eventName) listener(eventName, data)
-    else listener(data)
-  }
-}
-
-},{"assert":10,"nanotiming":83}],70:[function(require,module,exports){
-var document = require('global/document')
-var morph = require('nanomorph')
-var onload = require('on-load')
-var assert = require('assert')
-
-module.exports = Nanocomponent
-
-function makeID () {
-  return 'ncid-' + Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
-}
-
-function Nanocomponent () {
-  this._hasWindow = typeof window !== 'undefined'
-  this._id = null // represents the id of the root node
-  this._ncID = null // internal nanocomponent id
-  this._proxy = null
-  this._loaded = false // Used to debounce on-load when child-reordering
-  this._rootNodeName = null
-
-  this._handleLoad = this._handleLoad.bind(this)
-  this._handleUnload = this._handleUnload.bind(this)
-
-  var self = this
-
-  Object.defineProperty(this, 'element', {
-    get: function () {
-      var el = document.getElementById(self._id)
-      if (el) return el.dataset.nanocomponent === self._ncID ? el : undefined
-    }
-  })
-}
-
-Nanocomponent.prototype.render = function () {
-  var self = this
-  var args = new Array(arguments.length)
-  for (var i = 0; i < arguments.length; i++) args[i] = arguments[i]
-  if (!this._hasWindow) {
-    return this.createElement.apply(this, args)
-  } else if (this.element) {
-    var shouldUpdate = this.update.apply(this, args)
-    if (shouldUpdate) {
-      morph(this.element, this._handleRender(args))
-      if (this.afterupdate) this.afterupdate(this.element)
-    }
-    if (!this._proxy) { this._proxy = this._createProxy() }
-    return this._proxy
-  } else {
-    this._reset()
-    var el = this._handleRender(args)
-    if (this.beforerender) this.beforerender(el)
-    if (this.load || this.unload) {
-      onload(el, self._handleLoad, self._handleUnload, self)
-    }
-    return el
-  }
-}
-
-Nanocomponent.prototype._handleRender = function (args) {
-  var el = this.createElement.apply(this, args)
-  if (!this._rootNodeName) this._rootNodeName = el.nodeName
-  assert(el instanceof window.HTMLElement, 'nanocomponent: createElement should return a DOM node')
-  assert.equal(this._rootNodeName, el.nodeName, 'nanocomponent: root node types cannot differ between re-renders')
-  return this._brandNode(this._ensureID(el))
-}
-
-Nanocomponent.prototype._createProxy = function () {
-  var proxy = document.createElement('div')
-  var self = this
-  this._brandNode(proxy)
-  proxy.id = this._id
-  proxy.setAttribute('data-proxy', '')
-  proxy.isSameNode = function (el) {
-    return (el && el.dataset.nanocomponent === self._ncID)
-  }
-  return proxy
-}
-
-Nanocomponent.prototype._reset = function () {
-  this._ncID = makeID()
-  this._id = null
-  this._proxy = null
-  this._rootNodeName = null
-}
-
-Nanocomponent.prototype._brandNode = function (node) {
-  node.setAttribute('data-nanocomponent', this._ncID)
-  return node
-}
-
-Nanocomponent.prototype._ensureID = function (node) {
-  if (node.id) this._id = node.id
-  else node.id = this._id = this._ncID
-  return node
-}
-
-Nanocomponent.prototype._handleLoad = function () {
-  var self = this
-  if (this._loaded) return // Debounce child-reorders
-  this._loaded = true
-  if (this.load) window.requestAnimationFrame(function () { self.load() })
-}
-
-Nanocomponent.prototype._handleUnload = function () {
-  var self = this
-  if (this.element) return // Debounce child-reorders
-  this._loaded = false
-  if (this.unload) window.requestAnimationFrame(function () { self.unload() })
-}
-
-Nanocomponent.prototype.createElement = function () {
-  throw new Error('nanocomponent: createElement should be implemented!')
-}
-
-Nanocomponent.prototype.update = function () {
-  throw new Error('nanocomponent: update should be implemented!')
-}
-
-},{"assert":10,"global/document":49,"nanomorph":71,"on-load":85}],71:[function(require,module,exports){
-arguments[4][65][0].apply(exports,arguments)
-},{"./lib/morph":73,"assert":10,"dup":65}],72:[function(require,module,exports){
-arguments[4][66][0].apply(exports,arguments)
-},{"dup":66}],73:[function(require,module,exports){
-arguments[4][67][0].apply(exports,arguments)
-},{"./events":72,"dup":67}],74:[function(require,module,exports){
+},{"./events":67}],69:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = history
@@ -9955,7 +9774,7 @@ function history (cb) {
   }
 }
 
-},{"assert":10}],75:[function(require,module,exports){
+},{"assert":10}],70:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = href
@@ -9991,7 +9810,7 @@ function href (cb, root) {
   }
 }
 
-},{"assert":10}],76:[function(require,module,exports){
+},{"assert":10}],71:[function(require,module,exports){
 var assert = require('assert')
 var xtend = require('xtend')
 
@@ -10155,7 +9974,7 @@ function pad (str) {
   return str.length !== 2 ? 0 + str : str
 }
 
-},{"assert":10,"xtend":144}],77:[function(require,module,exports){
+},{"assert":10,"xtend":139}],72:[function(require,module,exports){
 var assert = require('assert')
 var morph = require('./lib/morph')
 var rootLabelRegex = /^data-onloadid/
@@ -10250,9 +10069,9 @@ function persistStatefulRoot (newNode, oldNode) {
   }
 }
 
-},{"./lib/morph":79,"assert":10}],78:[function(require,module,exports){
-arguments[4][66][0].apply(exports,arguments)
-},{"dup":66}],79:[function(require,module,exports){
+},{"./lib/morph":74,"assert":10}],73:[function(require,module,exports){
+arguments[4][67][0].apply(exports,arguments)
+},{"dup":67}],74:[function(require,module,exports){
 var events = require('./events')
 var eventsLength = events.length
 
@@ -10427,7 +10246,7 @@ function updateAttribute (newNode, oldNode, name) {
   }
 }
 
-},{"./events":78}],80:[function(require,module,exports){
+},{"./events":73}],75:[function(require,module,exports){
 var nanomorph = require('nanomorph')
 var assert = require('assert')
 
@@ -10449,7 +10268,7 @@ function nanomount (target, newTree) {
     target.outerHTML.nodeName + '.')
 }
 
-},{"assert":10,"nanomorph":77}],81:[function(require,module,exports){
+},{"assert":10,"nanomorph":72}],76:[function(require,module,exports){
 'use strict'
 
 var assert = require('assert')
@@ -10486,7 +10305,7 @@ function nanoraf (render, raf) {
   }
 }
 
-},{"assert":10}],82:[function(require,module,exports){
+},{"assert":10}],77:[function(require,module,exports){
 var wayfarer = require('wayfarer')
 
 var isLocalFile = (/file:\/\//.test(typeof window === 'object' &&
@@ -10546,7 +10365,7 @@ function pathname (route, isElectron) {
   return route.replace(suffix, '').replace(normalize, '/')
 }
 
-},{"wayfarer":133}],83:[function(require,module,exports){
+},{"wayfarer":128}],78:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = Nanotiming
@@ -10572,7 +10391,7 @@ Nanotiming.prototype.end = function (partial) {
   window.performance.measure(name, name + '-start', name + '-end')
 }
 
-},{"assert":10}],84:[function(require,module,exports){
+},{"assert":10}],79:[function(require,module,exports){
 var assert = require('assert')
 
 var dftOpts = {}
@@ -10597,7 +10416,7 @@ function onIdle (cb, opts) {
   }
 }
 
-},{"assert":10}],85:[function(require,module,exports){
+},{"assert":10}],80:[function(require,module,exports){
 /* global MutationObserver */
 var document = require('global/document')
 var window = require('global/window')
@@ -10686,7 +10505,7 @@ function eachMutation (nodes, fn) {
   }
 }
 
-},{"global/document":49,"global/window":50}],86:[function(require,module,exports){
+},{"global/document":49,"global/window":50}],81:[function(require,module,exports){
 (function (global){
 /**
  * JSON parse.
@@ -10721,7 +10540,7 @@ module.exports = function parsejson(data) {
   }
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],87:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 /**
  * Compiles a querystring
  * Returns string representation of the object
@@ -10760,7 +10579,7 @@ exports.decode = function(qs){
   return qry;
 };
 
-},{}],88:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 /**
  * Parses an URI
  *
@@ -10801,7 +10620,7 @@ module.exports = function parseuri(str) {
     return uri;
 };
 
-},{}],89:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 module.exports = plucker
 
 function plucker(path, object) {
@@ -10838,7 +10657,7 @@ function pluck(path) {
   }
 }
 
-},{}],90:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -10885,7 +10704,7 @@ function nextTick(fn, arg1, arg2, arg3) {
 }
 
 }).call(this,require('_process'))
-},{"_process":17}],91:[function(require,module,exports){
+},{"_process":17}],86:[function(require,module,exports){
 (function (process,global){
 'use strict'
 
@@ -10927,7 +10746,7 @@ function randomBytes (size, cb) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":17,"safe-buffer":103}],92:[function(require,module,exports){
+},{"_process":17,"safe-buffer":98}],87:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -11052,7 +10871,7 @@ function forEach(xs, f) {
     f(xs[i], i);
   }
 }
-},{"./_stream_readable":94,"./_stream_writable":96,"core-util-is":27,"inherits":58,"process-nextick-args":90}],93:[function(require,module,exports){
+},{"./_stream_readable":89,"./_stream_writable":91,"core-util-is":27,"inherits":58,"process-nextick-args":85}],88:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -11100,7 +10919,7 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":95,"core-util-is":27,"inherits":58}],94:[function(require,module,exports){
+},{"./_stream_transform":90,"core-util-is":27,"inherits":58}],89:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -12110,7 +11929,7 @@ function indexOf(xs, x) {
   return -1;
 }
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_stream_duplex":92,"./internal/streams/BufferList":97,"./internal/streams/destroy":98,"./internal/streams/stream":99,"_process":17,"core-util-is":27,"events":45,"inherits":58,"isarray":100,"process-nextick-args":90,"safe-buffer":103,"string_decoder/":127,"util":16}],95:[function(require,module,exports){
+},{"./_stream_duplex":87,"./internal/streams/BufferList":92,"./internal/streams/destroy":93,"./internal/streams/stream":94,"_process":17,"core-util-is":27,"events":45,"inherits":58,"isarray":95,"process-nextick-args":85,"safe-buffer":98,"string_decoder/":122,"util":16}],90:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -12325,7 +12144,7 @@ function done(stream, er, data) {
 
   return stream.push(null);
 }
-},{"./_stream_duplex":92,"core-util-is":27,"inherits":58}],96:[function(require,module,exports){
+},{"./_stream_duplex":87,"core-util-is":27,"inherits":58}],91:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -12992,7 +12811,7 @@ Writable.prototype._destroy = function (err, cb) {
   cb(err);
 };
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_stream_duplex":92,"./internal/streams/destroy":98,"./internal/streams/stream":99,"_process":17,"core-util-is":27,"inherits":58,"process-nextick-args":90,"safe-buffer":103,"util-deprecate":129}],97:[function(require,module,exports){
+},{"./_stream_duplex":87,"./internal/streams/destroy":93,"./internal/streams/stream":94,"_process":17,"core-util-is":27,"inherits":58,"process-nextick-args":85,"safe-buffer":98,"util-deprecate":124}],92:[function(require,module,exports){
 'use strict';
 
 /*<replacement>*/
@@ -13067,7 +12886,7 @@ module.exports = function () {
 
   return BufferList;
 }();
-},{"safe-buffer":103}],98:[function(require,module,exports){
+},{"safe-buffer":98}],93:[function(require,module,exports){
 'use strict';
 
 /*<replacement>*/
@@ -13140,12 +12959,12 @@ module.exports = {
   destroy: destroy,
   undestroy: undestroy
 };
-},{"process-nextick-args":90}],99:[function(require,module,exports){
+},{"process-nextick-args":85}],94:[function(require,module,exports){
 module.exports = require('events').EventEmitter;
 
-},{"events":45}],100:[function(require,module,exports){
+},{"events":45}],95:[function(require,module,exports){
 arguments[4][52][0].apply(exports,arguments)
-},{"dup":52}],101:[function(require,module,exports){
+},{"dup":52}],96:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = exports;
 exports.Readable = exports;
@@ -13154,7 +12973,7 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":92,"./lib/_stream_passthrough.js":93,"./lib/_stream_readable.js":94,"./lib/_stream_transform.js":95,"./lib/_stream_writable.js":96}],102:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":87,"./lib/_stream_passthrough.js":88,"./lib/_stream_readable.js":89,"./lib/_stream_transform.js":90,"./lib/_stream_writable.js":91}],97:[function(require,module,exports){
 'use strict'
 
 /**
@@ -13184,7 +13003,7 @@ module.exports = function removeItems(arr, startIdx, removeCount)
   arr.length = len
 }
 
-},{}],103:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
 var Buffer = buffer.Buffer
@@ -13248,7 +13067,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":18}],104:[function(require,module,exports){
+},{"buffer":18}],99:[function(require,module,exports){
  /* eslint-env node */
 'use strict';
 
@@ -13856,14 +13675,14 @@ SDPUtils.isRejected = function(mediaSection) {
 // Expose public methods.
 module.exports = SDPUtils;
 
-},{}],105:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 module.exports = require('insert-css')
 
-},{"insert-css":59}],106:[function(require,module,exports){
+},{"insert-css":59}],101:[function(require,module,exports){
 'use strict';
 module.exports = require('./lib/index');
 
-},{"./lib/index":111}],107:[function(require,module,exports){
+},{"./lib/index":106}],102:[function(require,module,exports){
 'use strict';
 
 var randomFromSeed = require('./random/random-from-seed');
@@ -13963,7 +13782,7 @@ module.exports = {
     shuffled: getShuffled
 };
 
-},{"./random/random-from-seed":114}],108:[function(require,module,exports){
+},{"./random/random-from-seed":109}],103:[function(require,module,exports){
 'use strict';
 
 var encode = require('./encode');
@@ -14013,7 +13832,7 @@ function build(clusterWorkerId) {
 
 module.exports = build;
 
-},{"./alphabet":107,"./encode":110}],109:[function(require,module,exports){
+},{"./alphabet":102,"./encode":105}],104:[function(require,module,exports){
 'use strict';
 var alphabet = require('./alphabet');
 
@@ -14032,7 +13851,7 @@ function decode(id) {
 
 module.exports = decode;
 
-},{"./alphabet":107}],110:[function(require,module,exports){
+},{"./alphabet":102}],105:[function(require,module,exports){
 'use strict';
 
 var randomByte = require('./random/random-byte');
@@ -14053,7 +13872,7 @@ function encode(lookup, number) {
 
 module.exports = encode;
 
-},{"./random/random-byte":113}],111:[function(require,module,exports){
+},{"./random/random-byte":108}],106:[function(require,module,exports){
 'use strict';
 
 var alphabet = require('./alphabet');
@@ -14120,7 +13939,7 @@ module.exports.characters = characters;
 module.exports.decode = decode;
 module.exports.isValid = isValid;
 
-},{"./alphabet":107,"./build":108,"./decode":109,"./encode":110,"./is-valid":112,"./util/cluster-worker-id":115}],112:[function(require,module,exports){
+},{"./alphabet":102,"./build":103,"./decode":104,"./encode":105,"./is-valid":107,"./util/cluster-worker-id":110}],107:[function(require,module,exports){
 'use strict';
 var alphabet = require('./alphabet');
 
@@ -14141,7 +13960,7 @@ function isShortId(id) {
 
 module.exports = isShortId;
 
-},{"./alphabet":107}],113:[function(require,module,exports){
+},{"./alphabet":102}],108:[function(require,module,exports){
 'use strict';
 
 var crypto = typeof window === 'object' && (window.crypto || window.msCrypto); // IE 11 uses window.msCrypto
@@ -14157,7 +13976,7 @@ function randomByte() {
 
 module.exports = randomByte;
 
-},{}],114:[function(require,module,exports){
+},{}],109:[function(require,module,exports){
 'use strict';
 
 // Found this seed-based random generator somewhere
@@ -14184,12 +14003,12 @@ module.exports = {
     seed: setSeed
 };
 
-},{}],115:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 'use strict';
 
 module.exports = 0;
 
-},{}],116:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 (function (Buffer){
 module.exports = Peer
 
@@ -14995,7 +14814,7 @@ Peer.prototype._transformConstraints = function (constraints) {
 function noop () {}
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":18,"debug":28,"get-browser-rtc":47,"inherits":58,"randombytes":91,"readable-stream":101}],117:[function(require,module,exports){
+},{"buffer":18,"debug":28,"get-browser-rtc":47,"inherits":58,"randombytes":86,"readable-stream":96}],112:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -15091,7 +14910,7 @@ exports.connect = lookup;
 exports.Manager = require('./manager');
 exports.Socket = require('./socket');
 
-},{"./manager":118,"./socket":120,"./url":121,"debug":28,"socket.io-parser":123}],118:[function(require,module,exports){
+},{"./manager":113,"./socket":115,"./url":116,"debug":28,"socket.io-parser":118}],113:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -15666,7 +15485,7 @@ Manager.prototype.onreconnect = function () {
   this.emitAll('reconnect', attempt);
 };
 
-},{"./on":119,"./socket":120,"backo2":11,"component-bind":23,"component-emitter":24,"debug":28,"engine.io-client":31,"indexof":57,"socket.io-parser":123}],119:[function(require,module,exports){
+},{"./on":114,"./socket":115,"backo2":11,"component-bind":23,"component-emitter":24,"debug":28,"engine.io-client":31,"indexof":57,"socket.io-parser":118}],114:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -15692,7 +15511,7 @@ function on (obj, ev, fn) {
   };
 }
 
-},{}],120:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -16112,7 +15931,7 @@ Socket.prototype.compress = function (compress) {
   return this;
 };
 
-},{"./on":119,"component-bind":23,"component-emitter":24,"debug":28,"parseqs":87,"socket.io-parser":123,"to-array":128}],121:[function(require,module,exports){
+},{"./on":114,"component-bind":23,"component-emitter":24,"debug":28,"parseqs":82,"socket.io-parser":118,"to-array":123}],116:[function(require,module,exports){
 (function (global){
 
 /**
@@ -16191,7 +16010,7 @@ function url (uri, loc) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"debug":28,"parseuri":88}],122:[function(require,module,exports){
+},{"debug":28,"parseuri":83}],117:[function(require,module,exports){
 (function (global){
 /*global Blob,File*/
 
@@ -16336,7 +16155,7 @@ exports.removeBlobs = function(data, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./is-buffer":124,"isarray":125}],123:[function(require,module,exports){
+},{"./is-buffer":119,"isarray":120}],118:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -16738,7 +16557,7 @@ function error() {
   };
 }
 
-},{"./binary":122,"./is-buffer":124,"component-emitter":24,"debug":28,"has-binary2":51}],124:[function(require,module,exports){
+},{"./binary":117,"./is-buffer":119,"component-emitter":24,"debug":28,"has-binary2":51}],119:[function(require,module,exports){
 (function (global){
 
 module.exports = isBuf;
@@ -16755,9 +16574,9 @@ function isBuf(obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],125:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 arguments[4][52][0].apply(exports,arguments)
-},{"dup":52}],126:[function(require,module,exports){
+},{"dup":52}],121:[function(require,module,exports){
 var fastSafeStringify = require('fast-safe-stringify')
 var copy = require('copy-text-to-clipboard')
 
@@ -16775,7 +16594,7 @@ function stateCopy (obj) {
 module.exports = stateCopy
 
 
-},{"copy-text-to-clipboard":26,"fast-safe-stringify":46}],127:[function(require,module,exports){
+},{"copy-text-to-clipboard":26,"fast-safe-stringify":46}],122:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('safe-buffer').Buffer;
@@ -17048,7 +16867,7 @@ function simpleWrite(buf) {
 function simpleEnd(buf) {
   return buf && buf.length ? this.write(buf) : '';
 }
-},{"safe-buffer":103}],128:[function(require,module,exports){
+},{"safe-buffer":98}],123:[function(require,module,exports){
 module.exports = toArray
 
 function toArray(list, index) {
@@ -17063,7 +16882,7 @@ function toArray(list, index) {
     return array
 }
 
-},{}],129:[function(require,module,exports){
+},{}],124:[function(require,module,exports){
 (function (global){
 
 /**
@@ -17134,16 +16953,16 @@ function config (name) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],130:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 arguments[4][58][0].apply(exports,arguments)
-},{"dup":58}],131:[function(require,module,exports){
+},{"dup":58}],126:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],132:[function(require,module,exports){
+},{}],127:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -17733,7 +17552,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":131,"_process":17,"inherits":130}],133:[function(require,module,exports){
+},{"./support/isBuffer":126,"_process":17,"inherits":125}],128:[function(require,module,exports){
 var assert = require('assert')
 var trie = require('./trie')
 
@@ -17800,7 +17619,7 @@ function Wayfarer (dft) {
   }
 }
 
-},{"./trie":134,"assert":10}],134:[function(require,module,exports){
+},{"./trie":129,"assert":10}],129:[function(require,module,exports){
 var mutate = require('xtend/mutable')
 var assert = require('assert')
 var xtend = require('xtend')
@@ -17939,7 +17758,7 @@ Trie.prototype.mount = function (route, trie) {
   }
 }
 
-},{"assert":10,"xtend":144,"xtend/mutable":145}],135:[function(require,module,exports){
+},{"assert":10,"xtend":139,"xtend/mutable":140}],130:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -18033,7 +17852,7 @@ Trie.prototype.mount = function (route, trie) {
   }
 })();
 
-},{"./chrome/chrome_shim":136,"./edge/edge_shim":138,"./firefox/firefox_shim":140,"./safari/safari_shim":142,"./utils":143}],136:[function(require,module,exports){
+},{"./chrome/chrome_shim":131,"./edge/edge_shim":133,"./firefox/firefox_shim":135,"./safari/safari_shim":137,"./utils":138}],131:[function(require,module,exports){
 
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
@@ -18300,7 +18119,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils.js":143,"./getusermedia":137}],137:[function(require,module,exports){
+},{"../utils.js":138,"./getusermedia":132}],132:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -18500,7 +18319,7 @@ module.exports = function() {
   }
 };
 
-},{"../utils.js":143}],138:[function(require,module,exports){
+},{"../utils.js":138}],133:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -19629,7 +19448,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils":143,"./getusermedia":139,"sdp":104}],139:[function(require,module,exports){
+},{"../utils":138,"./getusermedia":134,"sdp":99}],134:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -19663,7 +19482,7 @@ module.exports = function() {
   };
 };
 
-},{}],140:[function(require,module,exports){
+},{}],135:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -19827,7 +19646,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils":143,"./getusermedia":141}],141:[function(require,module,exports){
+},{"../utils":138,"./getusermedia":136}],136:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -19990,7 +19809,7 @@ module.exports = function() {
   };
 };
 
-},{"../utils":143}],142:[function(require,module,exports){
+},{"../utils":138}],137:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -20020,7 +19839,7 @@ module.exports = {
   // shimPeerConnection: safariShim.shimPeerConnection
 };
 
-},{}],143:[function(require,module,exports){
+},{}],138:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -20153,7 +19972,7 @@ module.exports = {
   extractVersion: utils.extractVersion
 };
 
-},{}],144:[function(require,module,exports){
+},{}],139:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -20174,7 +19993,7 @@ function extend() {
     return target
 }
 
-},{}],145:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -20193,7 +20012,7 @@ function extend(target) {
     return target
 }
 
-},{}],146:[function(require,module,exports){
+},{}],141:[function(require,module,exports){
 'use strict';
 
 var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')
@@ -20263,12 +20082,12 @@ yeast.encode = encode;
 yeast.decode = decode;
 module.exports = yeast;
 
-},{}],147:[function(require,module,exports){
+},{}],142:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
 const Modal = require('./components/modal.js')
-const Dropdown = require('./components/dropdown.js')
+const Dropdown = require('./components/dropdown-nano.js')
 const VideoEl = require('./components/VideoContainer.js')
 
 module.exports = addBroadcast
@@ -20288,7 +20107,7 @@ function addBroadcast (state, emit) {
 
   if(bState.kind==="audio") {
     constraintOptions = html`
-    <div>
+    <div id="audio-constraints">
       ${deviceDropdown.render({
         value: 'Device:  ' + defaultLabel,
         options: state.devices.audioinput.all.map((id) => (
@@ -20320,18 +20139,20 @@ function addBroadcast (state, emit) {
     `
   } else {
     constraintOptions = html`
-    ${deviceDropdown.render({
-      value: 'Device:  ' + defaultLabel,
-      options: state.devices.videoinput.all.map((id) => (
-        {
-          value: id,
-          label: state.devices.videoinput.byId[id].label
+    <div id="video-constraints">
+      ${deviceDropdown.render({
+        value: 'Device:  ' + defaultLabel,
+        options: state.devices.videoinput.all.map((id) => (
+          {
+            value: id,
+            label: state.devices.videoinput.byId[id].label
+          }
+        )),
+        onchange: (value) => {
+          emit('devices:updateBroadcastConstraints', {deviceId: value})
         }
-      )),
-      onchange: (value) => {
-        emit('devices:updateBroadcastConstraints', {deviceId: value})
-      }
-    })}`
+      })}
+    </div`
   }
   return html`
 
@@ -20339,7 +20160,7 @@ function addBroadcast (state, emit) {
     //  show: state.user.modalAddBroadcast,
       show: true,
       header: "Add Broadcast",
-      contents: html`<div>
+      contents: html`<div id="add broadcast">
             ${radioEl(
               {
                 label: "",
@@ -20401,7 +20222,7 @@ function addBroadcast (state, emit) {
 //   }
 // })}
 
-},{"./components/VideoContainer.js":153,"./components/dropdown.js":150,"./components/modal.js":152,"choo/html":21}],148:[function(require,module,exports){
+},{"./components/VideoContainer.js":147,"./components/dropdown-nano.js":144,"./components/modal.js":146,"choo/html":21}],143:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const VideoEl = require('./components/VideoContainer.js')
@@ -20445,7 +20266,7 @@ function communicationView (state, emit) {
     `
 }
 
-},{"./components/VideoContainer.js":153,"choo/html":21}],149:[function(require,module,exports){
+},{"./components/VideoContainer.js":147,"choo/html":21}],144:[function(require,module,exports){
 const Nano = require('nanocomponent')
 const css = 0
 const html = require('choo/html')
@@ -20470,7 +20291,7 @@ function Dropdown () {
 Dropdown.prototype = Object.create(Nano.prototype)
 
 Dropdown.prototype.createElement = function (props) {
-  console.log("rendering", this.props)
+  console.log("rendering", this.props, this.element)
   this.props = props
   const style = ((require('sheetify/insert')("._11f683ea {\n  /* Size and position */\n  position: relative; /* Enable absolute positioning for children and pseudo elements */\n  width: 400px;\n  padding: 10px;\n  margin-top: 5px;\n  margin-bottom: 5px;\n  /*margin: 0 auto;*/\n\n  /* Styles */\n  /*background: #9bc7de;\n  color: #fff;*/\n  background: #555555;\n  outline: none;\n  cursor: pointer;\n\n  /* Font settings */\n /* font-weight: bold;*/\n }\n\n ._11f683ea:after {\n  content: \"\";\n  width: 0;\n  height: 0;\n  position: absolute;\n  right: 16px;\n  top: 50%;\n  margin-top: -6px;\n  border-width: 4px 0 4px 4px;\n  border-style: solid;\n  border-color: transparent #fff;\n }\n\n ._11f683ea .dropdown {\n  /* Size & position */\n  position: absolute;\n  top: 100%;\n  left: 0; /* Size */\n  right: 0; /* Size */\n  margin: 0px;\n  padding: 0px;\n  /* Styles */\n  background: #fff;\n  font-weight: normal; /* Overwrites previous font-weight: bold; */\n\n  /* Hiding */\n  opacity: 0;\n  pointer-events: none;\n  z-index: 100\n }\n\n ._11f683ea .dropdown li {\n  list-style-type: none;\n  display: block;\n  text-decoration: none;\n  color: #9e9e9e;\n  padding: 10px 20px;\n\n }\n\n  /* Hover state */\n  ._11f683ea .dropdown li:hover {\n      background: #f3f8f8;\n  }\n\n  ._11f683ea.active .dropdown {\n    opacity: 1;\n    pointer-events: auto;\n  }\n\n  ._11f683ea.active:after {\n      border-color: #9bc7de transparent;\n      border-width: 4px 4px 0 4px ;\n      margin-top: -3px;\n  }\n\n  ._11f683ea.active {\n    background: #555555;\n    background: linear-gradient(to right, #9bc7de 0%, #9bc7de 78%, #ffffff 78%, #ffffff 100%);\n  }") || true) && "_11f683ea")
 
@@ -20481,20 +20302,30 @@ Dropdown.prototype.createElement = function (props) {
   var tachyonsStyles = ' bg-mid-gray f6'
 
 
-      return html`<div class=${style + tachyonsStyles +(this.state.active===true ? ' active': '')} tabindex="0" onclick=${this.toggleActive.bind(this)} onblur=${this.deactivate.bind(this)}>
-    <span>${value}</span>
+    return html`
+    <div>
+      <div class=${style + tachyonsStyles +(this.state.active===true ? ' active': '')} tabindex="0" onclick=${this.toggleActive.bind(this)} onblur=${this.deactivate.bind(this)}>
+      <span>${value}</span>
 
-    <ul class="dropdown">
-        ${options.map((item)=>
-           html`<li data-value=${item.value} onclick=${this.handleclick.bind(this)} >${item.label}</li>`
-        )}
+      <ul class="dropdown">
+          ${options.map((item)=>
+             html`<li data-value=${item.value} onclick=${this.handleclick.bind(this)} >${item.label}</li>`
+          )}
 
-      </ul>
+        </ul>
 
-   </div>`
+     </div>
+     </div>`
 
 }
 
+Dropdown.prototype.load = function(el){
+  console.log("loaded ", el)
+}
+
+Dropdown.prototype.unload = function(el){
+  console.log("unloaded ", el)
+}
 
 Dropdown.prototype.handleclick = function (e){
   //console.log(e)
@@ -20521,77 +20352,7 @@ Dropdown.prototype.update = function (props) {
 
 }
 
-},{"choo/html":21,"juliangruber-shallow-equal/objects":61,"nanocomponent":70,"sheetify/insert":105,"xtend":144}],150:[function(require,module,exports){
-const microcomponent = require('microcomponent')
-const css = 0
-const html = require('choo/html')
-const shallowEqual = require('juliangruber-shallow-equal/objects')
-
-module.exports = Dropdown
-/* using microcomponent in order to create an element that keeps track of
-its own state. custom dropdown based on:
-https://tympanus.net/codrops/2012/10/04/custom-drop-down-list-styling/
- */
-
-function Dropdown () {
-  var component = microcomponent({
-    name: 'dropdown',
-    state: {
-      active: false,
-      needsUpdate: false
-    }
-  })
-
-  component.on('render', render)
-  component.on('update', update)
-
-  return component
-
-  function render() {
-    this.state.needsUpdate = false
-    //  console.log("THIS", this)
-     const style = ((require('sheetify/insert')("._a31566a2 {\n    /* Size and position */\n    position: relative; /* Enable absolute positioning for children and pseudo elements */\n    width: 400px;\n    padding: 10px;\n    margin-top: 5px;\n    margin-bottom: 5px;\n    /*margin: 0 auto;*/\n\n    /* Styles */\n    /*background: #9bc7de;\n    color: #fff;*/\n    background: #555555;\n    outline: none;\n    cursor: pointer;\n\n    /* Font settings */\n   /* font-weight: bold;*/\n  }\n\n  ._a31566a2:after {\n    content: \"\";\n    width: 0;\n    height: 0;\n    position: absolute;\n    right: 16px;\n    top: 50%;\n    margin-top: -6px;\n    border-width: 4px 0 4px 4px;\n    border-style: solid;\n    border-color: transparent #fff;\n  }\n\n  ._a31566a2 .dropdown {\n    /* Size & position */\n    position: absolute;\n    top: 100%;\n    left: 0; /* Size */\n    right: 0; /* Size */\n    margin: 0px;\n    padding: 0px;\n    /* Styles */\n    background: #fff;\n    font-weight: normal; /* Overwrites previous font-weight: bold; */\n\n    /* Hiding */\n    opacity: 0;\n    pointer-events: none;\n    z-index: 100\n  }\n\n  ._a31566a2 .dropdown li {\n    list-style-type: none;\n    display: block;\n    text-decoration: none;\n    color: #9e9e9e;\n    padding: 10px 20px;\n\n  }\n\n    /* Hover state */\n    ._a31566a2 .dropdown li:hover {\n        background: #f3f8f8;\n    }\n\n    ._a31566a2.active .dropdown {\n      opacity: 1;\n      pointer-events: auto;\n    }\n\n    ._a31566a2.active:after {\n        border-color: #9bc7de transparent;\n        border-width: 4px 4px 0 4px ;\n        margin-top: -3px;\n    }\n\n    ._a31566a2.active {\n      background: #555555;\n      background: linear-gradient(to right, #9bc7de 0%, #9bc7de 78%, #ffffff 78%, #ffffff 100%);\n    }") || true) && "_a31566a2")
-
-    var { onchange, value, options } = this.props
-   // console.log("rendering ", this.state.active)
-
-   // var activeStyles = ""
-    var tachyonsStyles = ' bg-mid-gray f6'
-    return html`<div class=${style + tachyonsStyles +(this.state.active===true ? ' active': '')} tabindex="0" onclick=${toggleActive.bind(this)} onblur=${deactivate.bind(this)}>
-    <span>${value}</span>
-    <ul class="dropdown">
-      ${options.map((item)=>
-         html`<li data-value=${item.value} onclick=${handleclick} >${item.label}</li>`
-      )}
-
-    </ul>
-  </div>`
-
-
-  }
-
-  function update(props){
-    return !shallowEqual(props, this.props) || this.state.needsUpdate
-  }
-
-  function handleclick(e){
-    component.props.onchange(e.target.dataset.value)
-  }
-
-  function toggleActive(){
-    this.state.active = !this.state.active
-    this.state.needsUpdate = true
-    this.render(this.props)
-  }
-
-  function deactivate(){
-    this.state.active = false
-    this.state.needsUpdate = true
-    this.render(this.props)
-  }
-}
-
-},{"choo/html":21,"juliangruber-shallow-equal/objects":61,"microcomponent":63,"sheetify/insert":105}],151:[function(require,module,exports){
+},{"choo/html":21,"juliangruber-shallow-equal/objects":61,"nanocomponent":65,"sheetify/insert":100,"xtend":139}],145:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20619,7 +20380,7 @@ function inputElement (name, defaultText, opts) {
   </div>`
 }
 
-},{"choo/html":21,"xtend":144}],152:[function(require,module,exports){
+},{"choo/html":21,"xtend":139}],146:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20653,7 +20414,7 @@ function Modal (opts) {
   }
 }
 
-},{"assert":10,"choo/html":21,"xtend":144}],153:[function(require,module,exports){
+},{"assert":10,"choo/html":21,"xtend":139}],147:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20709,7 +20470,7 @@ console.log("VIDEO", this.props.id, props.id)
   return false
 }
 
-},{"choo/html":21,"nanocomponent":70,"xtend":144}],154:[function(require,module,exports){
+},{"choo/html":21,"nanocomponent":65,"xtend":139}],148:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20805,7 +20566,7 @@ function loginView (state, emit) {
   }
 }
 
-},{"./components/VideoContainer.js":153,"./components/dropdown-nano.js":149,"./components/input.js":151,"choo/html":21}],155:[function(require,module,exports){
+},{"./components/VideoContainer.js":147,"./components/dropdown-nano.js":144,"./components/input.js":145,"choo/html":21}],149:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20816,12 +20577,13 @@ const AddBroadcast = require('./addBroadcast.js')
 
 module.exports = mainView
 //  <!--${AddBroadcast(state, emit)}-->
+//  ${login(state, emit)}
 function mainView (state, emit) {
   if (!state.user.loggedIn) {
     return html`
     <div>
-    ${login(state, emit)}
-  
+
+    ${AddBroadcast(state, emit)}
     </div>
     `
   } else {
@@ -20837,7 +20599,7 @@ function mainView (state, emit) {
   }
 }
 
-},{"./addBroadcast.js":147,"./communication.js":148,"./login.js":154,"./mediaList.js":156,"choo/html":21}],156:[function(require,module,exports){
+},{"./addBroadcast.js":142,"./communication.js":143,"./login.js":148,"./mediaList.js":150,"choo/html":21}],150:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 

@@ -22,7 +22,7 @@ function Dropdown () {
 Dropdown.prototype = Object.create(Nano.prototype)
 
 Dropdown.prototype.createElement = function (props) {
-  console.log("rendering", this.props)
+  console.log("rendering", this.props, this.element)
   this.props = props
   const style = css`
  :host {
@@ -115,20 +115,30 @@ Dropdown.prototype.createElement = function (props) {
   var tachyonsStyles = ' bg-mid-gray f6'
 
 
-      return html`<div class=${style + tachyonsStyles +(this.state.active===true ? ' active': '')} tabindex="0" onclick=${this.toggleActive.bind(this)} onblur=${this.deactivate.bind(this)}>
-    <span>${value}</span>
+    return html`
+    <div>
+      <div class=${style + tachyonsStyles +(this.state.active===true ? ' active': '')} tabindex="0" onclick=${this.toggleActive.bind(this)} onblur=${this.deactivate.bind(this)}>
+      <span>${value}</span>
 
-    <ul class="dropdown">
-        ${options.map((item)=>
-           html`<li data-value=${item.value} onclick=${this.handleclick.bind(this)} >${item.label}</li>`
-        )}
+      <ul class="dropdown">
+          ${options.map((item)=>
+             html`<li data-value=${item.value} onclick=${this.handleclick.bind(this)} >${item.label}</li>`
+          )}
 
-      </ul>
+        </ul>
 
-   </div>`
+     </div>
+     </div>`
 
 }
 
+Dropdown.prototype.load = function(el){
+  console.log("loaded ", el)
+}
+
+Dropdown.prototype.unload = function(el){
+  console.log("unloaded ", el)
+}
 
 Dropdown.prototype.handleclick = function (e){
   //console.log(e)
