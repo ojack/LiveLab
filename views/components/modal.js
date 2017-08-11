@@ -16,9 +16,9 @@ function Modal (opts) {
     return html`
 
         <div class="fixed vh-100 dt w-100 bg-black top-0 left-0" style="background-color: rgba(0, 0, 0, 0.5)">
-          <div class="dib w-60 h-50 bg-dark-gray" style="position:absolute;left:50%;top:50%;transform:translate(-50%, -50%)">
+          <div class="dib w-70 h-70 bg-dark-gray" style="position:absolute;left:50%;top:50%;transform:translate(-50%, -50%)">
             <div class="bg-gray pv2 ph3">
-              <span class="fr f4 fw4" onclick=${opts.close}> x </span>
+              <span class="fr f4 fw4 pointer" onclick=${opts.close}> x </span>
               <h3 class="f4 fw2 pa0 ma0"> ${opts.header} </h3>
             </div>
             ${opts.contents}

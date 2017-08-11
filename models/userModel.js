@@ -14,7 +14,8 @@ function userModel (state, bus) {
     room: 'test',
     server: 'https://live-lab-v1.glitch.me/',
     loggedIn: false,
-    statusMessage: ''
+    statusMessage: '',
+    multiPeer: null
   }, state.user)
 
   bus.emit('peers:updatePeer', {
@@ -41,12 +42,15 @@ function userModel (state, bus) {
     bus.emit('render')
   })
 
-
+//testing reconnection
+  bus.on('user:reinitAll', function(){
+    if(multiPeer !== null) multiPeer.reinitAll()
+  })
 
   // TO DO: validate form info before submitting
   bus.on('user:join', function () {
     localStorage.setItem('uuid', state.user.uuid)
-    var multiPeer = new MultiPeer({
+    multiPeer = new MultiPeer({
       room: state.user.room,
       server: state.user.server,
       stream: getLocalCommunicationStream(),

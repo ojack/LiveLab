@@ -48,6 +48,7 @@ function addBroadcast (devices, emit, showElement) {
   } else {
     constraintOptions = html`
     <div id="video-constraints">
+
       ${deviceDropdown.render({
         value: 'Device:  ' + defaultLabel,
         options: devices.videoinput.all.map((id) => (
@@ -89,6 +90,14 @@ function addBroadcast (devices, emit, showElement) {
             )}
 
             ${constraintOptions}
+            <div class="f6 link dim ph3 pv2 mb2 dib white bg-gray pointer" onclick=${() => (emit('devices:updateBroadcastPreview', true))}>Update Preview</div>
+            <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('user:reinitAll'))}>Start Broadcast</div>
+            <p class="red">${bState.errorMessage}</p>
+            ${previewVid.render({
+              htmlProps: {},
+              track: bState.previewTrack,
+              id: bState.previewTrack ?  bState.previewTrack.id : null
+            })}
         </div>`,
       close: () => (emit('devices:toggleAddBroadcast', false))
     })}

@@ -25,14 +25,16 @@ function devicesModel (state, bus) {
       all: []
     },
     addBroadcast: {
-      active: false,
+      active: true,
       kind: "audio",
+      errorMessage: "",
       audio: {
         deviceId: null
       },
       video: {
         deviceId: null
-      }
+      },
+      previewTrack: null
     },
     default: {
       inputDevices: {
@@ -58,7 +60,6 @@ function devicesModel (state, bus) {
 
   bus.on('devices:updateBroadcastDevice', function(obj){
     xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind], obj)
-    updateBroadcastPreview()
     bus.emit('render')
   })
 
@@ -70,18 +71,28 @@ function devicesModel (state, bus) {
           xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind][key], obj[key])
       }
     )
-    updateBroadcastPreview()
     bus.emit('render')
   })
 
   bus.on('devices:toggleAddBroadcast', function(val){
     state.devices.addBroadcast.active = val
+    state.devices.addBroadcast.errorMessage = ""
+    //if closing window, stop active preview stream
+    if(val===false){
+      if(state.devices.addBroadcast.previewTrack !== null) {
+        state.devices.addBroadcast.previewTrack.stop()
+        state.devices.addBroadcast.previewTrack = null
+      }
+    }
     bus.emit('render')
   })
 
   bus.on('devices:setBroadcastKind', function(val){
     state.devices.addBroadcast.kind = val
-
+    if(state.devices.addBroadcast.previewTrack!==null){
+      state.devices.addBroadcast.previewTrack.stop()
+      state.devices.addBroadcast.previewTrack = null
+    }
     //set broadcast to default on c
 
     bus.emit('render')
@@ -93,12 +104,51 @@ function devicesModel (state, bus) {
     xtend(state.devices.addBroadcast.video, constraintsJSON.video)
   }
 
-  function updateBroadcastPreview() {
+  bus.on('devices:updateBroadcastPreview', function () {
+      var bConstraints = {}
+      var userConstraints = {}
       var bState = state.devices.addBroadcast
-      var constraints = {}
-    //  if(bState.kind == 'audio')
-      //getLocalMedia ({
-  }
+      if(bState[bState.kind].deviceId===null) {
+        state.devices.addBroadcast.errorMessage = "Error: device not specified"
+        bus.emit('render')
+      } else {
+        state.devices.addBroadcast.errorMessage = ""
+        userConstraints.deviceId = { exact : bState[bState.kind].deviceId }
+        for(var key in bState[bState.kind]){
+          //if the user has specified a value for a particular constraint, pass it along to getusermedia.
+          //for right now, only specifies "ideal" value, device does the best it can to meet constraints.
+          // see https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API/Constraints#Applying_constraints
+          if(bState[bState.kind][key] && bState[bState.kind][key].value){
+            userConstraints[key] = {
+              ideal: bState[bState.kind][key].value
+            }
+          }
+        }
+        bConstraints[bState.kind] = userConstraints
+        if(bState.kind==="audio"){
+          bConstraints.video = false
+        } else {
+          bConstraints.audio = false
+        }
+        getLocalMedia(bConstraints, function(err, stream){
+          if(err) {
+            state.devices.addBroadcast.errorMessage = err
+          } else {
+            var tracks = stream.getTracks()
+            tracks.forEach(function (track) {
+               if(state.devices.addBroadcast.previewTrack!==null){
+                 state.devices.addBroadcast.previewTrack.stop()
+               }
+               state.devices.addBroadcast.previewTrack = track
+            })
+
+          }
+          bus.emit('render')
+        })
+      }
+  })
+
+
 
   bus.on('devices:setDefaultAudio', function (val) {
     setDefaultAudio(val)
@@ -121,15 +171,16 @@ function devicesModel (state, bus) {
     if (state.devices.default.inputDevices.audio !== val) {
       state.devices.default.inputDevices.audio = val
       getLocalMedia ({
-        constraints: {
+
           audio: { deviceId: { exact: state.devices.default.inputDevices.audio } },
           video: false
-        },
-        isDefault: true
-      }, function(err, stream){
+        }, function(err, stream){
         if(err===null){
           var tracks = stream.getTracks()
           tracks.forEach(function (track) {
+            if(state.devices.default.previewTracks.audio!=null){
+              state.devices.default.previewTracks.audio.stop()
+            }
              state.devices.default.previewTracks.audio = track
           })
         }
@@ -142,16 +193,15 @@ function devicesModel (state, bus) {
     if (state.devices.default.inputDevices.video !== vid) {
       console.log('SETTING VIDEO', vid)
       state.devices.default.inputDevices.video = vid
-      getLocalMedia ({
-        constraints: {
+      getLocalMedia (
+       {
           audio: false,
           video: { deviceId: { exact: state.devices.default.inputDevices.video } }
-        },
-        isDefault: true
       }, function(err, stream){
         if(err===null){
           var tracks = stream.getTracks()
           tracks.forEach(function (track) {
+            if(state.devices.default.previewTracks.video!==null) state.devices.default.previewTracks.video.stop()
              state.devices.default.previewTracks.video = track
           })
         }
@@ -159,8 +209,8 @@ function devicesModel (state, bus) {
     }
   }
 
-function getLocalMedia(options, callback) {
-    getUserMedia(options.constraints, function (err, stream) {
+function getLocalMedia(constraints, callback) {
+    getUserMedia(constraints, function (err, stream) {
         if (err) {
           callback(err, null)
           // TO DO: do something about error

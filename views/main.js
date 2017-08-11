@@ -14,7 +14,6 @@ function mainView (state, emit) {
     return html`
     <div>
     ${login(state, emit)}
-
     </div>
     `
   } else {

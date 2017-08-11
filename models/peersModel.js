@@ -36,7 +36,8 @@ function peersModel (state, bus) {
       defaultTracks: {
         audio: null,
         video: null
-      }
+      },
+      needsUpdate: true
     }, state.peers.byId[peer.peerId], peer)
 
     console.log("NEW  PEER INFO", state.peers.byId)
@@ -60,10 +61,12 @@ function peersModel (state, bus) {
     // remove all tracks associated with this peer
     state.peers.byId[peerId].tracks.forEach(function (trackId) {
       bus.emit('media:removeTrack', trackId)
+
     })
-    var index = state.peers.all.indexOf(peerId)
+    state.peers.byId[peerId].tracks = []
+  /*  var index = state.peers.all.indexOf(peerId)
     if (index > -1) state.peers.all.splice(index, 1)
-    delete state.peers.byId[peerId]
+    delete state.peers.byId[peerId]*/
   })
   bus.emit('render')
 }

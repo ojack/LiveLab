@@ -58,6 +58,25 @@ MultiPeer.prototype.sendToAll = function (data) {
   }, this)
 }
 
+MultiPeer.prototype.reinitAll = function(){
+  Object.keys(this.peers).forEach(function (id) {
+    this.peers[id].destroy(function(e){
+      console.log("closed!", e)
+      var newOptions = {initiator: true}
+      if (this.stream != null) {
+        newOptions.stream = this.stream
+      } else {
+        console.log('stream is null')
+      }
+      var options = extend(newOptions, this._peerOptions)
+
+      this.peers[id] = new SimplePeer(options)
+      this._attachPeerEvents(this.peers[id], id)
+
+    }.bind(this))
+  }.bind(this))
+//  this._connectToPeers.bind(this)
+}
 // userData contains all information about the local user:
 // -uuid
 // -nickname
@@ -101,11 +120,13 @@ MultiPeer.prototype._handleSignal = function (data) {
 // handle events for each connected peer
 MultiPeer.prototype._attachPeerEvents = function (p, _id) {
   p.on('signal', function (id, signal) {
+    console.log('signal')
     //  console.log("peer signal sending over sockets", id, signal)
     this.signaller.emit('signal', {id: id, signal: signal})
   }.bind(this, _id))
 
   p.on('stream', function (id, stream) {
+    console.log('E: stream', id, stream)
     //  console.log("received a stream", stream)
     this.emit('stream', id, stream)
   }.bind(this, _id))
@@ -113,7 +134,9 @@ MultiPeer.prototype._attachPeerEvents = function (p, _id) {
   p.on('connect', function (id) {
     console.log("connected to ", id)
     this.emit('connect', id)
-    this.peers[id].send(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
+
+   this.peers[id].send(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
+
     //when connected, emit user information to other peers
 
     //this.sendToAll(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
@@ -121,6 +144,7 @@ MultiPeer.prototype._attachPeerEvents = function (p, _id) {
   }.bind(this, _id))
 
   p.on('data', function (id, data) {
+    console.log('data', id)
     this.emit('data', {id: id, data: JSON.parse(data)})
   }.bind(this, _id))
 
@@ -205,14 +229,16 @@ function devicesModel (state, bus) {
       all: []
     },
     addBroadcast: {
-      active: false,
+      active: true,
       kind: "audio",
+      errorMessage: "",
       audio: {
         deviceId: null
       },
       video: {
         deviceId: null
-      }
+      },
+      previewTrack: null
     },
     default: {
       inputDevices: {
@@ -238,7 +264,6 @@ function devicesModel (state, bus) {
 
   bus.on('devices:updateBroadcastDevice', function(obj){
     xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind], obj)
-    updateBroadcastPreview()
     bus.emit('render')
   })
 
@@ -250,18 +275,28 @@ function devicesModel (state, bus) {
           xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind][key], obj[key])
       }
     )
-    updateBroadcastPreview()
     bus.emit('render')
   })
 
   bus.on('devices:toggleAddBroadcast', function(val){
     state.devices.addBroadcast.active = val
+    state.devices.addBroadcast.errorMessage = ""
+    //if closing window, stop active preview stream
+    if(val===false){
+      if(state.devices.addBroadcast.previewTrack !== null) {
+        state.devices.addBroadcast.previewTrack.stop()
+        state.devices.addBroadcast.previewTrack = null
+      }
+    }
     bus.emit('render')
   })
 
   bus.on('devices:setBroadcastKind', function(val){
     state.devices.addBroadcast.kind = val
-
+    if(state.devices.addBroadcast.previewTrack!==null){
+      state.devices.addBroadcast.previewTrack.stop()
+      state.devices.addBroadcast.previewTrack = null
+    }
     //set broadcast to default on c
 
     bus.emit('render')
@@ -273,12 +308,51 @@ function devicesModel (state, bus) {
     xtend(state.devices.addBroadcast.video, constraintsJSON.video)
   }
 
-  function updateBroadcastPreview() {
+  bus.on('devices:updateBroadcastPreview', function () {
+      var bConstraints = {}
+      var userConstraints = {}
       var bState = state.devices.addBroadcast
-      var constraints = {}
-    //  if(bState.kind == 'audio')
-      //getLocalMedia ({
-  }
+      if(bState[bState.kind].deviceId===null) {
+        state.devices.addBroadcast.errorMessage = "Error: device not specified"
+        bus.emit('render')
+      } else {
+        state.devices.addBroadcast.errorMessage = ""
+        userConstraints.deviceId = { exact : bState[bState.kind].deviceId }
+        for(var key in bState[bState.kind]){
+          //if the user has specified a value for a particular constraint, pass it along to getusermedia.
+          //for right now, only specifies "ideal" value, device does the best it can to meet constraints.
+          // see https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API/Constraints#Applying_constraints
+          if(bState[bState.kind][key] && bState[bState.kind][key].value){
+            userConstraints[key] = {
+              ideal: bState[bState.kind][key].value
+            }
+          }
+        }
+        bConstraints[bState.kind] = userConstraints
+        if(bState.kind==="audio"){
+          bConstraints.video = false
+        } else {
+          bConstraints.audio = false
+        }
+        getLocalMedia(bConstraints, function(err, stream){
+          if(err) {
+            state.devices.addBroadcast.errorMessage = err
+          } else {
+            var tracks = stream.getTracks()
+            tracks.forEach(function (track) {
+               if(state.devices.addBroadcast.previewTrack!==null){
+                 state.devices.addBroadcast.previewTrack.stop()
+               }
+               state.devices.addBroadcast.previewTrack = track
+            })
+
+          }
+          bus.emit('render')
+        })
+      }
+  })
+
+
 
   bus.on('devices:setDefaultAudio', function (val) {
     setDefaultAudio(val)
@@ -301,15 +375,16 @@ function devicesModel (state, bus) {
     if (state.devices.default.inputDevices.audio !== val) {
       state.devices.default.inputDevices.audio = val
       getLocalMedia ({
-        constraints: {
+
           audio: { deviceId: { exact: state.devices.default.inputDevices.audio } },
           video: false
-        },
-        isDefault: true
-      }, function(err, stream){
+        }, function(err, stream){
         if(err===null){
           var tracks = stream.getTracks()
           tracks.forEach(function (track) {
+            if(state.devices.default.previewTracks.audio!=null){
+              state.devices.default.previewTracks.audio.stop()
+            }
              state.devices.default.previewTracks.audio = track
           })
         }
@@ -322,16 +397,15 @@ function devicesModel (state, bus) {
     if (state.devices.default.inputDevices.video !== vid) {
       console.log('SETTING VIDEO', vid)
       state.devices.default.inputDevices.video = vid
-      getLocalMedia ({
-        constraints: {
+      getLocalMedia (
+       {
           audio: false,
           video: { deviceId: { exact: state.devices.default.inputDevices.video } }
-        },
-        isDefault: true
       }, function(err, stream){
         if(err===null){
           var tracks = stream.getTracks()
           tracks.forEach(function (track) {
+            if(state.devices.default.previewTracks.video!==null) state.devices.default.previewTracks.video.stop()
              state.devices.default.previewTracks.video = track
           })
         }
@@ -339,8 +413,8 @@ function devicesModel (state, bus) {
     }
   }
 
-function getLocalMedia(options, callback) {
-    getUserMedia(options.constraints, function (err, stream) {
+function getLocalMedia(constraints, callback) {
+    getUserMedia(constraints, function (err, stream) {
         if (err) {
           callback(err, null)
           // TO DO: do something about error
@@ -521,7 +595,8 @@ function peersModel (state, bus) {
       defaultTracks: {
         audio: null,
         video: null
-      }
+      },
+      needsUpdate: true
     }, state.peers.byId[peer.peerId], peer)
 
     console.log("NEW  PEER INFO", state.peers.byId)
@@ -545,10 +620,12 @@ function peersModel (state, bus) {
     // remove all tracks associated with this peer
     state.peers.byId[peerId].tracks.forEach(function (trackId) {
       bus.emit('media:removeTrack', trackId)
+
     })
-    var index = state.peers.all.indexOf(peerId)
+    state.peers.byId[peerId].tracks = []
+  /*  var index = state.peers.all.indexOf(peerId)
     if (index > -1) state.peers.all.splice(index, 1)
-    delete state.peers.byId[peerId]
+    delete state.peers.byId[peerId]*/
   })
   bus.emit('render')
 }
@@ -570,7 +647,8 @@ function userModel (state, bus) {
     room: 'test',
     server: 'https://live-lab-v1.glitch.me/',
     loggedIn: false,
-    statusMessage: ''
+    statusMessage: '',
+    multiPeer: null
   }, state.user)
 
   bus.emit('peers:updatePeer', {
@@ -597,12 +675,15 @@ function userModel (state, bus) {
     bus.emit('render')
   })
 
-
+//testing reconnection
+  bus.on('user:reinitAll', function(){
+    if(multiPeer !== null) multiPeer.reinitAll()
+  })
 
   // TO DO: validate form info before submitting
   bus.on('user:join', function () {
     localStorage.setItem('uuid', state.user.uuid)
-    var multiPeer = new MultiPeer({
+    multiPeer = new MultiPeer({
       room: state.user.room,
       server: state.user.server,
       stream: getLocalCommunicationStream(),
@@ -20154,6 +20235,7 @@ function addBroadcast (devices, emit, showElement) {
   } else {
     constraintOptions = html`
     <div id="video-constraints">
+
       ${deviceDropdown.render({
         value: 'Device:  ' + defaultLabel,
         options: devices.videoinput.all.map((id) => (
@@ -20195,6 +20277,14 @@ function addBroadcast (devices, emit, showElement) {
             )}
 
             ${constraintOptions}
+            <div class="f6 link dim ph3 pv2 mb2 dib white bg-gray pointer" onclick=${() => (emit('devices:updateBroadcastPreview', true))}>Update Preview</div>
+            <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('user:reinitAll'))}>Start Broadcast</div>
+            <p class="red">${bState.errorMessage}</p>
+            ${previewVid.render({
+              htmlProps: {},
+              track: bState.previewTrack,
+              id: bState.previewTrack ?  bState.previewTrack.id : null
+            })}
         </div>`,
       close: () => (emit('devices:toggleAddBroadcast', false))
     })}
@@ -20380,9 +20470,9 @@ function Modal (opts) {
     return html`
 
         <div class="fixed vh-100 dt w-100 bg-black top-0 left-0" style="background-color: rgba(0, 0, 0, 0.5)">
-          <div class="dib w-60 h-50 bg-dark-gray" style="position:absolute;left:50%;top:50%;transform:translate(-50%, -50%)">
+          <div class="dib w-70 h-70 bg-dark-gray" style="position:absolute;left:50%;top:50%;transform:translate(-50%, -50%)">
             <div class="bg-gray pv2 ph3">
-              <span class="fr f4 fw4" onclick=${opts.close}> x </span>
+              <span class="fr f4 fw4 pointer" onclick=${opts.close}> x </span>
               <h3 class="f4 fw2 pa0 ma0"> ${opts.header} </h3>
             </div>
             ${opts.contents}
@@ -20492,7 +20582,7 @@ module.exports = slider
 function slider(opts){
   return html`<div  class="mv3">
     <span> ${opts.label} : ${opts.value} </span>
-    <input class="ml3 mr2" type="range" min=${opts.min} max=${opts.max} value=${opts.value} onchange=${opts.onChange} name=${opts.label}></input>
+    <input class="ml3 mr2" type="range" min=${opts.min} max=${opts.max} value=${opts.value} oninput=${opts.onChange} name=${opts.label}></input>
 
   </div>`
 }
@@ -20541,10 +20631,14 @@ function addTrackToElement(track, element){
 // update stream if track id has changed
 VideoContainer.prototype.update = function (props) {
 
-  if (props.track && props.track != null && props.id !== this.props.id) {
-    this.props.track = props.track
-    this.props.id = props.id
-    addTrackToElement(this.props.track, this.element)
+
+  if (props.track && props.track != null) {
+  //  if(props.needsUpdate === true || props.id !== this.props.id) {
+    if(props.track !== this.props.track) {
+      this.props.track = props.track
+      this.props.id = props.id
+      addTrackToElement(this.props.track, this.element)
+    }
   }
 
   return false
@@ -20663,7 +20757,6 @@ function mainView (state, emit) {
     return html`
     <div>
     ${login(state, emit)}
-
     </div>
     `
   } else {

@@ -41,10 +41,14 @@ function addTrackToElement(track, element){
 // update stream if track id has changed
 VideoContainer.prototype.update = function (props) {
 
-  if (props.track && props.track != null && props.id !== this.props.id) {
-    this.props.track = props.track
-    this.props.id = props.id
-    addTrackToElement(this.props.track, this.element)
+
+  if (props.track && props.track != null) {
+  //  if(props.needsUpdate === true || props.id !== this.props.id) {
+    if(props.track !== this.props.track) {
+      this.props.track = props.track
+      this.props.id = props.id
+      addTrackToElement(this.props.track, this.element)
+    }
   }
 
   return false
