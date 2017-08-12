@@ -108,7 +108,7 @@ function userModel (state, bus) {
         var peerData = xtend({
           peerId: data.id
         }, data.data.message)
-        console.log('peer data', peerData)
+        console.log('NEW PEPEER DATA', peerData)
         bus.emit('peers:updatePeer', peerData)
       }
     })

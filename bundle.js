@@ -21,7 +21,7 @@ app.route('/', require('./views/main.js'))
 
 app.mount('body div')
 
-},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/userModel.js":7,"./views/main.js":152,"choo":22,"choo-expose":19,"choo-log":20}],2:[function(require,module,exports){
+},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/userModel.js":7,"./views/main.js":153,"choo":22,"choo-expose":19,"choo-log":20}],2:[function(require,module,exports){
 // Module for handling connections to multiple peers
 
 var io = require('socket.io-client')
@@ -315,16 +315,24 @@ function devicesModel (state, bus) {
   })
 
   bus.on('devices:addNewMediaToBroadcast', function () {
-    updateBroadcastPreview(function(err, track){
-      if (err) {
-        bus.emit('render')
+    getConstraintsFromSettings(state.devices.addBroadcast, function (err, constraints) {
+      if(err){
+        state.devices.addBroadcast.errorMessage = err
       } else {
-        bus.emit('media:addTrack', {
-          track: track,
-          peerId: state.user.uuid,
-          isDefault: false
+        getLocalMedia(constraints, function(err, stream){
+          if(err){
+            state.devices.addBroadcast.errorMessage = err
+          } else {
+            var tracks = stream.getTracks()
+            bus.emit('media:addTrack', {
+              track: tracks[0],
+              peerId: state.user.uuid,
+              isDefault: false
+            })
+            bus.emit('user:updateBroadcastStream')
+          }
+          bus.emit('render')
         })
-        bus.emit('user:updateBroadcastStream')
       }
     })
   })
@@ -773,7 +781,7 @@ function userModel (state, bus) {
         var peerData = xtend({
           peerId: data.id
         }, data.data.message)
-        console.log('peer data', peerData)
+        console.log('NEW PEPEER DATA', peerData)
         bus.emit('peers:updatePeer', peerData)
       }
     })
@@ -20344,7 +20352,53 @@ function addBroadcast (devices, emit, showElement) {
 
 }
 
-},{"./components/VideoContainer.js":150,"./components/dropdown.js":144,"./components/modal.js":146,"./components/radioSelect.js":147,"./components/settingsUI.js":148,"choo/html":21}],143:[function(require,module,exports){
+},{"./components/VideoContainer.js":151,"./components/dropdown.js":145,"./components/modal.js":147,"./components/radioSelect.js":148,"./components/settingsUI.js":149,"choo/html":21}],143:[function(require,module,exports){
+'use strict'
+const html = require('choo/html')
+const VideoEl = require('./components/VideoContainer.js')
+
+const MAX_NUM_PEERS = 20 // can be changed (stub for initializing video containers)
+
+module.exports = allVideos
+
+// initialize peer video holders
+var peerVids = []
+for (var i = 0; i < MAX_NUM_PEERS; i++) {
+  peerVids[i] = new VideoEl()
+}
+
+function allVideos (state, emit) {
+  // create containers for each
+  var communicationContainers = Object.keys(state.media.byId).filter(function(mediaId){
+    return (state.media.byId[mediaId].track.kind==="video")
+  }).map(function (key, index) {
+    var vidEl = peerVids[index]
+    if (vidEl) {
+      var trackId = key
+      return html`
+      <div class="dib w-25">
+
+        ${vidEl.render({
+          htmlProps: {
+            class: 'h-50 w-100'
+          },
+          track: (trackId in state.media.byId)  ? state.media.byId[trackId].track : null,
+          id: (trackId in state.media.byId) ?  state.media.byId[trackId].track.id : null
+        })}
+      </div>`
+    } else {
+      return null
+    }
+  })
+
+  return html`
+    <div>
+      ${communicationContainers}
+    </div>
+    `
+}
+
+},{"./components/VideoContainer.js":151,"choo/html":21}],144:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const VideoEl = require('./components/VideoContainer.js')
@@ -20388,7 +20442,7 @@ function communicationView (state, emit) {
     `
 }
 
-},{"./components/VideoContainer.js":150,"choo/html":21}],144:[function(require,module,exports){
+},{"./components/VideoContainer.js":151,"choo/html":21}],145:[function(require,module,exports){
 const Nano = require('nanocomponent')
 const css = 0
 const html = require('choo/html')
@@ -20466,7 +20520,7 @@ Dropdown.prototype.update = function (props) {
 
 }
 
-},{"choo/html":21,"juliangruber-shallow-equal/objects":61,"nanocomponent":65,"sheetify/insert":100,"xtend":139}],145:[function(require,module,exports){
+},{"choo/html":21,"juliangruber-shallow-equal/objects":61,"nanocomponent":65,"sheetify/insert":100,"xtend":139}],146:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20494,7 +20548,7 @@ function inputElement (name, defaultText, opts) {
   </div>`
 }
 
-},{"choo/html":21,"xtend":139}],146:[function(require,module,exports){
+},{"choo/html":21,"xtend":139}],147:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20528,7 +20582,7 @@ function Modal (opts) {
   }
 }
 
-},{"assert":10,"choo/html":21,"xtend":139}],147:[function(require,module,exports){
+},{"assert":10,"choo/html":21,"xtend":139}],148:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20545,7 +20599,7 @@ function radioSelect(opts){
   </div>`
 }
 
-},{"choo/html":21}],148:[function(require,module,exports){
+},{"choo/html":21}],149:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20614,7 +20668,7 @@ function createBooleanElement(label, obj, callback){
   })
 }
 
-},{"./radioSelect.js":147,"./slider.js":149,"choo/html":21,"xtend":139}],149:[function(require,module,exports){
+},{"./radioSelect.js":148,"./slider.js":150,"choo/html":21,"xtend":139}],150:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20630,7 +20684,7 @@ function slider(opts){
   </div>`
 }
 
-},{"choo/html":21}],150:[function(require,module,exports){
+},{"choo/html":21}],151:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20676,8 +20730,10 @@ VideoContainer.prototype.update = function (props) {
 
 
   if (props.track && props.track != null) {
+
   //  if(props.needsUpdate === true || props.id !== this.props.id) {
     if(props.track !== this.props.track) {
+      console.log("rendering", props.track)
       this.props.track = props.track
       this.props.id = props.id
       addTrackToElement(this.props.track, this.element)
@@ -20687,7 +20743,7 @@ VideoContainer.prototype.update = function (props) {
   return false
 }
 
-},{"choo/html":21,"nanocomponent":65,"xtend":139}],151:[function(require,module,exports){
+},{"choo/html":21,"nanocomponent":65,"xtend":139}],152:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -20783,18 +20839,20 @@ function loginView (state, emit) {
   }
 }
 
-},{"./components/dropdown.js":144,"./components/input.js":145,"./components/videocontainer.js":150,"choo/html":21}],152:[function(require,module,exports){
+},{"./components/dropdown.js":145,"./components/input.js":146,"./components/videocontainer.js":151,"choo/html":21}],153:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
 const login = require('./login.js')
 const communication = require('./communication.js')
+const allVideos = require('./allVideos.js')
 const mediaList = require('./mediaList.js')
 const AddBroadcast = require('./addBroadcast.js')
 
 module.exports = mainView
 //  <!--${AddBroadcast(state, emit)}-->
 //  ${login(state, emit)}
+//  ${communication(state, emit)}
 function mainView (state, emit) {
   if (!state.user.loggedIn) {
     return html`
@@ -20806,7 +20864,8 @@ function mainView (state, emit) {
 
     return html`
     <div>
-      ${communication(state, emit)}
+
+      ${allVideos(state, emit)}
       ${mediaList(state, emit)}
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
     </div>
@@ -20815,7 +20874,7 @@ function mainView (state, emit) {
   }
 }
 
-},{"./addBroadcast.js":142,"./communication.js":143,"./login.js":151,"./mediaList.js":153,"choo/html":21}],153:[function(require,module,exports){
+},{"./addBroadcast.js":142,"./allVideos.js":143,"./communication.js":144,"./login.js":152,"./mediaList.js":154,"choo/html":21}],154:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 

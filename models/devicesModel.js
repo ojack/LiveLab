@@ -111,16 +111,24 @@ function devicesModel (state, bus) {
   })
 
   bus.on('devices:addNewMediaToBroadcast', function () {
-    updateBroadcastPreview(function(err, track){
-      if (err) {
-        bus.emit('render')
+    getConstraintsFromSettings(state.devices.addBroadcast, function (err, constraints) {
+      if(err){
+        state.devices.addBroadcast.errorMessage = err
       } else {
-        bus.emit('media:addTrack', {
-          track: track,
-          peerId: state.user.uuid,
-          isDefault: false
+        getLocalMedia(constraints, function(err, stream){
+          if(err){
+            state.devices.addBroadcast.errorMessage = err
+          } else {
+            var tracks = stream.getTracks()
+            bus.emit('media:addTrack', {
+              track: tracks[0],
+              peerId: state.user.uuid,
+              isDefault: false
+            })
+            bus.emit('user:updateBroadcastStream')
+          }
+          bus.emit('render')
         })
-        bus.emit('user:updateBroadcastStream')
       }
     })
   })

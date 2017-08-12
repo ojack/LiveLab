@@ -43,8 +43,10 @@ VideoContainer.prototype.update = function (props) {
 
 
   if (props.track && props.track != null) {
+
   //  if(props.needsUpdate === true || props.id !== this.props.id) {
     if(props.track !== this.props.track) {
+      console.log("rendering", props.track)
       this.props.track = props.track
       this.props.id = props.id
       addTrackToElement(this.props.track, this.element)
