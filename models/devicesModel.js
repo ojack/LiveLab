@@ -105,50 +105,25 @@ function devicesModel (state, bus) {
   }
 
   bus.on('devices:updateBroadcastPreview', function () {
-      var bConstraints = {}
-      var userConstraints = {}
-      var bState = state.devices.addBroadcast
-      if(bState[bState.kind].deviceId===null) {
-        state.devices.addBroadcast.errorMessage = "Error: device not specified"
-        bus.emit('render')
-      } else {
-        state.devices.addBroadcast.errorMessage = ""
-        userConstraints.deviceId = { exact : bState[bState.kind].deviceId }
-        for(var key in bState[bState.kind]){
-          //if the user has specified a value for a particular constraint, pass it along to getusermedia.
-          //for right now, only specifies "ideal" value, device does the best it can to meet constraints.
-          // see https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API/Constraints#Applying_constraints
-          if(bState[bState.kind][key] && bState[bState.kind][key].value){
-            userConstraints[key] = {
-              ideal: bState[bState.kind][key].value
-            }
-          }
-        }
-        bConstraints[bState.kind] = userConstraints
-        if(bState.kind==="audio"){
-          bConstraints.video = false
-        } else {
-          bConstraints.audio = false
-        }
-        getLocalMedia(bConstraints, function(err, stream){
-          if(err) {
-            state.devices.addBroadcast.errorMessage = err
-          } else {
-            var tracks = stream.getTracks()
-            tracks.forEach(function (track) {
-               if(state.devices.addBroadcast.previewTrack!==null){
-                 state.devices.addBroadcast.previewTrack.stop()
-               }
-               state.devices.addBroadcast.previewTrack = track
-            })
-
-          }
-          bus.emit('render')
-        })
-      }
+    updateBroadcastPreview(function(err, track){
+      bus.emit('render')
+    })
   })
 
-
+  bus.on('devices:addNewMediaToBroadcast', function () {
+    updateBroadcastPreview(function(err, track){
+      if (err) {
+        bus.emit('render')
+      } else {
+        bus.emit('media:addTrack', {
+          track: track,
+          peerId: state.user.uuid,
+          isDefault: false
+        })
+        bus.emit('user:updateBroadcastStream')
+      }
+    })
+  })
 
   bus.on('devices:setDefaultAudio', function (val) {
     setDefaultAudio(val)
@@ -208,6 +183,61 @@ function devicesModel (state, bus) {
       })
     }
   }
+
+
+
+function updateBroadcastPreview(callback){
+  state.devices.addBroadcast.errorMessage = ""
+  getConstraintsFromSettings(state.devices.addBroadcast, function (err, constraints) {
+    if(err){
+      state.devices.addBroadcast.errorMessage = err
+      callback(err, null)
+    } else {
+      getLocalMedia(constraints, function(err, stream){
+        if(err) {
+          state.devices.addBroadcast.errorMessage = err
+          callback(err, null)
+        } else {
+          var tracks = stream.getTracks()
+          tracks.forEach(function (track) {
+             if(state.devices.addBroadcast.previewTrack!==null){
+               state.devices.addBroadcast.previewTrack.stop()
+             }
+             state.devices.addBroadcast.previewTrack = track
+          })
+          callback(null, state.devices.addBroadcast.previewTrack)
+        }
+      })
+    }
+  })
+}
+//format ui settings object into getUserMedia constraints
+function getConstraintsFromSettings(settings, callback) {
+  var allConstraints = {}
+  var userConstraints = {}
+  if(settings[settings.kind].deviceId===null) {
+    callback("Error: device not specified", null)
+  } else {
+    userConstraints.deviceId = { exact : settings[settings.kind].deviceId }
+    for(var key in settings[settings.kind]){
+      //if the user has specified a value for a particular constraint, pass it along to getusermedia.
+      //for right now, only specifies "ideal" value, device does the best it can to meet constraints.
+      // see https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API/Constraints#Applying_constraints
+      if(settings[settings.kind][key] && settings[settings.kind][key].value){
+        userConstraints[key] = {
+          ideal: settings[settings.kind][key].value
+        }
+      }
+    }
+    allConstraints[settings.kind] = userConstraints
+    if(settings.kind==="audio"){
+      allConstraints.video = false
+    } else {
+      allConstraints.audio = false
+    }
+    callback(null, allConstraints)
+  }
+}
 
 function getLocalMedia(constraints, callback) {
     getUserMedia(constraints, function (err, stream) {

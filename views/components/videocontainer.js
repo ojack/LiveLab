@@ -34,7 +34,7 @@ VideoContainer.prototype.createElement = function (props) {
 function addTrackToElement(track, element){
   var tracks = []
   tracks.push(track)
-  var stream = new MediaStream(tracks) // stream must be initialized with tracks, even though documentation says otherwise
+  var stream = new MediaStream(tracks) // stream must be initialized with array of tracks, even though documentation says otherwise
   element.srcObject = stream
 }
 

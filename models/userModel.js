@@ -43,13 +43,19 @@ function userModel (state, bus) {
   })
 
 //testing reconnection
-  bus.on('user:reinitAll', function(){
-    if(multiPeer !== null) multiPeer.reinitAll()
+  bus.on('user:updateBroadcastStream', function(){
+    if(multiPeer !== null) {
+      var stream = getCombinedLocalStream()
+      console.log("UPDATED STREAM", stream.getTracks())
+      multiPeer.stream = stream
+      multiPeer.reinitAll()
+    }
   })
 
   // TO DO: validate form info before submitting
   bus.on('user:join', function () {
     localStorage.setItem('uuid', state.user.uuid)
+
     multiPeer = new MultiPeer({
       room: state.user.room,
       server: state.user.server,
@@ -141,11 +147,16 @@ function userModel (state, bus) {
     return new MediaStream(tracks)
   }
 
-// returns a stream that contains all local tracks
+// returns a stream that contains all local tracks. Adds tracks one by one using addTrack() because
+// of bug when all are added at once in an array (tracks with duplicate labels but not duplicate ids are eliminated)
   function getCombinedLocalStream () {
-    var userTracks = state.peers.byId[state.user.uuid].tracks.map(function (trackId) {
-      return state.media.byId[trackId].track
+    var tracks = []
+    var startTrack = state.peers.byId[state.user.uuid].tracks[0]
+    tracks.push(state.media.byId[startTrack].track)
+    var stream = new MediaStream(tracks)
+    state.peers.byId[state.user.uuid].tracks.forEach(function (trackId) {
+      stream.addTrack(state.media.byId[trackId].track)
     })
-    return new MediaStream(userTracks)
+    return stream
   }
 }

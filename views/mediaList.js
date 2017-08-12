@@ -18,9 +18,9 @@ function mediaListView (state, emit) {
             var media = state.media.byId[id]
             return html`
               <tr>
-                <td>${media.trackId}</td>
+                <td>${media.track.id}</td>
                 <td>${state.peers.byId[media.peerId].nickname}</td>
-                <td>${media.kind}</td>
+                <td>${media.track.kind}</td>
               </tr>
             `
           })}

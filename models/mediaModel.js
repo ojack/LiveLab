@@ -53,12 +53,12 @@ function mediaModel (state, bus) {
     if (state.media.all.indexOf(opts.track.id) < 0) {
       state.media.all.push(opts.track.id)
     }
-
+    console.log("MEDIA STATE", state.media)
     bus.emit('peers:addTrackToPeer', {
       trackId: opts.track.id,
       peerId: opts.peerId,
       isDefault: opts.isDefault,
-      kind: opts.kind
+      kind: opts.track.kind
     })
 
     bus.emit('render')

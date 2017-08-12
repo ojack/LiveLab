@@ -49,11 +49,13 @@ function peersModel (state, bus) {
 
   bus.on('peers:addTrackToPeer', function (opts) {
   //  console.log('Track TO PEER', state.peers, opts)
+
     state.peers.byId[opts.peerId].tracks.push(opts.trackId)
     // if track is default communication track, add to peer defaultTracks
     if (opts.isDefault) {
       state.peers.byId[opts.peerId].defaultTracks[opts.kind] = opts.trackId
     }
+    console.log("peersTracks", state.peers.byId[opts.peerId].tracks)
     bus.emit('render')
   })
 
