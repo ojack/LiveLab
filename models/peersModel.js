@@ -36,8 +36,7 @@ function peersModel (state, bus) {
       defaultTracks: {
         audio: null,
         video: null
-      },
-      needsUpdate: true
+      }
     }, state.peers.byId[peer.peerId], peer)
 
     console.log("NEW  PEER INFO", state.peers.byId)

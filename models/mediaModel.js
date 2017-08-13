@@ -42,7 +42,11 @@ function mediaModel (state, bus) {
     bus.emit('render')
   })
 
-
+  bus.on('media:updateTrackInfo', function(trackUpdateObject){
+    Object.keys(trackUpdateObject).forEach((key) => {
+      state.media.byId[key] = xtend(state.media.byId[key], trackUpdateObject[key])
+    })
+  })
 
   bus.on('media:addTrack', function (opts) {
     state.media.byId[opts.track.id] = xtend({}, opts)

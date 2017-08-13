@@ -201,7 +201,7 @@ const xtend = Object.assign
 module.exports = devicesModel
 
 function devicesModel (state, bus) {
-// object representing the user's input and output devices
+  // object representing the user's input and output devices
   state.devices = xtend({
     videoinput: {
       byId: {},
@@ -220,7 +220,7 @@ function devicesModel (state, bus) {
       all: []
     },
     addBroadcast: {
-      active: true,
+      active: false,
       kind: "audio",
       name: "",
       errorMessage: "",
@@ -244,15 +244,60 @@ function devicesModel (state, bus) {
     }
   }, state.devices)
 
-// TO DO: put this function somewhere else
+  // on page init, get user devices and load default constraints from json
+  // TO DO: put this function somewhere else
   window.onload = function () {
     getDevices()
     loadConstraints()
-    console.log("DEVICE STATE", state.devices)
     bus.emit('peers:updatePeer', {
       peerId: state.user.uuid
     })
   }
+
+
+
+  bus.on('devices:setDefaultAudio', function (val) {
+    setDefaultMedia(val, "audio")
+
+  })
+
+  bus.on('devices:setDefaultVideo', function (val) {
+    setDefaultMedia(val, "video")
+  })
+
+
+  function setDefaultMedia (val, kind) {
+    if (state.devices.default.inputDevices[kind] !== val) {
+      state.devices.default.inputDevices[kind] = val
+      getConstraintsFromSettings({kind: kind, deviceId: state.devices.default.inputDevices[kind]}, function(err, constraints){
+        if(err) {
+          //to do: do something with error!
+          console.log("CONSTRAINT ERROR", err)
+        } else {
+          getLocalMedia (constraints, function(err, stream){
+
+            if(err===null){
+              var tracks = stream.getTracks()
+              tracks.forEach(function (track) {
+                if(state.devices.default.previewTracks[kind]!=null){
+                  state.devices.default.previewTracks[kind].stop()
+                }
+                state.devices.default.previewTracks[kind] = track
+              })
+            } else {
+              //to do: do something with error!
+              console.log("GET USER MEDIA ERROR", err)
+            }
+            bus.emit('render')
+          })
+        }
+      })
+    }
+  }
+
+  /**
+  ** UI event handlers for Add Broadcast Media Pop-up
+  **/
 
   bus.on('devices:setBroadcastName', function(name){
     state.devices.addBroadcast.name = name
@@ -269,7 +314,7 @@ function devicesModel (state, bus) {
   bus.on('devices:updateBroadcastConstraints', function(obj){
     Object.keys(obj).forEach(key =>
       {
-          xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind][key], obj[key])
+        xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind][key], obj[key])
       }
     )
     bus.emit('render')
@@ -299,7 +344,7 @@ function devicesModel (state, bus) {
     bus.emit('render')
   })
 
-//add available constraint options to devices model
+  //add available constraint options to devices model
   function loadConstraints(){
     xtend(state.devices.addBroadcast.audio, constraintsJSON.audio)
     xtend(state.devices.addBroadcast.video, constraintsJSON.video)
@@ -312,7 +357,7 @@ function devicesModel (state, bus) {
   })
 
   bus.on('devices:addNewMediaToBroadcast', function () {
-    getConstraintsFromSettings(state.devices.addBroadcast, function (err, constraints) {
+    getConstraintsFromSettings(xtend({}, state.devices.addBroadcast[state.devices.addBroadcast.kind], {kind: state.devices.addBroadcast.kind}), function (err, constraints) {
       if(err){
         state.devices.addBroadcast.errorMessage = err
       } else {
@@ -335,137 +380,52 @@ function devicesModel (state, bus) {
     })
   })
 
-  bus.on('devices:setDefaultAudio', function (val) {
-    setDefaultAudio(val)
-
-  })
-
-  bus.on('devices:setDefaultVideo', function (val) {
-    setDefaultVideo(val)
-  })
-// bus.on('devices:getDevices', function () {
-// TO DO: use electron remote available displays to enumerate video output devices
-// })
-//display window for adding broadcast
-  bus.on('devices:modalAddBroadcast', function (modalState) {
-    state.devices.addBroadcast.active = modalState
-    bus.emit('render')
-  })
-
-  function setDefaultAudio (val) {
-    if (state.devices.default.inputDevices.audio !== val) {
-      state.devices.default.inputDevices.audio = val
-      getLocalMedia ({
-
-          audio: { deviceId: { exact: state.devices.default.inputDevices.audio } },
-          video: false
-        }, function(err, stream){
-        if(err===null){
-          var tracks = stream.getTracks()
-          tracks.forEach(function (track) {
-            if(state.devices.default.previewTracks.audio!=null){
-              state.devices.default.previewTracks.audio.stop()
-            }
-             state.devices.default.previewTracks.audio = track
-          })
-        }
-      })
-    }
-    bus.emit('render')
-  }
-
-  function setDefaultVideo (vid) {
-    if (state.devices.default.inputDevices.video !== vid) {
-      console.log('SETTING VIDEO', vid)
-      state.devices.default.inputDevices.video = vid
-      getLocalMedia (
-       {
-          audio: false,
-          video: { deviceId: { exact: state.devices.default.inputDevices.video } }
-      }, function(err, stream){
-        if(err===null){
-          var tracks = stream.getTracks()
-          tracks.forEach(function (track) {
-            if(state.devices.default.previewTracks.video!==null) state.devices.default.previewTracks.video.stop()
-             state.devices.default.previewTracks.video = track
-          })
-        }
-      })
-    }
-  }
-
-
-
-function updateBroadcastPreview(callback){
-  state.devices.addBroadcast.errorMessage = ""
-  getConstraintsFromSettings(state.devices.addBroadcast, function (err, constraints) {
-    if(err){
-      state.devices.addBroadcast.errorMessage = err
-      callback(err, null)
-    } else {
-      getLocalMedia(constraints, function(err, stream){
-        if(err) {
-          state.devices.addBroadcast.errorMessage = err
-          callback(err, null)
-        } else {
-          var tracks = stream.getTracks()
-          tracks.forEach(function (track) {
-             if(state.devices.addBroadcast.previewTrack!==null){
-               state.devices.addBroadcast.previewTrack.stop()
-             }
-             state.devices.addBroadcast.previewTrack = track
-          })
-          callback(null, state.devices.addBroadcast.previewTrack)
-        }
-      })
-    }
-  })
-}
-//format ui settings object into getUserMedia constraints
-function getConstraintsFromSettings(settings, callback) {
-  var allConstraints = {}
-  var userConstraints = {}
-  if(settings[settings.kind].deviceId===null) {
-    callback("Error: device not specified", null)
-  } else {
-    userConstraints.deviceId = { exact : settings[settings.kind].deviceId }
-    for(var key in settings[settings.kind]){
-      //if the user has specified a value for a particular constraint, pass it along to getusermedia.
-      //for right now, only specifies "ideal" value, device does the best it can to meet constraints.
-      // see https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API/Constraints#Applying_constraints
-      if(settings[settings.kind][key] && settings[settings.kind][key].value){
-        userConstraints[key] = {
-          ideal: settings[settings.kind][key].value
-        }
+  function updateBroadcastPreview(callback){
+    state.devices.addBroadcast.errorMessage = ""
+    getConstraintsFromSettings(xtend({}, state.devices.addBroadcast[state.devices.addBroadcast.kind], {kind: state.devices.addBroadcast.kind}), function (err, constraints) {
+      if(err){
+        state.devices.addBroadcast.errorMessage = err
+        callback(err, null)
+      } else {
+        getLocalMedia(constraints, function(err, stream){
+          if(err) {
+            state.devices.addBroadcast.errorMessage = err
+            callback(err, null)
+          } else {
+            var tracks = stream.getTracks()
+            tracks.forEach(function (track) {
+              if(state.devices.addBroadcast.previewTrack!==null){
+                state.devices.addBroadcast.previewTrack.stop()
+              }
+              state.devices.addBroadcast.previewTrack = track
+            })
+            callback(null, state.devices.addBroadcast.previewTrack)
+          }
+        })
       }
-    }
-    allConstraints[settings.kind] = userConstraints
-    if(settings.kind==="audio"){
-      allConstraints.video = false
-    } else {
-      allConstraints.audio = false
-    }
-    callback(null, allConstraints)
+    })
   }
-}
 
-function getLocalMedia(constraints, callback) {
+  /** Helper functions for dealing with devices, get user media, and constraints **/
+
+  function getLocalMedia(constraints, callback) {
     getUserMedia(constraints, function (err, stream) {
-        if (err) {
-          callback(err, null)
-          // TO DO: do something about error
-        } else {
-          callback(null, stream)
-        }
-        bus.emit('render')
-      })
+      if (err) {
+        callback(err, null)
+        // TO DO: do something about error
+      } else {
+        callback(null, stream)
+      }
+      bus.emit('render')
+    })
   }
 
-
-
+  // bus.on('devices:getDevices', function () {
+  // TO DO: use electron remote available displays to enumerate video output devices
+  // })
+  //display window for adding broadcast
   function getDevices () {
     var supportedConstraints = navigator.mediaDevices.getSupportedConstraints()
-    console.log("CONSTRIANTSS", supportedConstraints)
 
     enumerateDevices().then((devices) => {
       const kinds = ['audioinput', 'videoinput', 'audiooutput']
@@ -479,13 +439,47 @@ function getLocalMedia(constraints, callback) {
         })
       })
 
-  // Set default audio and video devices
-      if (state.devices.audioinput.all.length > 0) setDefaultAudio(state.devices.audioinput.all[0])
-      if (state.devices.videoinput.all.length > 0) setDefaultVideo(state.devices.videoinput.all[0])
+      // Set default audio and video devices
+      if (state.devices.audioinput.all.length > 0) setDefaultMedia(state.devices.audioinput.all[0], "audio")
+      if (state.devices.videoinput.all.length > 0) setDefaultMedia(state.devices.videoinput.all[0], "video")
 
-      console.log('DEVICES', state.devices)
       bus.emit('render')
     }).catch(console.log.bind(console)) // TO DO:: display error to user
+  }
+}
+
+//format ui settings object into getUserMedia constraints
+// settings object is of the format {
+// kind: //"audio" or "video",
+// deviceId:
+// <other setting > : { value: //value}
+//
+
+function getConstraintsFromSettings(settings, callback) {
+
+  var allConstraints = {}
+  var userConstraints = {}
+  if(settings.deviceId===null) {
+    callback("Error: device not specified", null)
+  } else {
+    userConstraints.deviceId = { exact : settings.deviceId }
+    for(var key in settings){
+      //if the user has specified a value for a particular constraint, pass it along to getusermedia.
+      //for right now, only specifies "ideal" value, device does the best it can to meet constraints.
+      // see https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API/Constraints#Applying_constraints
+      if(settings[key] && settings[key].value){
+        userConstraints[key] = {
+          ideal: settings[key].value
+        }
+      }
+    }
+    allConstraints[settings.kind] = userConstraints
+    if(settings.kind==="audio"){
+      allConstraints.video = false
+    } else {
+      allConstraints.audio = false
+    }
+    callback(null, allConstraints)
   }
 }
 
@@ -534,7 +528,11 @@ function mediaModel (state, bus) {
     bus.emit('render')
   })
 
-
+  bus.on('media:updateTrackInfo', function(trackUpdateObject){
+    Object.keys(trackUpdateObject).forEach((key) => {
+      state.media.byId[key] = xtend(state.media.byId[key], trackUpdateObject[key])
+    })
+  })
 
   bus.on('media:addTrack', function (opts) {
     state.media.byId[opts.track.id] = xtend({}, opts)
@@ -631,8 +629,7 @@ function peersModel (state, bus) {
       defaultTracks: {
         audio: null,
         video: null
-      },
-      needsUpdate: true
+      }
     }, state.peers.byId[peer.peerId], peer)
 
     console.log("NEW  PEER INFO", state.peers.byId)
@@ -685,14 +682,15 @@ function userModel (state, bus) {
     room: 'test',
     server: 'https://live-lab-v1.glitch.me/',
     loggedIn: false,
+    nickname: "olivia",
     statusMessage: '',
     multiPeer: null
   }, state.user)
 
-//add self to peer infol
+//login page ui events
   bus.emit('peers:updatePeer', {
     peerId: state.user.uuid,
-    nickname: 'olivia'
+    nickname: state.user.nickname
   })
 
   bus.on('user:setNickname', function (name) {
@@ -714,17 +712,7 @@ function userModel (state, bus) {
     bus.emit('render')
   })
 
-//testing reconnection
-  bus.on('user:updateBroadcastStream', function(){
-    if(multiPeer !== null) {
-      var stream = getCombinedLocalStream()
-      console.log("UPDATED STREAM", stream.getTracks())
-      multiPeer.stream = stream
-      multiPeer.reinitAll()
-    }
-  })
-
-  // TO DO: validate form info before submitting
+  // Initiate connection with signalling server
   bus.on('user:join', function () {
     localStorage.setItem('uuid', state.user.uuid)
 
@@ -737,7 +725,8 @@ function userModel (state, bus) {
         nickname: state.user.nickname
       }
     })
-    //received initial list of peers from signalling server
+
+    //received initial list of peers from signalling server, update local peer information
     multiPeer.on('peers', function (peers) {
       state.user.loggedIn = true
       state.user.statusMessage += 'Connected to server ' + state.user.server + '\n'
@@ -750,18 +739,13 @@ function userModel (state, bus) {
       bus.emit('render')
     })
 
+    //received new media stream from remote peer
     multiPeer.on('stream', function (peerId, stream) {
       state.user.statusMessage += 'Received media from peer ' + peerId + '\n'
       bus.emit('media:addTracksFromStream', {
         peerId: peerId,
         stream: stream
       })
-    })
-
-    multiPeer.on('connect', function (id) {
-      state.user.statusMessage += 'Connected to peer ' + id + '\n'
-      multiPeer.sendToPeer(id, JSON.stringify({ type: 'updatePeerData', message: this._userData }))
-      bus.emit('render')
     })
 
     multiPeer.on('close', function (id) {
@@ -774,20 +758,48 @@ function userModel (state, bus) {
       })
     })
 
+    //when first connected to remote peer, send user information
+    multiPeer.on('connect', function (id) {
+      state.user.statusMessage += 'Connected to peer ' + id + '\n'
+      var userInfo = state.peers.byId[state.user.uuid]
+      var infoObj = {}
+      userInfo.tracks.forEach((trackId) => {
+        infoObj[trackId] = xtend({}, state.media.byId[trackId])
+        delete infoObj[trackId].track
+      })
+
+      updateLocalInfo(id, {
+        peer: xtend({}, userInfo),
+        tracks: infoObj
+      })
+      bus.emit('render')
+    })
+
+    //received data from remote peer
     multiPeer.on('data', function (data) {
-      console.log("received data", data)
-      if (data.data && data.data.type === 'updatePeerData') {
-        var peerData = xtend({
+      // data is updated user and track information
+      if (data.data && data.data.type === 'updatePeerInfo') {
+      /*  var peerData = xtend({
           peerId: data.id
         }, data.data.message)
-        console.log('NEW PEPEER DATA', peerData)
-        bus.emit('peers:updatePeer', peerData)
+        console.log('NEW PEPEER DATA', peerData)*/
+        if('peer' in data.data.message) bus.emit('peers:updatePeer', data.data.message.peer)
+        if('tracks' in data.data.message) bus.emit('media:updateTrackInfo', data.data.message.tracks)
       }
     })
 
     state.user.statusMessage = 'Contacting server ' + state.user.server + '\n'
 
     bus.emit('render')
+  })
+
+  bus.on('user:updateBroadcastStream', function(){
+    if(multiPeer !== null) {
+      var stream = getCombinedLocalStream()
+      console.log("UPDATED STREAM", stream.getTracks())
+      multiPeer.stream = stream
+      multiPeer.reinitAll()
+    }
   })
 
   function getLocalCommunicationStream () {
@@ -819,8 +831,31 @@ function userModel (state, bus) {
     return new MediaStream(tracks)
   }
 
+//share local updates to track or user information with peers
+// to do: (maybe?) only update track info that has changed
+function updateLocalInfo(id){
+  if(multiPeer){
+    var userInfo = state.peers.byId[state.user.uuid]
+    var trackInfo = {}
+    userInfo.tracks.forEach((trackId) => {
+      trackInfo[trackId] = xtend({}, state.media.byId[trackId])
+      delete trackInfo[trackId].track
+    })
+    var updateObj = {
+      peer: userInfo,
+      tracks: trackInfo
+    }
+    console.log("SHARING USER INFO", updateObj)
+    if(id){
+      multiPeer.sendToPeer(id, JSON.stringify({ type: 'updatePeerInfo', message: updateObj}))
+    } else {
+      // send to all
+    }
+
+  }
+}
 // returns a stream that contains all local tracks. Adds tracks one by one using addTrack() because
-// of bug when all are added at once in an array (tracks with duplicate labels but not duplicate ids are eliminated)
+// of bug (when all are added at once in an array, tracks with duplicate labels but not duplicate ids are eliminated)
   function getCombinedLocalStream () {
     var tracks = []
     var startTrack = state.peers.byId[state.user.uuid].tracks[0]
