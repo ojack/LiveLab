@@ -58,6 +58,12 @@ MultiPeer.prototype.sendToAll = function (data) {
   }, this)
 }
 
+MultiPeer.prototype.sendToPeer = function (peerId, data) {
+  if (peerId in this.peers) {
+    this.peers[peerId].send(data)
+  }
+}
+
 MultiPeer.prototype.reinitAll = function(){
   Object.keys(this.peers).forEach(function (id) {
     this.peers[id].destroy(function(e){
@@ -77,15 +83,7 @@ MultiPeer.prototype.reinitAll = function(){
   }.bind(this))
 //  this._connectToPeers.bind(this)
 }
-// userData contains all information about the local user:
-// -uuid
-// -nickname
-// -track information
-// whenever it is updated, new data is sent to all connected peers
-MultiPeer.prototype.updatePeerData = function (data) {
-  this._userData = data
-  this.sendToAll(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
-}
+
 // Once the new peer receives a list of connected peers from the server,
 // creates new simple peer object for each connected peer.
 MultiPeer.prototype._connectToPeers = function (id, peers) {
@@ -134,13 +132,6 @@ MultiPeer.prototype._attachPeerEvents = function (p, _id) {
   p.on('connect', function (id) {
     console.log("connected to ", id)
     this.emit('connect', id)
-
-   this.peers[id].send(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
-
-    //when connected, emit user information to other peers
-
-    //this.sendToAll(JSON.stringify({ type: 'updatePeerData', message: this._userData }))
-
   }.bind(this, _id))
 
   p.on('data', function (id, data) {
@@ -231,6 +222,7 @@ function devicesModel (state, bus) {
     addBroadcast: {
       active: true,
       kind: "audio",
+      name: "",
       errorMessage: "",
       audio: {
         deviceId: null
@@ -261,6 +253,11 @@ function devicesModel (state, bus) {
       peerId: state.user.uuid
     })
   }
+
+  bus.on('devices:setBroadcastName', function(name){
+    state.devices.addBroadcast.name = name
+    bus.emit('render')
+  })
 
   bus.on('devices:updateBroadcastDevice', function(obj){
     xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind], obj)
@@ -327,7 +324,8 @@ function devicesModel (state, bus) {
             bus.emit('media:addTrack', {
               track: tracks[0],
               peerId: state.user.uuid,
-              isDefault: false
+              isDefault: false,
+              name: state.devices.addBroadcast.name
             })
             bus.emit('user:updateBroadcastStream')
           }
@@ -516,10 +514,6 @@ module.exports = mediaModel
 function mediaModel (state, bus) {
   state.media = xtend({
     byId: {},
-    default: {
-      audio: null,
-      video: null
-    },
     all: []
   }, state.media)
 
@@ -544,6 +538,10 @@ function mediaModel (state, bus) {
 
   bus.on('media:addTrack', function (opts) {
     state.media.byId[opts.track.id] = xtend({}, opts)
+    // if default communication stream, set name to default
+    if(opts.isDefault) {
+      state.media.byId[opts.track.id].name = "default"
+    }
     if (state.media.all.indexOf(opts.track.id) < 0) {
       state.media.all.push(opts.track.id)
     }
@@ -691,6 +689,7 @@ function userModel (state, bus) {
     multiPeer: null
   }, state.user)
 
+//add self to peer infol
   bus.emit('peers:updatePeer', {
     peerId: state.user.uuid,
     nickname: 'olivia'
@@ -738,7 +737,7 @@ function userModel (state, bus) {
         nickname: state.user.nickname
       }
     })
-
+    //received initial list of peers from signalling server
     multiPeer.on('peers', function (peers) {
       state.user.loggedIn = true
       state.user.statusMessage += 'Connected to server ' + state.user.server + '\n'
@@ -755,13 +754,13 @@ function userModel (state, bus) {
       state.user.statusMessage += 'Received media from peer ' + peerId + '\n'
       bus.emit('media:addTracksFromStream', {
         peerId: peerId,
-        stream: stream,
-        isDefault: true
+        stream: stream
       })
     })
 
     multiPeer.on('connect', function (id) {
       state.user.statusMessage += 'Connected to peer ' + id + '\n'
+      multiPeer.sendToPeer(id, JSON.stringify({ type: 'updatePeerData', message: this._userData }))
       bus.emit('render')
     })
 
@@ -20244,6 +20243,7 @@ const Dropdown = require('./components/dropdown.js')
 const VideoEl = require('./components/VideoContainer.js')
 const radioSelect = require('./components/radioSelect.js')
 const settingsUI = require('./components/settingsUI.js')
+const input = require('./components/input.js')
 
 module.exports = addBroadcast
 
@@ -20310,8 +20310,14 @@ function addBroadcast (devices, emit, showElement) {
 
     ${Modal({
       show: showElement,
-      header: "Add Broadcast",
+      header: "Add Media",
       contents: html`<div id="add broadcast" class="pa3 f6 fw3">
+            ${input('name', 'name', {
+              value: bState.name,
+              onkeyup: (e) => {
+                emit('devices:setBroadcastName', e.target.value)
+              }
+            })}
             ${radioSelect(
               {
                 label: "kind:",
@@ -20352,7 +20358,7 @@ function addBroadcast (devices, emit, showElement) {
 
 }
 
-},{"./components/VideoContainer.js":151,"./components/dropdown.js":145,"./components/modal.js":147,"./components/radioSelect.js":148,"./components/settingsUI.js":149,"choo/html":21}],143:[function(require,module,exports){
+},{"./components/VideoContainer.js":151,"./components/dropdown.js":145,"./components/input.js":146,"./components/modal.js":147,"./components/radioSelect.js":148,"./components/settingsUI.js":149,"choo/html":21}],143:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const VideoEl = require('./components/VideoContainer.js')
@@ -20887,17 +20893,19 @@ function mediaListView (state, emit) {
         <h3 class="f6 lh-copy"> AVAILABLE MEDIA: </h3>
         <table>
           <tr>
+            <th>NAME</th>
             <th>ID</th>
-            <th>PEER</th>
             <th>KIND</th>
+            <th>PEER</th>
           </tr>
           ${state.media.all.map((id) => {
             var media = state.media.byId[id]
             return html`
               <tr>
-                <td>${media.track.id}</td>
-                <td>${state.peers.byId[media.peerId].nickname}</td>
-                <td>${media.track.kind}</td>
+                <td class="pa1">${media.name}</td>
+                <td class="pa1">${media.track.id}</td>
+                <td class="pa1">${media.track.kind}</td>
+                <td class="pa1">${state.peers.byId[media.peerId].nickname}</td>
               </tr>
             `
           })}

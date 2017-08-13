@@ -27,6 +27,7 @@ function devicesModel (state, bus) {
     addBroadcast: {
       active: true,
       kind: "audio",
+      name: "",
       errorMessage: "",
       audio: {
         deviceId: null
@@ -57,6 +58,11 @@ function devicesModel (state, bus) {
       peerId: state.user.uuid
     })
   }
+
+  bus.on('devices:setBroadcastName', function(name){
+    state.devices.addBroadcast.name = name
+    bus.emit('render')
+  })
 
   bus.on('devices:updateBroadcastDevice', function(obj){
     xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind], obj)
@@ -123,7 +129,8 @@ function devicesModel (state, bus) {
             bus.emit('media:addTrack', {
               track: tracks[0],
               peerId: state.user.uuid,
-              isDefault: false
+              isDefault: false,
+              name: state.devices.addBroadcast.name
             })
             bus.emit('user:updateBroadcastStream')
           }

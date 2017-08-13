@@ -6,6 +6,7 @@ const Dropdown = require('./components/dropdown.js')
 const VideoEl = require('./components/VideoContainer.js')
 const radioSelect = require('./components/radioSelect.js')
 const settingsUI = require('./components/settingsUI.js')
+const input = require('./components/input.js')
 
 module.exports = addBroadcast
 
@@ -72,8 +73,14 @@ function addBroadcast (devices, emit, showElement) {
 
     ${Modal({
       show: showElement,
-      header: "Add Broadcast",
+      header: "Add Media",
       contents: html`<div id="add broadcast" class="pa3 f6 fw3">
+            ${input('name', 'name', {
+              value: bState.name,
+              onkeyup: (e) => {
+                emit('devices:setBroadcastName', e.target.value)
+              }
+            })}
             ${radioSelect(
               {
                 label: "kind:",

@@ -18,6 +18,7 @@ function userModel (state, bus) {
     multiPeer: null
   }, state.user)
 
+//add self to peer infol
   bus.emit('peers:updatePeer', {
     peerId: state.user.uuid,
     nickname: 'olivia'
@@ -65,7 +66,7 @@ function userModel (state, bus) {
         nickname: state.user.nickname
       }
     })
-
+    //received initial list of peers from signalling server
     multiPeer.on('peers', function (peers) {
       state.user.loggedIn = true
       state.user.statusMessage += 'Connected to server ' + state.user.server + '\n'
@@ -82,13 +83,13 @@ function userModel (state, bus) {
       state.user.statusMessage += 'Received media from peer ' + peerId + '\n'
       bus.emit('media:addTracksFromStream', {
         peerId: peerId,
-        stream: stream,
-        isDefault: true
+        stream: stream
       })
     })
 
     multiPeer.on('connect', function (id) {
       state.user.statusMessage += 'Connected to peer ' + id + '\n'
+      multiPeer.sendToPeer(id, JSON.stringify({ type: 'updatePeerData', message: this._userData }))
       bus.emit('render')
     })
 

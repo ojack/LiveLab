@@ -10,17 +10,19 @@ function mediaListView (state, emit) {
         <h3 class="f6 lh-copy"> AVAILABLE MEDIA: </h3>
         <table>
           <tr>
+            <th>NAME</th>
             <th>ID</th>
-            <th>PEER</th>
             <th>KIND</th>
+            <th>PEER</th>
           </tr>
           ${state.media.all.map((id) => {
             var media = state.media.byId[id]
             return html`
               <tr>
-                <td>${media.track.id}</td>
-                <td>${state.peers.byId[media.peerId].nickname}</td>
-                <td>${media.track.kind}</td>
+                <td class="pa1">${media.name}</td>
+                <td class="pa1">${media.track.id}</td>
+                <td class="pa1">${media.track.kind}</td>
+                <td class="pa1">${state.peers.byId[media.peerId].nickname}</td>
               </tr>
             `
           })}

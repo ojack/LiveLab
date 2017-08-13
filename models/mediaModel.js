@@ -22,10 +22,6 @@ module.exports = mediaModel
 function mediaModel (state, bus) {
   state.media = xtend({
     byId: {},
-    default: {
-      audio: null,
-      video: null
-    },
     all: []
   }, state.media)
 
@@ -50,6 +46,10 @@ function mediaModel (state, bus) {
 
   bus.on('media:addTrack', function (opts) {
     state.media.byId[opts.track.id] = xtend({}, opts)
+    // if default communication stream, set name to default
+    if(opts.isDefault) {
+      state.media.byId[opts.track.id].name = "default"
+    }
     if (state.media.all.indexOf(opts.track.id) < 0) {
       state.media.all.push(opts.track.id)
     }
