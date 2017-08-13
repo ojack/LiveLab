@@ -48,6 +48,11 @@ function userModel (state, bus) {
   bus.on('user:join', function () {
     localStorage.setItem('uuid', state.user.uuid)
 
+    bus.emit('peers:updatePeer', {
+      peerId: state.user.uuid,
+      nickname: state.user.nickname
+    })
+
     multiPeer = new MultiPeer({
       room: state.user.room,
       server: state.user.server,
@@ -62,17 +67,18 @@ function userModel (state, bus) {
     multiPeer.on('peers', function (peers) {
       state.user.loggedIn = true
       state.user.statusMessage += 'Connected to server ' + state.user.server + '\n'
-      var peersInfo = peers.map(function (peer) {
+    /*  var peersInfo = peers.map(function (peer) {
         var peerInfo = {peerId: peer}
         if (peer === state.user.uuid) peerInfo.nickname = state.user.nickname
         return peerInfo
       })
-      bus.emit('peers:setAllPeers', peersInfo)
+      bus.emit('peers:setAllPeers', peersInfo)*/
       bus.emit('render')
     })
 
     //received new media stream from remote peer
     multiPeer.on('stream', function (peerId, stream) {
+      console.log("STREAM", peerId)
       state.user.statusMessage += 'Received media from peer ' + peerId + '\n'
       bus.emit('media:addTracksFromStream', {
         peerId: peerId,
@@ -84,7 +90,7 @@ function userModel (state, bus) {
       bus.emit('peers:removePeer', id)
     })
     multiPeer.on('new peer', function (data) {
-      // console.log("NEW REMOTE PEER", data)
+     console.log("NEW REMOTE PEER", data)
       bus.emit('peers:updatePeer', {
         peerId: data.id
       })
@@ -92,7 +98,9 @@ function userModel (state, bus) {
 
     //when first connected to remote peer, send user information
     multiPeer.on('connect', function (id) {
+      console.log("CONNECT", id)
       state.user.statusMessage += 'Connected to peer ' + id + '\n'
+      bus.emit('peers:updatePeer', {peerId: id})
       var userInfo = state.peers.byId[state.user.uuid]
       var infoObj = {}
       userInfo.tracks.forEach((trackId) => {
