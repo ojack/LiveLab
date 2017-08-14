@@ -6,8 +6,7 @@ module.exports = mediaListView
 function mediaListView (state, emit) {
   return html`
 
-    <div >
-        <h3 class="f6 lh-copy"> AVAILABLE MEDIA: </h3>
+    <div class="pa3 dib">
         <table>
           <tr>
             <th>NAME</th>
@@ -17,8 +16,10 @@ function mediaListView (state, emit) {
           </tr>
           ${state.media.all.map((id) => {
             var media = state.media.byId[id]
+            var className = id == state.ui.inspector.trackId ? "ba bw1" : ""
+            console.log(id, state.ui.inspector.trackId)
             return html`
-              <tr>
+              <tr class=${className} onclick=${()=>{emit('user:setInspectMedia', id)}}>
                 <td class="pa1">${media.name}</td>
                 <td class="pa1">${media.track.id}</td>
                 <td class="pa1">${media.track.kind}</td>
@@ -27,7 +28,7 @@ function mediaListView (state, emit) {
             `
           })}
       </table>
-        <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div>
+        <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div>
     </div>
     `
 }

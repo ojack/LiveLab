@@ -44,6 +44,28 @@ function userModel (state, bus) {
     bus.emit('render')
   })
 
+  bus.on('user:setInspectMedia', function(trackId){
+    var track = state.media.byId[trackId]
+    console.log("inspecting ", trackId, state.media.byId[trackId], multiPeer.peers[state.media.byId[trackId].peerId])
+
+    if(track.peerId===state.user.uuid) {
+      // track is local, to do: show information about peers shared with, etc
+      bus.emit('ui:updateInspectorTrack', {
+        trackId: trackId,
+        pc: null
+      })
+    } else {
+      if(track.peerId in multiPeer.peers){
+        bus.emit('ui:updateInspectorTrack', {
+          pc: multiPeer.peers[track.peerId]._pc,
+          trackId: trackId
+        })
+      }
+    }
+
+    bus.emit('render')
+  })
+
   // Initiate connection with signalling server
   bus.on('user:join', function () {
     localStorage.setItem('uuid', state.user.uuid)
@@ -82,7 +104,8 @@ function userModel (state, bus) {
       state.user.statusMessage += 'Received media from peer ' + peerId + '\n'
       bus.emit('media:addTracksFromStream', {
         peerId: peerId,
-        stream: stream
+        stream: stream,
+        isDefault: true
       })
     })
 
@@ -107,6 +130,8 @@ function userModel (state, bus) {
         infoObj[trackId] = xtend({}, state.media.byId[trackId])
         delete infoObj[trackId].track
       })
+      //for testing purposes, automatically set inspector info
+
 
       updateLocalInfo(id, {
         peer: xtend({}, userInfo),

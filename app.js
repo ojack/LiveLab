@@ -15,6 +15,7 @@ app.use(require('./models/devicesModel.js'))
 app.use(require('./models/mediaModel.js'))
 app.use(require('./models/peersModel.js'))
 app.use(require('./models/userModel.js'))
+app.use(require('./models/uiModel.js'))
 
 app.route('/', require('./views/main.js'))
 
