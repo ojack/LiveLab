@@ -22,7 +22,7 @@ app.route('/', require('./views/main.js'))
 
 app.mount('body div')
 
-},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/uiModel.js":7,"./models/userModel.js":8,"./views/main.js":156,"choo":23,"choo-expose":20,"choo-log":21}],2:[function(require,module,exports){
+},{"./models/devicesModel.js":4,"./models/mediaModel.js":5,"./models/peersModel.js":6,"./models/uiModel.js":7,"./models/userModel.js":8,"./views/main.js":157,"choo":23,"choo-expose":20,"choo-log":21}],2:[function(require,module,exports){
 // Module for handling connections to multiple peers
 
 var io = require('socket.io-client')
@@ -688,12 +688,13 @@ function uiModel (state, bus) {
 
   bus.on('ui:updateInspectorTrack', function (opts) {
 
-    state.ui.inspector = xtend(state.ui.inspector, opts)
+      state.ui.inspector = xtend(state.ui.inspector, opts)
       console.log("PEER CONNECTION", state.ui.inspector)
+      bus.emit('render')
   })
 
 
-  bus.emit('render')
+
 }
 
 },{}],8:[function(require,module,exports){
@@ -20576,9 +20577,11 @@ RTCInspector.prototype.createElement = function (props) {
     var defaultHtmlProps = {
 
     }
+    console.log("initial render", props)
     var _htmlProps = xtend(defaultHtmlProps, this.props.htmlProps)
 
     var el = html`<div ${_htmlProps}></div>`
+    if(props.pc) this.startMonitoring(props.pc)
     return el
 }
 
@@ -20587,12 +20590,13 @@ RTCInspector.prototype.createElement = function (props) {
 RTCInspector.prototype.update = function (props) {
   this.props.trackId = props.trackId
   this.props.pc = props.pc
+  //console.log("INSPECT", props)
   //if(props.isActive !== this.props.isActive){
     //start or stop checking for stats
     if(props.pc && props.pc !== null) {
       console.log("active", this)
       if(this.active !== true) {
-        this.active = true
+
         this.startMonitoring(props.pc)
       }
     } else {
@@ -20606,29 +20610,42 @@ RTCInspector.prototype.update = function (props) {
 
 
 RTCInspector.prototype.startMonitoring = function (pc) {
-  console.log("starting", this)
+  this.stopMonitoring()
+  //console.log("starting", this)
   this.active = true
   var el = this.element
   this.interval = setInterval(function(){
 
     this.props.pc.getStats(null).then(function(res) {
+  //    this.props.stats =
     //  el.innerHTML = JSON.stringify(res)
-      var outputString = this.props.trackId + "/n"
+    if(this.element){
+      while (this.element.hasChildNodes()) this.element.removeChild(this.element.lastChild)
+    }
+      var outputString = this.props.trackId + '\n'
+      var statsObj
       res.forEach(function(report){
         if(report.type === 'ssrc') {
           if(report.googTrackId === this.props.trackId) {
-            outputString += JSON.stringify(report)
+          //  Object.keys(report).forEach((key)=>{console.log(key)})
+            statsObj = html`<div>${Object.keys(report).map((key) => html`<p>${key} : ${report[key]}</p>`)}</div>`
+          //  outputString += JSON.stringify(report)
           }
         }
       }.bind(this))
-      this.element.innerHTML = outputString
-        console.log("got stats", res)
+    //  this.element.innerHTML = outputString
+  //  console.log("STATS OBJ", statsObj)
+      this.element.appendChild(statsObj)
+      //  console.log("got stats", res)
       }.bind(this))
   }.bind(this), 1000)
 }
 
 RTCInspector.prototype.stopMonitoring = function() {
   this.active = false
+  if(this.element) {
+    while (this.element.hasChildNodes()) this.element.removeChild(this.element.lastChild)
+  }
   clearInterval(this.interval)
 }
 
@@ -20978,6 +20995,36 @@ VideoContainer.prototype.update = function (props) {
 
 },{"choo/html":22,"nanocomponent":66,"xtend":140}],155:[function(require,module,exports){
 'use strict'
+const html = require('choo/html')
+const RTCInspector = require('./components/RTCInspector.js')
+const VideoEl = require('./components/VideoContainer.js')
+
+module.exports = inspectorComponent
+
+const inspector = RTCInspector()
+const previewVid = VideoEl()
+
+function inspectorComponent (state, emit) {
+  return  html`<div class="h5 overflow-scroll pa2">
+    ${state.media.byId[state.ui.inspector.trackId].track.kind==='video' ? previewVid.render({
+      htmlProps: {
+        class: 'h4 w4'
+      },
+      track: (state.ui.inspector.trackId in state.media.byId)  ? state.media.byId[state.ui.inspector.trackId].track : null,
+      id: (state.ui.inspector.trackId in state.media.byId) ?  state.media.byId[state.ui.inspector.trackId].track.id : null
+    }) : null }
+    ${inspector.render({
+      htmlProps: {
+      
+      },
+      pc: state.ui.inspector.pc,
+      trackId: state.ui.inspector.trackId
+    })}
+  </div>`
+}
+
+},{"./components/RTCInspector.js":146,"./components/VideoContainer.js":154,"choo/html":22}],156:[function(require,module,exports){
+'use strict'
 
 const html = require('choo/html')
 const input = require('./components/input.js')
@@ -21072,7 +21119,7 @@ function loginView (state, emit) {
   }
 }
 
-},{"./components/dropdown.js":147,"./components/input.js":148,"./components/videocontainer.js":154,"choo/html":22}],156:[function(require,module,exports){
+},{"./components/dropdown.js":147,"./components/input.js":148,"./components/videocontainer.js":154,"choo/html":22}],157:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -21099,7 +21146,7 @@ function mainView (state, emit) {
   }
 }
 
-},{"./login.js":155,"./workspace.js":158,"choo/html":22}],157:[function(require,module,exports){
+},{"./login.js":156,"./workspace.js":159,"choo/html":22}],158:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 
@@ -21109,16 +21156,19 @@ function mediaListView (state, emit) {
   return html`
 
     <div class="pa3 dib">
-        <table>
-          <tr>
-            <th>NAME</th>
-            <th>ID</th>
-            <th>KIND</th>
-            <th>PEER</th>
-          </tr>
+        <table class="h5 overflow-scroll">
+          <thead>
+            <tr>
+              <th>NAME</th>
+              <th>ID</th>
+              <th>KIND</th>
+              <th>PEER</th>
+            </tr>
+          </thead>
+          <tbody>
           ${state.media.all.map((id) => {
             var media = state.media.byId[id]
-            var className = id == state.ui.inspector.trackId ? "ba bw1" : ""
+            var className = id == state.ui.inspector.trackId ? "bg-gray pointer" : "dim pointer"
             console.log(id, state.ui.inspector.trackId)
             return html`
               <tr class=${className} onclick=${()=>{emit('user:setInspectMedia', id)}}>
@@ -21129,13 +21179,14 @@ function mediaListView (state, emit) {
               </tr>
             `
           })}
+          </tbody>
       </table>
         <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div>
     </div>
     `
 }
 
-},{"choo/html":22}],158:[function(require,module,exports){
+},{"choo/html":22}],159:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -21144,11 +21195,11 @@ const allVideos = require('./allVideos.js')
 const mediaList = require('./mediaList.js')
 const panel = require('./components/panel.js')
 const AddBroadcast = require('./addBroadcast.js')
-const RTCInspector = require('./components/RTCInspector.js')
 
+const inspector = require('./inspector.js')
 module.exports = workspaceView
 
-const inspector = RTCInspector()
+
 //  <!--${AddBroadcast(state, emit)}-->
 //  ${login(state, emit)}
 // ${allVideos(state, emit)}
@@ -21159,11 +21210,11 @@ function workspaceView (state, emit) {
       <div class="fl w-70-ns w-100 pa2">
         ${communication(state, emit)}
       </div>
-      <div class="fl w-30-ns w-100 mw6">
+      <div class="fl w-30-ns w-100 mw6 h-100">
         ${panel(
           {
             htmlProps: {
-              class: "w-100 h-50"
+              class: "w-100"
             },
             contents: mediaList(state, emit),
             closable: false,
@@ -21173,15 +21224,11 @@ function workspaceView (state, emit) {
         ${state.ui.inspector.trackId !== null ? panel(
           {
             htmlProps: {
-              class: "w-100 f7"
+              class: "w-100 f7 mv2"
             },
             closable: false,
             header: "Stats: " + state.ui.inspector.trackId,
-            contents: inspector.render({
-              htmlProps: {},
-              pc: state.ui.inspector.pc,
-              trackId: state.ui.inspector.trackId
-            })
+            contents: inspector(state,emit)
           }
         ) : ''}
       </div>
@@ -21190,4 +21237,4 @@ function workspaceView (state, emit) {
     `
 }
 
-},{"./addBroadcast.js":143,"./allVideos.js":144,"./communication.js":145,"./components/RTCInspector.js":146,"./components/panel.js":150,"./mediaList.js":157,"choo/html":22}]},{},[1]);
+},{"./addBroadcast.js":143,"./allVideos.js":144,"./communication.js":145,"./components/panel.js":150,"./inspector.js":155,"./mediaList.js":158,"choo/html":22}]},{},[1]);
