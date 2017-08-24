@@ -753,11 +753,19 @@ function userModel (state, bus) {
     console.log("inspecting ", trackId, state.media.byId[trackId], multiPeer.peers[state.media.byId[trackId].peerId])
 
     if(track.peerId===state.user.uuid) {
-      // track is local, to do: show information about peers shared with, etc
-      bus.emit('ui:updateInspectorTrack', {
-        trackId: trackId,
-        pc: null
-      })
+      // if track is local, if there is a peer connection, show stats for whatever peer connectionr
+      // to do: show information about peers shared with, etc
+      if(Object.keys(multiPeer.peers).length > 0){
+        bus.emit('ui:updateInspectorTrack', {
+          trackId: trackId,
+          pc: multiPeer.peers[Object.keys(multiPeer.peers)[0]]._pc
+        })
+      } else {
+        bus.emit('ui:updateInspectorTrack', {
+          trackId: trackId,
+          pc: null
+        })
+      }
     } else {
       if(track.peerId in multiPeer.peers){
         bus.emit('ui:updateInspectorTrack', {
