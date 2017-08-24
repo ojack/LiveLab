@@ -546,7 +546,7 @@ function mediaModel (state, bus) {
     if (state.media.all.indexOf(opts.track.id) < 0) {
       state.media.all.push(opts.track.id)
     }
-    
+
     bus.emit('peers:addTrackToPeer', {
       trackId: opts.track.id,
       peerId: opts.peerId,
@@ -560,7 +560,11 @@ function mediaModel (state, bus) {
   bus.on('media:removeTrack', function (trackId) {
     delete state.media.byId[trackId]
     var index = state.media.all.indexOf(trackId)
+    if(trackId === state.ui.inspector.trackId){
+      bus.emit('ui:updateInspectorTrack', {trackId: null, pc: null})
+    }
     if (index > -1) state.media.all.splice(index, 1)
+
     bus.emit('render')
   })
   // Hacky way to avoid duplicating getusermedia calls:
@@ -20617,6 +20621,7 @@ RTCInspector.prototype.startMonitoring = function (pc) {
   this.interval = setInterval(function(){
 
     this.props.pc.getStats(null).then(function(res) {
+    //console.log("STATS", res)
   //    this.props.stats =
     //  el.innerHTML = JSON.stringify(res)
     if(this.element){
@@ -21005,6 +21010,7 @@ const inspector = RTCInspector()
 const previewVid = VideoEl()
 
 function inspectorComponent (state, emit) {
+
   return  html`<div class="h5 overflow-scroll pa2">
     ${state.media.byId[state.ui.inspector.trackId].track.kind==='video' ? previewVid.render({
       htmlProps: {
@@ -21015,7 +21021,7 @@ function inspectorComponent (state, emit) {
     }) : null }
     ${inspector.render({
       htmlProps: {
-      
+
       },
       pc: state.ui.inspector.pc,
       trackId: state.ui.inspector.trackId
@@ -21156,7 +21162,7 @@ function mediaListView (state, emit) {
   return html`
 
     <div class="pa3 dib">
-        <table class="h5 overflow-scroll">
+        <table cellspacing="0" cellpadding="0" class="h5 collapse overflow-scroll">
           <thead>
             <tr>
               <th>NAME</th>

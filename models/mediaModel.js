@@ -57,7 +57,7 @@ function mediaModel (state, bus) {
     if (state.media.all.indexOf(opts.track.id) < 0) {
       state.media.all.push(opts.track.id)
     }
-    
+
     bus.emit('peers:addTrackToPeer', {
       trackId: opts.track.id,
       peerId: opts.peerId,
@@ -71,7 +71,11 @@ function mediaModel (state, bus) {
   bus.on('media:removeTrack', function (trackId) {
     delete state.media.byId[trackId]
     var index = state.media.all.indexOf(trackId)
+    if(trackId === state.ui.inspector.trackId){
+      bus.emit('ui:updateInspectorTrack', {trackId: null, pc: null})
+    }
     if (index > -1) state.media.all.splice(index, 1)
+
     bus.emit('render')
   })
   // Hacky way to avoid duplicating getusermedia calls:

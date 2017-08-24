@@ -66,6 +66,7 @@ RTCInspector.prototype.startMonitoring = function (pc) {
   this.interval = setInterval(function(){
 
     this.props.pc.getStats(null).then(function(res) {
+    //console.log("STATS", res)
   //    this.props.stats =
     //  el.innerHTML = JSON.stringify(res)
     if(this.element){

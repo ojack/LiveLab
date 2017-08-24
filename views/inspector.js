@@ -9,6 +9,7 @@ const inspector = RTCInspector()
 const previewVid = VideoEl()
 
 function inspectorComponent (state, emit) {
+
   return  html`<div class="h5 overflow-scroll pa2">
     ${state.media.byId[state.ui.inspector.trackId].track.kind==='video' ? previewVid.render({
       htmlProps: {
@@ -19,7 +20,7 @@ function inspectorComponent (state, emit) {
     }) : null }
     ${inspector.render({
       htmlProps: {
-      
+
       },
       pc: state.ui.inspector.pc,
       trackId: state.ui.inspector.trackId

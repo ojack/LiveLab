@@ -7,7 +7,7 @@ function mediaListView (state, emit) {
   return html`
 
     <div class="pa3 dib">
-        <table class="h5 overflow-scroll">
+        <table cellspacing="0" cellpadding="0" class="h5 collapse overflow-scroll">
           <thead>
             <tr>
               <th>NAME</th>
