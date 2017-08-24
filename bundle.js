@@ -20581,7 +20581,6 @@ RTCInspector.prototype.createElement = function (props) {
     var defaultHtmlProps = {
 
     }
-    console.log("initial render", props)
     var _htmlProps = xtend(defaultHtmlProps, this.props.htmlProps)
 
     var el = html`<div ${_htmlProps}></div>`
@@ -20598,7 +20597,6 @@ RTCInspector.prototype.update = function (props) {
   //if(props.isActive !== this.props.isActive){
     //start or stop checking for stats
     if(props.pc && props.pc !== null) {
-      console.log("active", this)
       if(this.active !== true) {
 
         this.startMonitoring(props.pc)
@@ -20624,6 +20622,7 @@ RTCInspector.prototype.startMonitoring = function (pc) {
     //console.log("STATS", res)
   //    this.props.stats =
     //  el.innerHTML = JSON.stringify(res)
+    console.log("STATS", res)
     if(this.element){
       while (this.element.hasChildNodes()) this.element.removeChild(this.element.lastChild)
     }
