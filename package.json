@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "watch": "cross-env NODE_ENV=development watchify -t sheetify app.js -v -o bundle.js",
-    "start": "cross-env NODE_ENV=development electron .",
+    "start": "cross-env NODE_ENV=development nw .",
     "dev": "cross-env npm run watch & npm run start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,6 +22,7 @@
   "devDependencies": {
     "browserify": "^14.4.0",
     "cross-env": "^5.0.1",
+    "nwjs": "^1.4.4",
     "standard": "^10.0.2",
     "watchify": "^3.9.0"
   },
