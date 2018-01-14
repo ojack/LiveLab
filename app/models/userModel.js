@@ -83,6 +83,21 @@ function userModel (state, bus) {
       nickname: state.user.nickname
     })
 
+    //QUICK AND DIRTY TEST of sharing media streams between windows in nwjs
+
+    // var testPopup = window.open(null, "SHOW", 'fullscreen=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=no')
+    //
+    //   var testVid = testPopup.document.createElement("video")
+    // var vid = document.getElementsByTagName("video")[0]
+    //
+    // var src = vid.srcObject
+    //   console.log("VID EL", vid, src)
+    //   testVid.srcObject = src
+    //   testVid.autoplay = true
+    //   testPopup.document.body.appendChild(testVid)
+    //   console.log(testPopup)
+
+
     multiPeer = new MultiPeer({
       room: state.user.room,
       server: state.user.server,

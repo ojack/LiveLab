@@ -17,6 +17,8 @@ app.use(require('./models/peersModel.js'))
 app.use(require('./models/userModel.js'))
 app.use(require('./models/uiModel.js'))
 
-app.route('/index.html', require('./views/main.js'))
+//routing is different in nwjs vs browser version...include both routes to cover bases
+app.route('/public/index.html', require('./views/main.js'))
+app.route('', require('./views/main.js'))
 
 app.mount('body div')
