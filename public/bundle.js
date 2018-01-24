@@ -1795,8 +1795,8 @@ function mediaListView (state, emit) {
             <tr>
               <th>PEER</th>
               <th>NAME</th>
-              <th>ID</th>
               <th>KIND</th>
+              <th>ID</th>
             </tr>
           </thead>
           <tbody>
@@ -1807,8 +1807,8 @@ function mediaListView (state, emit) {
             return html`
               <tr class=${className} style="height:20px" onclick=${()=>{emit('user:setInspectMedia', id)}}>
                 <td class="pa1" style="height:20px">${state.peers.byId[media.peerId].nickname}</td>
-                <td class="pa1" style="height:20px">${media.track.kind}</td>
                 <td class="pa1" style="height:20px">${media.name}</td>
+                <td class="pa1" style="height:20px">${media.track.kind}</td>
                 <td class="pa1" style="height:20px">${media.track.id}</td>
               </tr>
             `
