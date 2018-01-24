@@ -1,5 +1,7 @@
 'use strict'
 const html = require('choo/html')
+const inspector = require('./inspector.js')
+const panel = require('./components/panel.js')
 
 module.exports = mediaListView
 
@@ -17,7 +19,7 @@ function mediaListView (state, emit) {
         </tr>
       </thead>
       </table>
-      <div style="height:180px;overflow-y:auto">
+      <div style="max-height:180px;overflow-y:auto">
         <table cellspacing="0" cellpadding="0" >
           <tbody>
           ${state.media.all.map((id) => {
@@ -37,7 +39,8 @@ function mediaListView (state, emit) {
           </tbody>
       </table>
       </div>
-        <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div>
+        <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div>
+        ${state.ui.inspector.trackId !== null ? inspector(state,emit) : ''}
     </div>
     `
 }

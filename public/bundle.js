@@ -1645,7 +1645,7 @@ const previewVid = VideoEl()
 
 function inspectorComponent (state, emit) {
 
-  return  html`<div class="h5 overflow-scroll pa2">
+  return  html`<div class="overflow-scroll pa0">
     ${state.media.byId[state.ui.inspector.trackId].track.kind==='video' ? previewVid.render({
       htmlProps: {
         class: 'h4 w4'
@@ -1786,6 +1786,8 @@ function mainView (state, emit) {
 },{"./login.js":21,"./workspace.js":24,"choo/html":38}],23:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
+const inspector = require('./inspector.js')
+const panel = require('./components/panel.js')
 
 module.exports = mediaListView
 
@@ -1803,7 +1805,7 @@ function mediaListView (state, emit) {
         </tr>
       </thead>
       </table>
-      <div style="height:180px;overflow-y:auto">
+      <div style="max-height:180px;overflow-y:auto">
         <table cellspacing="0" cellpadding="0" >
           <tbody>
           ${state.media.all.map((id) => {
@@ -1823,12 +1825,13 @@ function mediaListView (state, emit) {
           </tbody>
       </table>
       </div>
-        <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div>
+        <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div>
+        ${state.ui.inspector.trackId !== null ? inspector(state,emit) : ''}
     </div>
     `
 }
 
-},{"choo/html":38}],24:[function(require,module,exports){
+},{"./components/panel.js":15,"./inspector.js":20,"choo/html":38}],24:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -1838,7 +1841,7 @@ const mediaList = require('./mediaList.js')
 const panel = require('./components/panel.js')
 const AddBroadcast = require('./addBroadcast.js')
 
-const inspector = require('./inspector.js')
+
 module.exports = workspaceView
 
 
@@ -1863,23 +1866,14 @@ function workspaceView (state, emit) {
             header:   "Shared Media"
           }
         )}
-        ${state.ui.inspector.trackId !== null ? panel(
-          {
-            htmlProps: {
-              class: "w-100 f7 mv2"
-            },
-            closable: false,
-            header: "Stats: " + state.ui.inspector.trackId,
-            contents: inspector(state,emit)
-          }
-        ) : ''}
+
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
     </div>
     `
 }
 
-},{"./addBroadcast.js":9,"./communication.js":10,"./components/panel.js":15,"./inspector.js":20,"./mediaList.js":23,"choo/html":38}],25:[function(require,module,exports){
+},{"./addBroadcast.js":9,"./communication.js":10,"./components/panel.js":15,"./mediaList.js":23,"choo/html":38}],25:[function(require,module,exports){
 module.exports = after
 
 function after(count, callback, err_cb) {

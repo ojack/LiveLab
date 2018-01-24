@@ -7,7 +7,7 @@ const mediaList = require('./mediaList.js')
 const panel = require('./components/panel.js')
 const AddBroadcast = require('./addBroadcast.js')
 
-const inspector = require('./inspector.js')
+
 module.exports = workspaceView
 
 
@@ -32,16 +32,7 @@ function workspaceView (state, emit) {
             header:   "Shared Media"
           }
         )}
-        ${state.ui.inspector.trackId !== null ? panel(
-          {
-            htmlProps: {
-              class: "w-100 f7 mv2"
-            },
-            closable: false,
-            header: "Stats: " + state.ui.inspector.trackId,
-            contents: inspector(state,emit)
-          }
-        ) : ''}
+
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
     </div>

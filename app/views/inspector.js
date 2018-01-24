@@ -17,7 +17,7 @@ const previewVid = VideoEl()
 
 function inspectorComponent (state, emit) {
 
-  return  html`<div class="h5 overflow-scroll pa2">
+  return  html`<div class="overflow-scroll pa0">
     ${state.media.byId[state.ui.inspector.trackId].track.kind==='video' ? previewVid.render({
       htmlProps: {
         class: 'h4 w4'
