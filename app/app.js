@@ -29,26 +29,28 @@ if(typeof nw == "object"){
   //console.log(win)
   win.x = Math.floor(winX)
   win.y = Math.floor(winY)
+
+  // var screenCB = {
+  //   onDisplayBoundsChanged: function(screen) {
+  //     console.log('displayBoundsChanged', screen);
+  //   },
+  //
+  //   onDisplayAdded: function(screen) {
+  //     console.log('displayAdded', screen);
+  //   },
+  //
+  //   onDisplayRemoved: function(screen) {
+  //     console.log('displayRemoved', screen)
+  //   }
+  // }
+  //
+  // // listen to screen events
+  // nw.Screen.on('displayBoundsChanged', screenCB.onDisplayBoundsChanged)
+  // nw.Screen.on('displayAdded', screenCB.onDisplayAdded)
+  // nw.Screen.on('displayRemoved', screenCB.onDisplayRemoved)
 }
 
-var screenCB = {
-  onDisplayBoundsChanged: function(screen) {
-    console.log('displayBoundsChanged', screen);
-  },
 
-  onDisplayAdded: function(screen) {
-    console.log('displayAdded', screen);
-  },
-
-  onDisplayRemoved: function(screen) {
-    console.log('displayRemoved', screen)
-  }
-}
-
-// listen to screen events
-nw.Screen.on('displayBoundsChanged', screenCB.onDisplayBoundsChanged)
-nw.Screen.on('displayAdded', screenCB.onDisplayAdded)
-nw.Screen.on('displayRemoved', screenCB.onDisplayRemoved)
 
 
 

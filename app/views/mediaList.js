@@ -17,7 +17,7 @@ function mediaListView (state, emit) {
         </tr>
       </thead>
       </table>
-      <div style="height:200px;overflow-y:auto">
+      <div style="height:180px;overflow-y:auto">
         <table cellspacing="0" cellpadding="0" >
           <tbody>
           ${state.media.all.map((id) => {
@@ -33,7 +33,7 @@ function mediaListView (state, emit) {
               </tr>
             `
           })}
-        
+
           </tbody>
       </table>
       </div>
