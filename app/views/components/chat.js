@@ -20,7 +20,7 @@ function chatView (state, emit) {
 //  scrollEl.scrollTop = scrollEl.scrollHeight
   //console.log('SROLL EL', scrollEl, scrollEl.scrollTop, scrollEl.scrollHeight)
   return html`
-    <div  onload=${(e) => console.log('loaded!', e)} class="pa2 dib w-100">
+    <div onload=${(e) => console.log('loaded!', e)} class="pa2 dib w-100">
       ${scrollEl}
       ${input('', 'message', {
         value: state.ui.chat.current,

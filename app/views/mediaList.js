@@ -7,7 +7,6 @@ module.exports = mediaListView
 
 function mediaListView (state, emit) {
   return html`
-
     <div class="pa3 dib" style="width:100%">
     <table style="width:100%" cellspacing="0" cellpadding="0" >
       <thead>

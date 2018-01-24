@@ -5,6 +5,7 @@ const communication = require('./communication.js')
 // const allVideos = require('./allVideos.js')
 const mediaList = require('./mediaList.js')
 const panel = require('./components/panel.js')
+const chat = require('./components/chat.js')
 const AddBroadcast = require('./addBroadcast.js')
 
 
@@ -32,9 +33,19 @@ function workspaceView (state, emit) {
             header:   "Shared Media"
           }
         )}
-
+        ${panel(
+             {
+               htmlProps: {
+                 class: "w-100"
+               },
+               contents: chat(state, emit),
+               closable: false,
+               header:   "Chat"
+             }
+           )}
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
+
     </div>
     `
 }
