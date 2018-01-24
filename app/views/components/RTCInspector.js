@@ -68,9 +68,9 @@ RTCInspector.prototype.startMonitoring = function (pc) {
   //    this.props.stats =
     //  el.innerHTML = JSON.stringify(res)
     console.log("STATS", res)
-    if(this.element){
-      while (this.element.hasChildNodes()) this.element.removeChild(this.element.lastChild)
-    }
+    // if(this.element){
+    //   while (this.element.hasChildNodes()) this.element.removeChild(this.element.lastChild)
+    // }
       var outputString = this.props.trackId + '\n'
       var statsObj
       res.forEach(function(report){

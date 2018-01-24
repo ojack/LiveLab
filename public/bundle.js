@@ -1249,9 +1249,9 @@ RTCInspector.prototype.startMonitoring = function (pc) {
   //    this.props.stats =
     //  el.innerHTML = JSON.stringify(res)
     console.log("STATS", res)
-    if(this.element){
-      while (this.element.hasChildNodes()) this.element.removeChild(this.element.lastChild)
-    }
+    // if(this.element){
+    //   while (this.element.hasChildNodes()) this.element.removeChild(this.element.lastChild)
+    // }
       var outputString = this.props.trackId + '\n'
       var statsObj
       res.forEach(function(report){
@@ -1631,7 +1631,14 @@ const VideoEl = require('./components/VideoContainer.js')
 
 module.exports = inspectorComponent
 
-const inspector = RTCInspector()
+//const inspector = RTCInspector()
+// <!--${inspector.render({
+//   htmlProps: {
+//
+//   },
+//   pc: state.ui.inspector.pc,
+//   trackId: state.ui.inspector.trackId
+// })}-->
 const previewVid = VideoEl()
 
 function inspectorComponent (state, emit) {
@@ -1644,13 +1651,7 @@ function inspectorComponent (state, emit) {
       track: (state.ui.inspector.trackId in state.media.byId)  ? state.media.byId[state.ui.inspector.trackId].track : null,
       id: (state.ui.inspector.trackId in state.media.byId) ?  state.media.byId[state.ui.inspector.trackId].track.id : null
     }) : null }
-    ${inspector.render({
-      htmlProps: {
 
-      },
-      pc: state.ui.inspector.pc,
-      trackId: state.ui.inspector.trackId
-    })}
   </div>`
 }
 
@@ -1789,16 +1790,19 @@ module.exports = mediaListView
 function mediaListView (state, emit) {
   return html`
 
-    <div class="pa3 dib">
-        <table cellspacing="0" cellpadding="0" class="collapse overflow-scroll">
-          <thead>
-            <tr>
-              <th>PEER</th>
-              <th>NAME</th>
-              <th>KIND</th>
-              <th>ID</th>
-            </tr>
-          </thead>
+    <div class="pa3 dib" style="width:100%">
+    <table style="width:100%" cellspacing="0" cellpadding="0" >
+      <thead>
+        <tr>
+          <th style="width:20%">PEER</th>
+          <th style="width:20%">NAME</th>
+          <th style="width:20%">KIND</th>
+          <th style="width:40%">ID</th>
+        </tr>
+      </thead>
+      </table>
+      <div style="height:200px;overflow-y:auto">
+        <table cellspacing="0" cellpadding="0" >
           <tbody>
           ${state.media.all.map((id) => {
             var media = state.media.byId[id]
@@ -1806,15 +1810,17 @@ function mediaListView (state, emit) {
             console.log(id, state.ui.inspector.trackId)
             return html`
               <tr class=${className} style="height:20px" onclick=${()=>{emit('user:setInspectMedia', id)}}>
-                <td class="pa1" style="height:20px">${state.peers.byId[media.peerId].nickname}</td>
-                <td class="pa1" style="height:20px">${media.name}</td>
-                <td class="pa1" style="height:20px">${media.track.kind}</td>
-                <td class="pa1" style="height:20px">${media.track.id}</td>
+                <td class="pa1" style="width:20%;height:20px">${state.peers.byId[media.peerId].nickname}</td>
+                <td class="pa1" style="width:20%;height:20px">${media.name}</td>
+                <td class="pa1" style="width:20%;height:20px">${media.track.kind}</td>
+                <td class="pa1" style="width:40%;height:20px;font-size:8px">${media.track.id}</td>
               </tr>
             `
           })}
+        
           </tbody>
       </table>
+      </div>
         <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div>
     </div>
     `

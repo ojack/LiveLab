@@ -5,7 +5,14 @@ const VideoEl = require('./components/VideoContainer.js')
 
 module.exports = inspectorComponent
 
-const inspector = RTCInspector()
+//const inspector = RTCInspector()
+// <!--${inspector.render({
+//   htmlProps: {
+//
+//   },
+//   pc: state.ui.inspector.pc,
+//   trackId: state.ui.inspector.trackId
+// })}-->
 const previewVid = VideoEl()
 
 function inspectorComponent (state, emit) {
@@ -18,12 +25,6 @@ function inspectorComponent (state, emit) {
       track: (state.ui.inspector.trackId in state.media.byId)  ? state.media.byId[state.ui.inspector.trackId].track : null,
       id: (state.ui.inspector.trackId in state.media.byId) ?  state.media.byId[state.ui.inspector.trackId].track.id : null
     }) : null }
-    ${inspector.render({
-      htmlProps: {
 
-      },
-      pc: state.ui.inspector.pc,
-      trackId: state.ui.inspector.trackId
-    })}
   </div>`
 }
