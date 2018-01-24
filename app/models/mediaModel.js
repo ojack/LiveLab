@@ -25,6 +25,8 @@ function mediaModel (state, bus) {
     all: []
   }, state.media)
 
+  //  var ip = window.location.host
+ 
   bus.on('media:addTracksFromStream', function (options) {
     var tracks = options.stream.getTracks()
     tracks.forEach(function (track) {

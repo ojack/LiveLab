@@ -2,7 +2,7 @@
 
 const html = require('choo/html')
 const communication = require('./communication.js')
-const allVideos = require('./allVideos.js')
+// const allVideos = require('./allVideos.js')
 const mediaList = require('./mediaList.js')
 const panel = require('./components/panel.js')
 const AddBroadcast = require('./addBroadcast.js')

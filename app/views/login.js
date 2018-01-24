@@ -4,12 +4,14 @@ const html = require('choo/html')
 const input = require('./components/input.js')
 const Dropdown = require('./components/dropdown.js')
 const VideoEl = require('./components/videocontainer.js')
+// const Popup = require('./components/popup.js')
 
 module.exports = loginView
 
 const audioDropdown = Dropdown()
 const videoDropdown = Dropdown()
 const defaultVid = VideoEl()
+// const testPopup = Popup()
 // const demoVideo = Video()
 
 function loginView (state, emit) {
@@ -22,6 +24,7 @@ function loginView (state, emit) {
 
   return html`
   <div>
+  
     <div>
      ${defaultVid.render({
        htmlProps: {

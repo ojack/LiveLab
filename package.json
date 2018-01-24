@@ -2,11 +2,11 @@
   "name": "livelabv1",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "nw.js",
   "scripts": {
-    "watch": "cross-env NODE_ENV=development watchify -t sheetify app.js -v -o bundle.js",
-    "start": "cross-env NODE_ENV=development electron .",
-    "dev": "cross-env npm run watch & npm run start",
+    "watch": "cross-env NODE_ENV=development watchify -t sheetify app/app.js -v -o public/bundle.js",
+    "start": "cross-env NODE_ENV=development nw .",
+    "start-browser": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -22,12 +22,14 @@
   "devDependencies": {
     "browserify": "^14.4.0",
     "cross-env": "^5.0.1",
+    "nwjs": "^1.4.4",
     "standard": "^10.0.2",
     "watchify": "^3.9.0"
   },
   "dependencies": {
     "assert": "^1.4.1",
     "base-elements": "^2.2.1",
+    "browserify-middleware": "^8.0.0",
     "choo": "^5.6.2",
     "choo-expose": "^1.0.1",
     "choo-log": "^6.1.2",
@@ -35,6 +37,7 @@
     "electron-store": "^1.1.0",
     "electron-window": "^0.8.1",
     "enumerate-devices": "^1.1.1",
+    "express": "^4.16.2",
     "getusermedia": "^2.0.1",
     "juliangruber-shallow-equal": "^1.0.4",
     "microcomponent": "^3.1.6",
