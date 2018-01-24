@@ -735,13 +735,19 @@ function uiModel (state, bus) {
     trackId: null,
     pc: null, //peer connection to be inspected
     selectedTab: "track" //which inspector tab is currently open
+  },
+  chat: {
+    messages: [
+
+    ],
+    current: ""
   }
   }, state.ui)
 
   bus.on('ui:updateCommunication', function (opts) {
 
   })
-  
+
   bus.on('ui:updateInspectorTrack', function (opts) {
 
       state.ui.inspector = xtend(state.ui.inspector, opts)
@@ -749,8 +755,32 @@ function uiModel (state, bus) {
       bus.emit('render')
   })
 
+  bus.on('ui:sendChatMessage', function(){
+     var chatObj = {
+       peerId: state.user.uuid,
+       message: state.ui.chat.current,
+       date: Date.now()
+     }
+   //  bus.emit('user:sendChatMessage', chatObj)
+     appendNewChat(chatObj)
+     state.ui.chat.current = ""
+     bus.emit('render')
 
+   })
 
+   bus.on('ui:receivedNewChat', function (chatObj){
+
+   })
+
+   bus.on('ui:updateChat', function(text){
+     state.ui.chat.current = text
+   })
+
+   function appendNewChat(chatObj){
+       console.log(chatObj)
+       state.ui.chat.messages.push(chatObj)
+       console.log(state.ui.chat)
+      }
 }
 
 },{}],8:[function(require,module,exports){
@@ -944,8 +974,13 @@ function userModel (state, bus) {
       multiPeer.stream = stream
       multiPeer.reinitAll()
     }
+    bus.emit('render')
   })
 
+  bus.on('user:sendChatMessage', function(msg){
+     multiPeer.sendToAll(msg)
+   })
+   
   function getLocalCommunicationStream () {
     var tracks = []
     if (state.devices.default.previewTracks.audio !== null) {
@@ -1825,7 +1860,7 @@ function mediaListView (state, emit) {
           </tbody>
       </table>
       </div>
-        <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div>
+        <!--div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div-->
         ${state.ui.inspector.trackId !== null ? inspector(state,emit) : ''}
     </div>
     `
