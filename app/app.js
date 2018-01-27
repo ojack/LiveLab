@@ -30,6 +30,8 @@ if(typeof nw == "object"){
   win.x = Math.floor(winX)
   win.y = Math.floor(winY)
 
+
+
   // var screenCB = {
   //   onDisplayBoundsChanged: function(screen) {
   //     console.log('displayBoundsChanged', screen);

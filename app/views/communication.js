@@ -20,7 +20,7 @@ function communicationView (state, emit) {
   // create containers for each
   var communicationContainers = peerVids.map(function (vidEl, index) {
     var peerIndex = state.peers.all[index]
-    console.log("VOLUME", peerIndex, state.ui.communication)
+  
     if (peerIndex) {
       var trackId = state.peers.byId[peerIndex].defaultTracks.video
       var audioId = state.peers.byId[peerIndex].defaultTracks.audio

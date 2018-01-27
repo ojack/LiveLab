@@ -29,11 +29,13 @@ function devicesModel (state, bus) {
       kind: "audio",
       name: "",
       errorMessage: "",
-      audio: {
-        deviceId: null
-      },
-      video: {
-        deviceId: null
+      kinds: {
+        audio: {
+          deviceId: null
+        },
+        video: {
+          deviceId: null
+        }
       },
       previewTrack: null
     },
@@ -54,6 +56,12 @@ function devicesModel (state, bus) {
   window.onload = function () {
     getDevices()
     loadConstraints()
+    //if using nw.js, allow desktop capture
+    if(typeof nw == "object"){
+      state.devices.addBroadcast.kinds.screen =  {
+        deviceId: null
+      }
+    }
     bus.emit('peers:updatePeer', {
       peerId: state.user.uuid
     })
@@ -110,7 +118,7 @@ function devicesModel (state, bus) {
   })
 
   bus.on('devices:updateBroadcastDevice', function(obj){
-    xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind], obj)
+    xtend(state.devices.addBroadcast.kinds[state.devices.addBroadcast.kind], obj)
     bus.emit('render')
   })
 
@@ -119,7 +127,7 @@ function devicesModel (state, bus) {
   bus.on('devices:updateBroadcastConstraints', function(obj){
     Object.keys(obj).forEach(key =>
       {
-        xtend(state.devices.addBroadcast[state.devices.addBroadcast.kind][key], obj[key])
+        xtend(state.devices.addBroadcast.kinds[state.devices.addBroadcast.kind][key], obj[key])
       }
     )
     bus.emit('render')
@@ -144,6 +152,16 @@ function devicesModel (state, bus) {
       state.devices.addBroadcast.previewTrack.stop()
       state.devices.addBroadcast.previewTrack = null
     }
+
+    if(val==="screen"){
+      nw.Screen.chooseDesktopMedia(["window","screen"], (streamId)=>{
+        state.devices.addBroadcast.kinds.screen.deviceId= streamId
+        bus.emit('devices:updateBroadcastPreview')
+      })
+
+    }
+    // to do: if screen, show screen popup
+
     //set broadcast to default on c
 
     bus.emit('render')
@@ -151,8 +169,8 @@ function devicesModel (state, bus) {
 
   //add available constraint options to devices model
   function loadConstraints(){
-    xtend(state.devices.addBroadcast.audio, constraintsJSON.audio)
-    xtend(state.devices.addBroadcast.video, constraintsJSON.video)
+    xtend(state.devices.addBroadcast.kinds.audio, constraintsJSON.audio)
+    xtend(state.devices.addBroadcast.kinds.video, constraintsJSON.video)
   }
 
   bus.on('devices:updateBroadcastPreview', function () {
@@ -162,32 +180,47 @@ function devicesModel (state, bus) {
   })
 
   bus.on('devices:addNewMediaToBroadcast', function () {
-    getConstraintsFromSettings(xtend({}, state.devices.addBroadcast[state.devices.addBroadcast.kind], {kind: state.devices.addBroadcast.kind}), function (err, constraints) {
-      if(err){
-        state.devices.addBroadcast.errorMessage = err
-      } else {
-        getLocalMedia(constraints, function(err, stream){
-          if(err){
-            state.devices.addBroadcast.errorMessage = err
-          } else {
-            var tracks = stream.getTracks()
-            bus.emit('media:addTrack', {
-              track: tracks[0],
-              peerId: state.user.uuid,
-              isDefault: false,
-              name: state.devices.addBroadcast.name
-            })
-            bus.emit('user:updateBroadcastStream')
-          }
-          bus.emit('render')
-        })
-      }
-    })
+    if(state.devices.addBroadcast.kind == "screen"){
+      var track = state.devices.addBroadcast.previewTrack.clone()
+      console.log("track is", track)
+      bus.emit('media:addTrack', {
+        track: track,
+        peerId: state.user.uuid,
+        isDefault: false,
+        name: state.devices.addBroadcast.name
+      })
+      bus.emit('user:updateBroadcastStream')
+      bus.emit('render')
+    } else {
+      getConstraintsFromSettings(xtend({}, state.devices.addBroadcast.kinds[state.devices.addBroadcast.kind], {kind: state.devices.addBroadcast.kind}), function (err, constraints) {
+        if(err){
+          state.devices.addBroadcast.errorMessage = err
+        } else {
+          getLocalMedia(constraints, function(err, stream){
+            if(err){
+              state.devices.addBroadcast.errorMessage = err
+              console.log("LOCAL MEDIA ERROR", err)
+              //callback(err, null)
+            } else {
+              var tracks = stream.getTracks()
+              bus.emit('media:addTrack', {
+                track: tracks[0],
+                peerId: state.user.uuid,
+                isDefault: false,
+                name: state.devices.addBroadcast.name
+              })
+              bus.emit('user:updateBroadcastStream')
+            }
+            bus.emit('render')
+          })
+        }
+      })
+    }
   })
 
   function updateBroadcastPreview(callback){
     state.devices.addBroadcast.errorMessage = ""
-    getConstraintsFromSettings(xtend({}, state.devices.addBroadcast[state.devices.addBroadcast.kind], {kind: state.devices.addBroadcast.kind}), function (err, constraints) {
+    getConstraintsFromSettings(xtend({}, state.devices.addBroadcast.kinds[state.devices.addBroadcast.kind], {kind: state.devices.addBroadcast.kind}), function (err, constraints) {
       if(err){
         state.devices.addBroadcast.errorMessage = err
         callback(err, null)
@@ -267,7 +300,15 @@ function getConstraintsFromSettings(settings, callback) {
   if(settings.deviceId===null) {
     callback("Error: device not specified", null)
   } else {
-    userConstraints.deviceId = { exact : settings.deviceId }
+
+    if(settings.kind==="screen"){
+      userConstraints.mandatory =  {
+        chromeMediaSource: 'desktop',
+        chromeMediaSourceId: settings.deviceId
+      }
+    } else {
+      userConstraints.deviceId = { exact : settings.deviceId }
+    }
     for(var key in settings){
       //if the user has specified a value for a particular constraint, pass it along to getusermedia.
       //for right now, only specifies "ideal" value, device does the best it can to meet constraints.
@@ -278,8 +319,10 @@ function getConstraintsFromSettings(settings, callback) {
         }
       }
     }
-    allConstraints[settings.kind] = userConstraints
-    if(settings.kind==="audio"){
+
+    var type = settings.kind === "audio" ? "audio" : "video"
+    allConstraints[type] = userConstraints
+    if(type==="audio"){
       allConstraints.video = false
     } else {
       allConstraints.audio = false

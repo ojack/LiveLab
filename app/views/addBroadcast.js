@@ -18,9 +18,11 @@ function addBroadcast (devices, emit, showElement) {
   var constraintOptions
 
   var defaultLabel = ''
-  if(bState[bState.kind].deviceId !== null){
-    var selectedDevice = bState[bState.kind].deviceId
-    defaultLabel += devices[bState.kind+'input'].byId[selectedDevice].label
+  if(bState.kind !== "screen"){
+    if(bState.kinds[bState.kind].deviceId !== null){
+      var selectedDevice = bState.kinds[bState.kind].deviceId
+      defaultLabel += devices[bState.kind+'input'].byId[selectedDevice].label
+    }
   }
 
   if(bState.kind==="audio") {
@@ -40,7 +42,7 @@ function addBroadcast (devices, emit, showElement) {
           })}
           ${settingsUI({
               onChange: updateBroadcastConstraints,
-              settings: bState.audio
+              settings: bState.kinds.audio
             })
           }
     </div>
@@ -64,7 +66,7 @@ function addBroadcast (devices, emit, showElement) {
       })}
       ${settingsUI({
           onChange: updateBroadcastConstraints,
-          settings: bState.video
+          settings: bState.kinds.video
         })
       }
     </div`
@@ -84,14 +86,14 @@ function addBroadcast (devices, emit, showElement) {
             ${radioSelect(
               {
                 label: "kind:",
-                options:  [
-                  { name: "kind",
-                    checked: bState.kind==="audio"? "true": "false",
-                    value: "audio" },
-                  { name: "kind",
-                      checked: bState.kind==="audio"? "false": "true",
-                      value: "video" }
-                ],
+                options:  Object.keys(bState.kinds).map((kind)=>{
+                
+                    return {
+                      name: "kind",
+                      checked: bState.kind===kind? "true": "false",
+                      value: kind
+                    }
+                }),
                 onChange: setBroadcastKind
               }
             )}
