@@ -15,7 +15,7 @@ const previewVid = VideoEl()
 
 function addBroadcast (devices, emit, showElement) {
   var bState = devices.addBroadcast
-  var constraintOptions
+  var constraintOptions = html``
 
   var defaultLabel = ''
   if(bState.kind !== "screen"){
@@ -48,7 +48,7 @@ function addBroadcast (devices, emit, showElement) {
     </div>
 
     `
-  } else {
+  } else if (bState.kind==="video"){
     constraintOptions = html`
     <div id="video-constraints">
 
@@ -70,7 +70,10 @@ function addBroadcast (devices, emit, showElement) {
         })
       }
     </div`
+  } else {
+      constraintOptions = html`<div id="screen-constraints"></div>`
   }
+  
   return html`
 
     ${Modal({
@@ -87,7 +90,7 @@ function addBroadcast (devices, emit, showElement) {
               {
                 label: "kind:",
                 options:  Object.keys(bState.kinds).map((kind)=>{
-                
+
                     return {
                       name: "kind",
                       checked: bState.kind===kind? "true": "false",
@@ -103,7 +106,9 @@ function addBroadcast (devices, emit, showElement) {
             <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('devices:addNewMediaToBroadcast'))}>Start Broadcast</div>
             <p class="red">${bState.errorMessage}</p>
             ${previewVid.render({
-              htmlProps: {},
+              htmlProps: {
+
+              },
               track: bState.previewTrack,
               id: bState.previewTrack ?  bState.previewTrack.id : null
             })}
