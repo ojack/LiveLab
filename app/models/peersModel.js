@@ -40,8 +40,10 @@ function peersModel (state, bus) {
     }, state.peers.byId[peer.peerId], peer)
 
     console.log("NEW  PEER INFO", state.peers.byId)
+    bus.emit('ui:addPeer', peer.peerId)
     if (state.peers.all.indexOf(peer.peerId) < 0) {
       state.peers.all.push(peer.peerId)
+
     }
     bus.emit('render')
   })
@@ -68,6 +70,8 @@ function peersModel (state, bus) {
     var index = state.peers.all.indexOf(peerId)
     if (index > -1) state.peers.all.splice(index, 1)
     delete state.peers.byId[peerId]
+      bus.emit('ui:removePeer', peerId)
+      bus.emit('render')
   })
-  bus.emit('render')
+
 }
