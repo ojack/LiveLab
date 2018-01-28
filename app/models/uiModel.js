@@ -13,6 +13,14 @@ function uiModel (state, bus) {
     pc: null, //peer connection to be inspected
     selectedTab: "track" //which inspector tab is currently open
   },
+  osc: {
+    enabled: typeof nw === "object" ? true : false,
+    addBroadcast: {
+      visible: false,
+      port: 5271,
+      name: ''
+    }
+  },
   chat: {
     messages: [
 
@@ -46,6 +54,7 @@ function uiModel (state, bus) {
       bus.emit('render')
   })
 
+  //Events related to UI
   bus.on('ui:sendChatMessage', function(){
      var chatObj = {
        peerId: state.user.uuid,
@@ -80,4 +89,33 @@ function uiModel (state, bus) {
       }
 
     }
+
+    //Events related to OSC
+    bus.on('ui:addOSC', function(){
+      state.ui.osc.addBroadcast.visible = true
+      bus.emit('render')
+    })
+
+    bus.on('ui:setOSCBroadcastPort', function(val){
+      state.ui.osc.addBroadcast.port = val
+      bus.emit('render')
+    })
+
+    bus.on('ui:setOSCBroadcastName', function(val){
+      state.ui.osc.addBroadcast.name = val
+      bus.emit('render')
+    })
+
+    bus.on('ui:listenOnLocalPort', function(){
+      bus.emit('user:newOSCBroadcast', {
+        port: state.ui.osc.addBroadcast.port,
+        name: state.ui.osc.addBroadcast.name
+      })
+
+      //to do: add error checking for if port is in use
+      state.ui.osc.addBroadcast.port = null
+      state.ui.osc.addBroadcast.name = null
+      state.ui.osc.addBroadcast.visible = false
+      bus.emit('render')
+    })
  }

@@ -6,6 +6,7 @@ const communication = require('./communication.js')
 const mediaList = require('./mediaList.js')
 const panel = require('./components/panel.js')
 const chat = require('./components/chat.js')
+const osc = require('./components/osc.js')
 const AddBroadcast = require('./addBroadcast.js')
 
 
@@ -16,7 +17,23 @@ module.exports = workspaceView
 //  ${login(state, emit)}
 // ${allVideos(state, emit)}
 //contents: mediaList(state, emit),
+
+
+
 function workspaceView (state, emit) {
+  var oscEl = ''
+  if(state.ui.osc.enabled==true){
+    oscEl = panel(
+         {
+           htmlProps: {
+             class: "w-100"
+           },
+           contents: osc(state, emit),
+           closable: false,
+           header:   "OSC"
+         }
+       )
+  }
     return html`
     <div class="f6 dt fw2 w-100 h-100 mw-100">
       <div class="fl w-70-ns w-100 pa2">
@@ -43,6 +60,7 @@ function workspaceView (state, emit) {
                header:   "Chat"
              }
            )}
+        ${oscEl}
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
 

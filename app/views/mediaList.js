@@ -38,7 +38,7 @@ function mediaListView (state, emit) {
           </tbody>
       </table>
       </div>
-        <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Broadcast</div>
+        <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>+ Add Media Broadcast</div>
         ${state.ui.inspector.trackId !== null ? inspector(state,emit) : ''}
     </div>
     `

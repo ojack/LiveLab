@@ -1,7 +1,7 @@
 var xtend = Object.assign
 var shortid = require('shortid')
 var MultiPeer = require('./../lib/MultiPeer.js')
-
+var LiveLabOSC = require('./../lib/LiveLabOSC.js')
 // To do: separate ui events (logged in) and connection state/ status log from user model
 // status log contains all peer connection related information
 
@@ -16,9 +16,33 @@ function userModel (state, bus) {
     loggedIn: false,
     nickname: "olivia",
     statusMessage: '',
-    multiPeer: null
+    multiPeer: null,
+    osc: {
+      local: {},
+      remote: {}
+    }
   }, state.user)
+// osc channels
+  osc = new LiveLabOSC()
 
+  //start listening for messages on local port
+  bus.on('user:newOSCBroadcast', function(opts){
+    osc.listenOnPort(opts.port)
+    state.user.osc.local[opts.port] = {
+      name: opts.name,
+      message: null
+    }
+    bus.emit('render')
+  })
+
+  //called when osc message received locally
+  osc.on('received osc', function(opts){
+    state.user.osc.local[opts.port].message = opts.message
+    //console.log(opts.m)
+    bus.emit('render')
+  })
+
+  osc.on
 //login page ui events
   bus.emit('peers:updatePeer', {
     peerId: state.user.uuid,
@@ -96,6 +120,9 @@ function userModel (state, bus) {
     //   testVid.autoplay = true
     //   testPopup.document.body.appendChild(testVid)
     //   console.log(testPopup)
+
+    // testing osc
+
 
 
     multiPeer = new MultiPeer({
