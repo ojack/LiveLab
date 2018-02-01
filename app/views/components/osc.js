@@ -38,7 +38,7 @@ function oscView (state, emit) {
   } else {
     addBroadcast = html`<div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('ui:addOSC', true))}>+ Add OSC Broadcast</div>`
   }
-  return html`<div pa2>
+  return html`<div class="pa2">
     ${localOscEl}
     ${addBroadcast}
 
