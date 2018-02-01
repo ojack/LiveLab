@@ -1,6 +1,12 @@
-// Server side module for managing osc connections
-var dgram = nw.require('dgram')
-var osc = nw.require('osc-min')
+// Server side module for managing osc connections. Only works with nw.js
+
+var shortid = require('shortid')
+
+var dgram, osc
+if(typeof nw == "object"){
+  dgram = nw.require('dgram')
+  osc = nw.require('osc-min')
+}
 // to do: possibly switch to osc-msg (https://github.com/mohayonao/osc-msg) which seems to be better maintained
 var events = require('events').EventEmitter
 var inherits = require('inherits')
@@ -45,7 +51,7 @@ LiveLabOSC.prototype.listenOnPort = function(port){
     try {
       //turns datagram to javascript
       var message = osc.fromBuffer(msg)
-      
+
       this.emit('received osc', {
         port: port,
         message: message

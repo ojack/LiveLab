@@ -22,27 +22,9 @@ function userModel (state, bus) {
       remote: {}
     }
   }, state.user)
-// osc channels
-  osc = new LiveLabOSC()
 
-  //start listening for messages on local port
-  bus.on('user:newOSCBroadcast', function(opts){
-    osc.listenOnPort(opts.port)
-    state.user.osc.local[opts.port] = {
-      name: opts.name,
-      message: null
-    }
-    bus.emit('render')
-  })
 
-  //called when osc message received locally
-  osc.on('received osc', function(opts){
-    state.user.osc.local[opts.port].message = opts.message
-    //console.log(opts.m)
-    bus.emit('render')
-  })
-
-  osc.on
+  //osc.on
 //login page ui events
   bus.emit('peers:updatePeer', {
     peerId: state.user.uuid,
@@ -135,6 +117,29 @@ function userModel (state, bus) {
       }
     })
 
+    if(typeof nw == "object"){
+    // osc channels
+      osc = new LiveLabOSC()
+
+      //start listening for messages on local port
+      bus.on('user:newOSCBroadcast', function(opts){
+        osc.listenOnPort(opts.port)
+        state.user.osc.local[opts.port] = {
+          name: opts.name,
+          message: null
+        }
+        bus.emit('render')
+      })
+
+      //called when osc message received locally
+      osc.on('received osc', function(opts){
+        state.user.osc.local[opts.port].message = opts.message
+        //console.log(opts.m)
+        var id = state.user.uuid+''+opts.port
+        multiPeer.sendToAll(JSON.stringify({type: 'osc', message: opts.message, peer: state.user.uuid, id: id}))
+        bus.emit('render')
+      })
+    }
     //received initial list of peers from signalling server, update local peer information
     multiPeer.on('peers', function (peers) {
       state.user.loggedIn = true
@@ -200,6 +205,11 @@ function userModel (state, bus) {
           } else if(data.data.type=== 'chatMessage'){
            console.log("RECEIVED CHAT MESSAGE", data)
            bus.emit('ui:receivedNewChat', data.data.message)
+         } else if (data.data.type === 'osc'){
+          // state.user.osc.
+          state.user.osc.remote[data.data.id] = xtend(data.data, state.user.osc.remote[data.data.id])
+          bus.emit('render')
+        //  console.log("received osc ", data.data)
          }
        }
      })

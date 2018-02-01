@@ -71,9 +71,15 @@ app.route('', require('./views/main.js'))
 app.mount('body div')
 
 },{"./models/devicesModel.js":5,"./models/mediaModel.js":6,"./models/peersModel.js":7,"./models/uiModel.js":8,"./models/userModel.js":9,"./views/main.js":26,"choo":43,"choo-expose":40,"choo-log":41}],2:[function(require,module,exports){
-// Server side module for managing osc connections
-var dgram = nw.require('dgram')
-var osc = nw.require('osc-min')
+// Server side module for managing osc connections. Only works with nw.js
+
+var shortid = require('shortid')
+
+var dgram, osc
+if(typeof nw == "object"){
+  dgram = nw.require('dgram')
+  osc = nw.require('osc-min')
+}
 // to do: possibly switch to osc-msg (https://github.com/mohayonao/osc-msg) which seems to be better maintained
 var events = require('events').EventEmitter
 var inherits = require('inherits')
@@ -118,7 +124,7 @@ LiveLabOSC.prototype.listenOnPort = function(port){
     try {
       //turns datagram to javascript
       var message = osc.fromBuffer(msg)
-      
+
       this.emit('received osc', {
         port: port,
         message: message
@@ -149,7 +155,7 @@ LiveLabOSC.prototype.listenOnPort = function(port){
 
 module.exports = LiveLabOSC
 
-},{"events":66,"inherits":79}],3:[function(require,module,exports){
+},{"events":66,"inherits":79,"shortid":122}],3:[function(require,module,exports){
 // Module for handling connections to multiple peers
 
 var io = require('socket.io-client')
@@ -996,27 +1002,9 @@ function userModel (state, bus) {
       remote: {}
     }
   }, state.user)
-// osc channels
-  osc = new LiveLabOSC()
 
-  //start listening for messages on local port
-  bus.on('user:newOSCBroadcast', function(opts){
-    osc.listenOnPort(opts.port)
-    state.user.osc.local[opts.port] = {
-      name: opts.name,
-      message: null
-    }
-    bus.emit('render')
-  })
 
-  //called when osc message received locally
-  osc.on('received osc', function(opts){
-    state.user.osc.local[opts.port].message = opts.message
-    //console.log(opts.m)
-    bus.emit('render')
-  })
-
-  osc.on
+  //osc.on
 //login page ui events
   bus.emit('peers:updatePeer', {
     peerId: state.user.uuid,
@@ -1109,6 +1097,29 @@ function userModel (state, bus) {
       }
     })
 
+    if(typeof nw == "object"){
+    // osc channels
+      osc = new LiveLabOSC()
+
+      //start listening for messages on local port
+      bus.on('user:newOSCBroadcast', function(opts){
+        osc.listenOnPort(opts.port)
+        state.user.osc.local[opts.port] = {
+          name: opts.name,
+          message: null
+        }
+        bus.emit('render')
+      })
+
+      //called when osc message received locally
+      osc.on('received osc', function(opts){
+        state.user.osc.local[opts.port].message = opts.message
+        //console.log(opts.m)
+        var id = state.user.uuid+''+opts.port
+        multiPeer.sendToAll(JSON.stringify({type: 'osc', message: opts.message, peer: state.user.uuid, id: id}))
+        bus.emit('render')
+      })
+    }
     //received initial list of peers from signalling server, update local peer information
     multiPeer.on('peers', function (peers) {
       state.user.loggedIn = true
@@ -1174,6 +1185,11 @@ function userModel (state, bus) {
           } else if(data.data.type=== 'chatMessage'){
            console.log("RECEIVED CHAT MESSAGE", data)
            bus.emit('ui:receivedNewChat', data.data.message)
+         } else if (data.data.type === 'osc'){
+          // state.user.osc.
+          state.user.osc.remote[data.data.id] = xtend(data.data, state.user.osc.remote[data.data.id])
+          bus.emit('render')
+        //  console.log("received osc ", data.data)
          }
        }
      })
