@@ -19,7 +19,7 @@ function chatView (state, emit) {
 
 var container =  html`<div  id="scroll-container" class="overflow-y-scroll" style="max-height:140px;">${scrollEl}</div>`
 
-var overall =  html`  <div  class="pa2 dib w-100">
+var overall =  html`  <div  class="pa3 dib w-100">
       ${container}
       ${input('', 'message', {
         value: state.ui.chat.current,

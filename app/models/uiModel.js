@@ -42,6 +42,16 @@ function uiModel (state, bus) {
     }
   })
 
+  bus.on('ui:toggleFullscreen', function(){
+    state.ui.windows.fullscreen =! state.ui.windows.fullscreen
+    bus.emit('render')
+  })
+
+  bus.on('ui:updateWindowTrack', function(trackId){
+    state.ui.windows.track = state.media.byId[trackId].track
+    bus.emit('render')
+  })
+
   bus.on('ui:toggleWindow', function(bool){
     //if passed a variable, use variable. Otherwise, toggle current value
     if(bool !== undefined){

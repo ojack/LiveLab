@@ -899,6 +899,16 @@ function uiModel (state, bus) {
     }
   })
 
+  bus.on('ui:toggleFullscreen', function(){
+    state.ui.windows.fullscreen =! state.ui.windows.fullscreen
+    bus.emit('render')
+  })
+
+  bus.on('ui:updateWindowTrack', function(trackId){
+    state.ui.windows.track = state.media.byId[trackId].track
+    bus.emit('render')
+  })
+
   bus.on('ui:toggleWindow', function(bool){
     //if passed a variable, use variable. Otherwise, toggle current value
     if(bool !== undefined){
@@ -1688,7 +1698,7 @@ function chatView (state, emit) {
 
 var container =  html`<div  id="scroll-container" class="overflow-y-scroll" style="max-height:140px;">${scrollEl}</div>`
 
-var overall =  html`  <div  class="pa2 dib w-100">
+var overall =  html`  <div  class="pa3 dib w-100">
       ${container}
       ${input('', 'message', {
         value: state.ui.chat.current,
@@ -1744,7 +1754,7 @@ Dropdown.prototype.createElement = function (props) {
 
  // var activeStyles = ""
   var tachyonsStyles = ' bg-mid-gray f6'
-
+if(this.props.style) tachyonsStyles = this.props.style
 
     return html`
     <div>
@@ -2080,39 +2090,81 @@ ShowWindow.prototype.createElement = function (props, onClose) {
 ShowWindow.prototype.initWindow = function(){
   console.log("initing window")
   var windowSettings = "popup=yes,menubar=no,location=no,resizable=no,scrollbars=no,status=no,toolbar=no,location=no,chrome=yes";
-  this.win = window.open(null, "show", windowSettings)
+  this.win = window.open(null, this.props.track!==null?this.props.track.id:Date.now(), windowSettings)
 
   this.win.onbeforeunload = this.onClose
+
+
+  //hacky way to remove default controls: https://css-tricks.com/custom-controls-in-html5-video-full-screen/
+  // https://stackoverflow.com/questions/4481485/changing-css-pseudo-element-styles-via-javascript
+  var win = this.win
+  var addRule = (function (style) {
+    var sheet = win.document.head.appendChild(style).sheet;
+    return function (selector, css) {
+        var propText = typeof css === "string" ? css : Object.keys(css).map(function (p) {
+            return p + ":" + (p === "content" ? "'" + css[p] + "'" : css[p]);
+        }).join(";");
+        sheet.insertRule(selector + "{" + propText + "}", sheet.cssRules.length);
+    };
+})(win.document.createElement("style"));
+
+addRule("::-webkit-media-controls", {
+  display: "none"
+});
+
   this.video = this.win.document.createElement('video')
   this.video.autoplay = true
-
-
+  this.video.setAttribute('controls', false)
+  this.video.setAttribute('allowFullScreen', true)
+  this.video.style.width = "100%"
+  this.video.style.height = "100%"
+  this.video.style.objectFit = "fill"
+  this.win.document.body.style.padding = "0px"
+  this.win.document.body.style.margin = "0px"
   this.win.document.body.appendChild(this.video)
+  var vid = this.video
+  this.win.document.body.onkeydown = function(){
+    //console.log("key")
+    vid.webkitRequestFullScreen()
+  }
+  this.win.document.getElementBy
 }
 
-function addTrackToElement(track, element){
-  console.log("TRACK", track)
+ShowWindow.prototype.displayTrack = function(track){
+  console.log("CHANGING TRACK", track)
   var tracks = []
   tracks.push(track)
   var stream = new MediaStream(tracks) // stream must be initialized with array of tracks, even though documentation says otherwise
-  element.srcObject = stream
+  this.video.srcObject = stream
+  this.win.document.title = track.id
 }
 
 // update stream if track id has changed
 ShowWindow.prototype.update = function (props) {
   console.log("update win", props, this.props)
-  this.props.track = props.track
+
   if(props.open===true){
     if(this.props.open !== true){
+      this.props.track = props.track
       this.initWindow()
-      if(props.track) addTrackToElement(props.track, this.video)
+      if(props.track) this.displayTrack(props.track)
     }
-    if(props.track.id!==this.props.track.id) addTrackToElement(props.track, this.video)
+    if(props.track.id!==this.props.track.id) this.displayTrack(props.track)
+    // if(props.fullscreen!==this.props.fullscreen){
+    //   if(props.fullscreen===true){
+    //   //  console.log(this.win.document.documentElement)
+    //     this.video.webkitRequestFullScreen()
+    //     this.win.document.documentElement.webkitRequestFullScreen()
+    //   } else {
+    //   //  this.video.exitFullscreen()
+    //   }
+    // }
   } else {
-    if(!this.win.closed) this.win.close()
+    if(this.win) if(!this.win.closed) this.win.close()
   }
   this.props.open = props.open
   this.props.track = props.track
+  this.props.fullscreen = props.fullscreen
   //
   //
   // if (props.track && props.track != null) {
@@ -2413,23 +2465,52 @@ function mediaListView (state, emit) {
 'use strict'
 const html = require('choo/html')
 const Window = require('./components/showwindow.js')
+const Dropdown = require('./components/dropdown.js')
 
 module.exports = windowManagerView
+const trackDropdown = Dropdown()
 
 var show = new Window()
 function windowManagerView (state, emit) {
+  var windowControls = ''
+  if(!state.ui.windows.open){
+    windowControls = html`<div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('ui:toggleWindow', true))}>+ Open Window</div>`
+  } else {
+    windowControls = html`<div>
+
+
+      ${
+        trackDropdown.render({
+          value: 'Track:  ' + state.ui.windows.track.id,
+          options: state.media.all.filter((trackId)=>{
+            //console.log("checking ", trackId, state.media.byId[trackId])
+            return state.media.byId[trackId].track.kind==="video"
+          }).map((id)=>({
+            value: id,
+            label: id
+          })),
+          onchange: (value) => {
+            emit('ui:updateWindowTrack', value)
+          },
+          style: ' bg-mid-gray f7'
+        })
+      }
+      <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('ui:toggleWindow', false))}>Close Window</div>
+      Click on window and press any key to make fullscreen
+      </div>`
+  }
   return html`
     <div class="pa3 dib" style="width:100%">
       ${show.render(state.ui.windows, ()=>{
         console.log("window closing")
         emit('ui:toggleWindow', false)
       })}
-      <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('ui:toggleWindow'))}>${state.ui.windows.open?'Close Window':'+ Open Window'}</div>
+    ${windowControls}
     </div>
     `
 }
 
-},{"./components/showwindow.js":22,"choo/html":44}],30:[function(require,module,exports){
+},{"./components/dropdown.js":15,"./components/showwindow.js":22,"choo/html":44}],30:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')

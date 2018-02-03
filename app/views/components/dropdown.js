@@ -112,7 +112,7 @@ Dropdown.prototype.createElement = function (props) {
 
  // var activeStyles = ""
   var tachyonsStyles = ' bg-mid-gray f6'
-
+if(this.props.style) tachyonsStyles = this.props.style
 
     return html`
     <div>
