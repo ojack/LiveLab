@@ -7,6 +7,7 @@ const mediaList = require('./mediaList.js')
 const panel = require('./components/panel.js')
 const chat = require('./components/chat.js')
 const osc = require('./components/osc.js')
+const windowManager = require('./windowmanager.js')
 const AddBroadcast = require('./addBroadcast.js')
 
 
@@ -60,6 +61,16 @@ function workspaceView (state, emit) {
                header:   "Chat"
              }
            )}
+           ${panel(
+                {
+                  htmlProps: {
+                    class: "w-100"
+                  },
+                  contents: windowManager(state, emit),
+                  closable: false,
+                  header:   "Windows"
+                }
+              )}
         ${oscEl}
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}

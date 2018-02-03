@@ -37,7 +37,7 @@ var overall =  html`  <div  class="pa2 dib w-100">
     container.scrollTop = container.scrollHeight
 
     //var t = document.getElementById("scrollTest")
-    console.log("SCROLL", container.scrollHeight, container.clientHeight)
+  //  console.log("SCROLL", container.scrollHeight, container.clientHeight)
 
     return overall
 }

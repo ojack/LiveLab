@@ -33,7 +33,7 @@ AudioContainer.prototype.createElement = function (props) {
 }
 
 function addTrackToElement(track, element){
-  console.log("audio track", track)
+  //console.log("audio track", track)
   var tracks = []
   tracks.push(track)
   var stream = new MediaStream(tracks) // stream must be initialized with array of tracks, even though documentation says otherwise

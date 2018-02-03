@@ -24,7 +24,7 @@ function mediaListView (state, emit) {
           ${state.media.all.map((id) => {
             var media = state.media.byId[id]
             var className = id == state.ui.inspector.trackId ? "bg-gray pointer" : "dim pointer"
-            console.log(id, state.ui.inspector.trackId)
+            //console.log(id, state.ui.inspector.trackId)
             return html`
               <tr class=${className} style="height:20px" onclick=${()=>{emit('user:setInspectMedia', id)}}>
                 <td class="pa1" style="width:20%;height:20px">${state.peers.byId[media.peerId].nickname}</td>

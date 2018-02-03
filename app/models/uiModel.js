@@ -21,6 +21,11 @@ function uiModel (state, bus) {
       name: ''
     }
   },
+  windows: {
+    trackId: null,
+    open: false,
+    fullscreen: false
+  },
   chat: {
     messages: [
 
@@ -35,6 +40,29 @@ function uiModel (state, bus) {
     state.ui.communication[peerId] = {
       volume: vol
     }
+  })
+
+  bus.on('ui:toggleWindow', function(bool){
+    //if passed a variable, use variable. Otherwise, toggle current value
+    if(bool !== undefined){
+      console.log("choosing window ", bool)
+      state.ui.windows.open = bool
+    } else {
+      if(state.ui.windows.open){
+        state.ui.windows.open = false
+      } else {
+        state.ui.windows.open = true
+      }
+    }
+    if(state.ui.windows.open){
+      if(state.ui.windows.trackId===null) {
+        //set to default
+        //console.log("user default", state.peers, state.user.uuid)
+        var trackId = state.peers.byId[state.user.uuid].defaultTracks.video
+        state.ui.windows.track = state.media.byId[trackId].track
+      }
+    }
+    bus.emit('render')
   })
 
   bus.on('ui:toggleCommunicationVolume', function (peerId) {
