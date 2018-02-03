@@ -45,6 +45,7 @@ ShowWindow.prototype.createElement = function (props, onClose) {
 
 ShowWindow.prototype.directOpen = function(){
   this.initWindow()
+  if(this.props.track!==null) this.displayTrack(this.props.track)
   this.props.open = true
 }
 //to do: check whether popup blocked

@@ -1,6 +1,8 @@
 const enumerateDevices = require('enumerate-devices')
 const constraintsJSON = require('./availableConstraints.json')
 const getUserMedia = require('getusermedia')
+const Screen = require('./screenmedia.js')
+
 const xtend = Object.assign
 
 module.exports = devicesModel
@@ -56,12 +58,12 @@ function devicesModel (state, bus) {
   window.onload = function () {
     getDevices()
     loadConstraints()
-    //if using nw.js, allow desktop capture
-    if(typeof nw == "object"){
+    //check whether screen share extension is installed OR using nw.js version
+   if(sessionStorage.getScreenMediaJSExtensionId || typeof nw == "object"){
       state.devices.addBroadcast.kinds.screen =  {
         deviceId: null
       }
-    }
+  }
     bus.emit('peers:updatePeer', {
       peerId: state.user.uuid
     })
@@ -152,19 +154,49 @@ function devicesModel (state, bus) {
       state.devices.addBroadcast.previewTrack.stop()
       state.devices.addBroadcast.previewTrack = null
     }
-
+    bus.emit('render')
     if(val==="screen"){
-      nw.Screen.chooseDesktopMedia(["window","screen"], (streamId)=>{
-        state.devices.addBroadcast.kinds.screen.deviceId= streamId
-        bus.emit('devices:updateBroadcastPreview')
-      })
+      if(typeof nw == "object"){
+        nw.Screen.chooseDesktopMedia(["window","screen"], (streamId)=>{
+          state.devices.addBroadcast.kinds.screen.deviceId= streamId
+          bus.emit('devices:updateBroadcastPreview')
+        })
+      } else {
+        // Screen().then(function(response) {
+        //   console.log("screen", response)
+        // })
+        chrome.runtime.sendMessage(sessionStorage.getScreenMediaJSExtensionId,
+                {type:'getScreen', id: 1}, null,
+                function (data) {
+                    console.log("getting screen", data)
+                    if (!data || data.sourceId === '') { // user canceled
+                        var error = new Error('NavigatorUserMediaError');
+                        error.name = 'NotAllowedError';
+                        callback(error);
+                    } else {
+                      console.log("GOT INFO", data)
+                      state.devices.addBroadcast.kinds.screen.deviceId= data.sourceId
+                      bus.emit('devices:updateBroadcastPreview')
+                    }
+                  })
+                        // constraints = (hasConstraints && constraints) || {audio: false, video: {
+                        //     mandatory: {
+                        //         chromeMediaSource: 'desktop',
+                        //         maxWidth: window.screen.width,
+                        //         maxHeight: window.screen.height,
+                        //         maxFrameRate: 3
+                        //     }
+                        // }};
+
+
+      }
 
     }
     // to do: if screen, show screen popup
 
     //set broadcast to default on c
 
-    bus.emit('render')
+  //  bus.emit('render')
   })
 
   //add available constraint options to devices model
