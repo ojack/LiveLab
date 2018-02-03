@@ -15,7 +15,7 @@ var httpServer = http.createServer(app)
 // })
 // app.get('/bundle.js', browserify(__dirname + '/app/app.js'));
 
-httpsServer.listen(8000, function(){
+httpServer.listen(8000, function(){
   console.log("server available at https://localhost:8000")
 
 });
