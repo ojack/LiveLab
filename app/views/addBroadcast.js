@@ -107,7 +107,7 @@ function addBroadcast (devices, emit, showElement) {
             <p class="red">${bState.errorMessage}</p>
             ${previewVid.render({
               htmlProps: {
-
+                style: "max-width:300px;max-height:200px"
               },
               track: bState.previewTrack,
               id: bState.previewTrack ?  bState.previewTrack.id : null

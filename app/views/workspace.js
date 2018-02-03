@@ -68,7 +68,7 @@ function workspaceView (state, emit) {
                   },
                   contents: windowManager(state, emit),
                   closable: false,
-                  header:   "Windows"
+                  header:   "Output"
                 }
               )}
         ${oscEl}
