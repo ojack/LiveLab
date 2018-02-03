@@ -22,7 +22,7 @@ function uiModel (state, bus) {
     }
   },
   windows: {
-    trackId: null,
+    track: null,
     open: false,
     fullscreen: false
   },
@@ -65,7 +65,8 @@ function uiModel (state, bus) {
       }
     }
     if(state.ui.windows.open){
-      if(state.ui.windows.trackId===null) {
+      if(state.ui.windows.track===null) {
+        console.log("setting track")
         //set to default
         //console.log("user default", state.peers, state.user.uuid)
         var trackId = state.peers.byId[state.user.uuid].defaultTracks.video

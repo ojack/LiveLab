@@ -879,7 +879,7 @@ function uiModel (state, bus) {
     }
   },
   windows: {
-    trackId: null,
+    track: null,
     open: false,
     fullscreen: false
   },
@@ -922,7 +922,8 @@ function uiModel (state, bus) {
       }
     }
     if(state.ui.windows.open){
-      if(state.ui.windows.trackId===null) {
+      if(state.ui.windows.track===null) {
+        console.log("setting track")
         //set to default
         //console.log("user default", state.peers, state.user.uuid)
         var trackId = state.peers.byId[state.user.uuid].defaultTracks.video
@@ -2086,11 +2087,16 @@ ShowWindow.prototype.createElement = function (props, onClose) {
     return html`<div></div>`
 
 }
+
+ShowWindow.prototype.directOpen = function(){
+  this.initWindow()
+  this.props.open = true
+}
 //to do: check whether popup blocked
 ShowWindow.prototype.initWindow = function(){
   console.log("initing window")
   var windowSettings = "popup=yes,menubar=no,location=no,resizable=no,scrollbars=no,status=no,toolbar=no,location=no,chrome=yes";
-  this.win = window.open(null, this.props.track!==null?this.props.track.id:Date.now(), windowSettings)
+  this.win = window.open(null, JSON.stringify(Date.now()), windowSettings)
 
   this.win.onbeforeunload = this.onClose
 
@@ -2127,7 +2133,7 @@ addRule("::-webkit-media-controls", {
     //console.log("key")
     vid.webkitRequestFullScreen()
   }
-  this.win.document.getElementBy
+//  this.win.document.getElementBy
 }
 
 ShowWindow.prototype.displayTrack = function(track){
@@ -2149,7 +2155,13 @@ ShowWindow.prototype.update = function (props) {
       this.initWindow()
       if(props.track) this.displayTrack(props.track)
     }
-    if(props.track.id!==this.props.track.id) this.displayTrack(props.track)
+    if(props.track!==null){
+      if(this.props.track===null){
+        this.displayTrack(props.track)
+      } else if (props.track.id!==this.props.track.id){
+         this.displayTrack(props.track)
+       }
+    }
     // if(props.fullscreen!==this.props.fullscreen){
     //   if(props.fullscreen===true){
     //   //  console.log(this.win.document.documentElement)
@@ -2474,14 +2486,22 @@ var show = new Window()
 function windowManagerView (state, emit) {
   var windowControls = ''
   if(!state.ui.windows.open){
-    windowControls = html`<div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('ui:toggleWindow', true))}>+ Open Window</div>`
+    windowControls = html`<div
+      class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim"
+      onclick=${() => {
+        emit('ui:toggleWindow', true)
+        show.directOpen()
+      }}
+      >+ Open Window</div>`
   } else {
+    var trackId = ''
+    if(state.ui.windows.track!==null) trackId = state.ui.windows.track.id
     windowControls = html`<div>
 
 
       ${
         trackDropdown.render({
-          value: 'Track:  ' + state.ui.windows.track.id,
+          value: 'Track:  ' + trackId,
           options: state.media.all.filter((trackId)=>{
             //console.log("checking ", trackId, state.media.byId[trackId])
             return state.media.byId[trackId].track.kind==="video"

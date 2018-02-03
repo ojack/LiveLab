@@ -10,14 +10,22 @@ var show = new Window()
 function windowManagerView (state, emit) {
   var windowControls = ''
   if(!state.ui.windows.open){
-    windowControls = html`<div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('ui:toggleWindow', true))}>+ Open Window</div>`
+    windowControls = html`<div
+      class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim"
+      onclick=${() => {
+        emit('ui:toggleWindow', true)
+        show.directOpen()
+      }}
+      >+ Open Window</div>`
   } else {
+    var trackId = ''
+    if(state.ui.windows.track!==null) trackId = state.ui.windows.track.id
     windowControls = html`<div>
 
 
       ${
         trackDropdown.render({
-          value: 'Track:  ' + state.ui.windows.track.id,
+          value: 'Track:  ' + trackId,
           options: state.media.all.filter((trackId)=>{
             //console.log("checking ", trackId, state.media.byId[trackId])
             return state.media.byId[trackId].track.kind==="video"

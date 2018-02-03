@@ -42,11 +42,16 @@ ShowWindow.prototype.createElement = function (props, onClose) {
     return html`<div></div>`
 
 }
+
+ShowWindow.prototype.directOpen = function(){
+  this.initWindow()
+  this.props.open = true
+}
 //to do: check whether popup blocked
 ShowWindow.prototype.initWindow = function(){
   console.log("initing window")
   var windowSettings = "popup=yes,menubar=no,location=no,resizable=no,scrollbars=no,status=no,toolbar=no,location=no,chrome=yes";
-  this.win = window.open(null, this.props.track!==null?this.props.track.id:Date.now(), windowSettings)
+  this.win = window.open(null, JSON.stringify(Date.now()), windowSettings)
 
   this.win.onbeforeunload = this.onClose
 
@@ -83,7 +88,7 @@ addRule("::-webkit-media-controls", {
     //console.log("key")
     vid.webkitRequestFullScreen()
   }
-  this.win.document.getElementBy
+//  this.win.document.getElementBy
 }
 
 ShowWindow.prototype.displayTrack = function(track){
@@ -105,7 +110,13 @@ ShowWindow.prototype.update = function (props) {
       this.initWindow()
       if(props.track) this.displayTrack(props.track)
     }
-    if(props.track.id!==this.props.track.id) this.displayTrack(props.track)
+    if(props.track!==null){
+      if(this.props.track===null){
+        this.displayTrack(props.track)
+      } else if (props.track.id!==this.props.track.id){
+         this.displayTrack(props.track)
+       }
+    }
     // if(props.fullscreen!==this.props.fullscreen){
     //   if(props.fullscreen===true){
     //   //  console.log(this.win.document.documentElement)
