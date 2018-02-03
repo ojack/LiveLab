@@ -1285,7 +1285,7 @@ function updateLocalInfo(id){
 const html = require('choo/html')
 const Modal = require('./components/modal.js')
 const Dropdown = require('./components/dropdown.js')
-const VideoEl = require('./components/VideoContainer.js')
+const VideoEl = require('./components/videocontainer.js')
 const radioSelect = require('./components/radioSelect.js')
 const settingsUI = require('./components/settingsUI.js')
 const input = require('./components/input.js')
@@ -1355,7 +1355,7 @@ function addBroadcast (devices, emit, showElement) {
   } else {
       constraintOptions = html`<div id="screen-constraints"></div>`
   }
-  
+
   return html`
 
     ${Modal({
@@ -1410,11 +1410,11 @@ function addBroadcast (devices, emit, showElement) {
 
 }
 
-},{"./components/VideoContainer.js":23,"./components/dropdown.js":15,"./components/input.js":16,"./components/modal.js":17,"./components/radioSelect.js":20,"./components/settingsUI.js":21,"choo/html":42}],11:[function(require,module,exports){
+},{"./components/dropdown.js":15,"./components/input.js":16,"./components/modal.js":17,"./components/radioSelect.js":20,"./components/settingsUI.js":21,"./components/videocontainer.js":23,"choo/html":42}],11:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
-const VideoEl = require('./components/VideoContainer.js')
-const AudioEl = require('./components/AudioContainer.js')
+const VideoEl = require('./components/videocontainer.js')
+const AudioEl = require('./components/audiocontainer.js')
 
 const MAX_NUM_PEERS = 8 // can be changed (stub for initializing video containers)
 
@@ -1433,7 +1433,7 @@ function communicationView (state, emit) {
   // create containers for each
   var communicationContainers = peerVids.map(function (vidEl, index) {
     var peerIndex = state.peers.all[index]
-  
+
     if (peerIndex) {
       var trackId = state.peers.byId[peerIndex].defaultTracks.video
       var audioId = state.peers.byId[peerIndex].defaultTracks.audio
@@ -1472,7 +1472,7 @@ function communicationView (state, emit) {
     `
 }
 
-},{"./components/AudioContainer.js":13,"./components/VideoContainer.js":23,"choo/html":42}],12:[function(require,module,exports){
+},{"./components/audiocontainer.js":13,"./components/videocontainer.js":23,"choo/html":42}],12:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2082,7 +2082,7 @@ VideoContainer.prototype.update = function (props) {
 'use strict'
 const html = require('choo/html')
 const RTCInspector = require('./components/RTCInspector.js')
-const VideoEl = require('./components/VideoContainer.js')
+const VideoEl = require('./components/videocontainer.js')
 
 module.exports = inspectorComponent
 
@@ -2110,7 +2110,7 @@ function inspectorComponent (state, emit) {
   </div>`
 }
 
-},{"./components/RTCInspector.js":12,"./components/VideoContainer.js":23,"choo/html":42}],25:[function(require,module,exports){
+},{"./components/RTCInspector.js":12,"./components/videocontainer.js":23,"choo/html":42}],25:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')

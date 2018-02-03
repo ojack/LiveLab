@@ -5,8 +5,8 @@
   "main": "nw.js",
   "scripts": {
     "watch": "cross-env NODE_ENV=development watchify -t sheetify app/app.js -v -o public/bundle.js",
-    "start": "cross-env NODE_ENV=development nw .",
-    "start-browser": "node server.js",
+    "start-nw": "cross-env NODE_ENV=development nw .",
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

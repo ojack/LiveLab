@@ -12,10 +12,10 @@ var credentials = {key: privateKey, cert: certificate}
 
 var httpsServer = https.createServer(credentials, app)
 
-browserify.settings({
-  transform: ['sheetify']
-})
-app.get('/bundle.js', browserify(__dirname + '/app/app.js'));
+// browserify.settings({
+//   transform: ['sheetify']
+// })
+// app.get('/bundle.js', browserify(__dirname + '/app/app.js'));
 
 httpsServer.listen(8000, function(){
   console.log("server available at https://localhost:8000")

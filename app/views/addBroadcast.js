@@ -3,7 +3,7 @@
 const html = require('choo/html')
 const Modal = require('./components/modal.js')
 const Dropdown = require('./components/dropdown.js')
-const VideoEl = require('./components/VideoContainer.js')
+const VideoEl = require('./components/videocontainer.js')
 const radioSelect = require('./components/radioSelect.js')
 const settingsUI = require('./components/settingsUI.js')
 const input = require('./components/input.js')
@@ -73,7 +73,7 @@ function addBroadcast (devices, emit, showElement) {
   } else {
       constraintOptions = html`<div id="screen-constraints"></div>`
   }
-  
+
   return html`
 
     ${Modal({
