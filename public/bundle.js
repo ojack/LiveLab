@@ -1135,11 +1135,19 @@ function uiModel (state, bus) {
       name: ''
     }
   },
-  windows: {
-    track: null,
-    open: false,
-    fullscreen: false
-  },
+  windows:
+    [
+      {
+        track: null,
+        open: false
+      },{
+        track: null,
+        open: false
+      },{
+        track: null,
+        open: false
+      }
+    ],
   chat: {
     messages: [
 
@@ -1161,34 +1169,49 @@ function uiModel (state, bus) {
     bus.emit('render')
   })
 
-  bus.on('ui:updateWindowTrack', function(trackId){
-    state.ui.windows.track = state.media.byId[trackId].track
+  bus.on('ui:updateWindowTrack', function(opts){
+    state.ui.windows[opts.index].track = state.media.byId[opts.value].track
     bus.emit('render')
   })
 
-  bus.on('ui:toggleWindow', function(bool){
-    //if passed a variable, use variable. Otherwise, toggle current value
-    if(bool !== undefined){
-      console.log("choosing window ", bool)
-      state.ui.windows.open = bool
-    } else {
-      if(state.ui.windows.open){
-        state.ui.windows.open = false
-      } else {
-        state.ui.windows.open = true
-      }
+  bus.on('ui:openWindow', function(index){
+    if(state.ui.windows[index].track===null){
+      //console.log("user default", state.peers, state.user.uuid)
+      var trackId = state.peers.byId[state.user.uuid].defaultTracks.video
+      state.ui.windows[index].track = state.media.byId[trackId].track
     }
-    if(state.ui.windows.open){
-      if(state.ui.windows.track===null) {
-        console.log("setting track")
-        //set to default
-        //console.log("user default", state.peers, state.user.uuid)
-        var trackId = state.peers.byId[state.user.uuid].defaultTracks.video
-        state.ui.windows.track = state.media.byId[trackId].track
-      }
-    }
+    state.ui.windows[index].open = true
     bus.emit('render')
   })
+
+  bus.on('ui:closeWindow', function(index){
+    state.ui.windows[index].open = false
+    bus.emit('render')
+  })
+
+  // bus.on('ui:toggleWindow', function(bool){
+  //   //if passed a variable, use variable. Otherwise, toggle current value
+  //   if(bool !== undefined){
+  //     console.log("choosing window ", bool)
+  //     state.ui.windows.open = bool
+  //   } else {
+  //     if(state.ui.windows.open){
+  //       state.ui.windows.open = false
+  //     } else {
+  //       state.ui.windows.open = true
+  //     }
+  //   }
+  //   if(state.ui.windows.open){
+  //     if(state.ui.windows.track===null) {
+  //       console.log("setting track")
+  //       //set to default
+  //       //console.log("user default", state.peers, state.user.uuid)
+  //       var trackId = state.peers.byId[state.user.uuid].defaultTracks.video
+  //       state.ui.windows.track = state.media.byId[trackId].track
+  //     }
+  //   }
+  //   bus.emit('render')
+  // })
 
   bus.on('ui:toggleCommunicationVolume', function (peerId) {
     state.ui.communication[peerId].volume==0? state.ui.communication[peerId].volume = 1 : state.ui.communication[peerId].volume = 0
@@ -2738,52 +2761,74 @@ const Window = require('./components/showwindow.js')
 const Dropdown = require('./components/dropdown.js')
 
 module.exports = windowManagerView
-const trackDropdown = Dropdown()
 
-var show = new Window()
+var NUM_WINDOWS = 3
+
+var show = []
+const trackDropdown = []
+
+for(var i = 0; i < NUM_WINDOWS; i++){
+  show[i] = new Window()
+  trackDropdown[i] = Dropdown()
+}
+
 function windowManagerView (state, emit) {
-  var windowControls = ''
-  if(!state.ui.windows.open){
-    windowControls = html`<div
-      class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim"
-      onclick=${() => {
-        emit('ui:toggleWindow', true)
-        show.directOpen()
-      }}
-      >+ Open Window</div>`
-  } else {
-    var trackId = ''
-    if(state.ui.windows.track!==null) trackId = state.ui.windows.track.id
-    windowControls = html`<div>
+
+  var windowControls = state.ui.windows.map((win, index)=>
+  {
+
+    var el =''
+    if(!win.open){
+      el = html`<div
+        class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim"
+        onclick=${() => {
+          emit('ui:openWindow', index)
+          show[index].directOpen()
+        }}
+        >+ Open Window</div>`
+    } else {
+      var trackId = ''
+      if(win.track!==null) trackId = win.track.id
+      el = html`<div>
 
 
-      ${
-        trackDropdown.render({
-          value: 'Track:  ' + trackId,
-          options: state.media.all.filter((trackId)=>{
-            //console.log("checking ", trackId, state.media.byId[trackId])
-            return state.media.byId[trackId].track.kind==="video"
-          }).map((id)=>({
-            value: id,
-            label: id
-          })),
-          onchange: (value) => {
-            emit('ui:updateWindowTrack', value)
-          },
-          style: ' bg-mid-gray f7'
-        })
-      }
-      <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('ui:toggleWindow', false))}>Close Window</div>
-      Click on window and press any key to make fullscreen
+        ${
+          trackDropdown[index].render({
+            value: index+ ':: ' + trackId,
+            options: state.media.all.filter((trackId)=>{
+              //console.log("checking ", trackId, state.media.byId[trackId])
+              return state.media.byId[trackId].track.kind==="video"
+            }).map((id)=>({
+              value: id,
+              label: id
+            })),
+            onchange: (value) => {
+              emit('ui:updateWindowTrack', {value: value, index: index})
+            },
+            style: ' bg-mid-gray f7'
+          })
+        }
+      <div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('ui:closeWindow', index))}>close window ${index}</div>
+
       </div>`
-  }
+    }
+
+    return html`
+      <div  style = "width:100%;height:60px">
+        ${el}
+        ${show[index].render(state.ui.windows[index], ()=>{
+             console.log("window closing")
+             emit('ui:closeWindow', index)
+           })}
+
+      </div>`
+  })
+
   return html`
     <div class="pa3 dib" style="width:100%">
-      ${show.render(state.ui.windows, ()=>{
-        console.log("window closing")
-        emit('ui:toggleWindow', false)
-      })}
+
     ${windowControls}
+       Click on an open window and press any key to make fullscreen
     </div>
     `
 }
