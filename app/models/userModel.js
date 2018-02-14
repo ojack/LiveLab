@@ -136,7 +136,7 @@ function userModel (state, bus) {
         state.user.osc.local[opts.port].message = opts.message
         //console.log(opts.m)
         var id = state.user.uuid+''+opts.port
-        multiPeer.sendToAll(JSON.stringify({type: 'osc', message: opts.message, peer: state.user.uuid, id: id}))
+        multiPeer.sendToAll(JSON.stringify({type: 'osc', message: opts.message, peer: state.user.uuid, id: id, name:state.user.osc.local[opts.port].name}))
         bus.emit('render')
       })
     }
@@ -207,7 +207,8 @@ function userModel (state, bus) {
            bus.emit('ui:receivedNewChat', data.data.message)
          } else if (data.data.type === 'osc'){
           // state.user.osc.
-          state.user.osc.remote[data.data.id] = xtend(data.data, state.user.osc.remote[data.data.id])
+          console.log("received osc", data)
+          processRemoteOsc(data)
           bus.emit('render')
         //  console.log("received osc ", data.data)
          }
@@ -218,6 +219,10 @@ function userModel (state, bus) {
 
     bus.emit('render')
   })
+  function processRemoteOsc(data){
+    //  state.user.osc.remote[data.data.id] = xtend(data.data, state.user.osc.remote[data.data.id])
+    state.user.osc.remote[data.data.id] = data.data
+  }
 
   bus.on('user:updateBroadcastStream', function(){
     if(multiPeer !== null) {

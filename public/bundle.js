@@ -1435,7 +1435,7 @@ function userModel (state, bus) {
         state.user.osc.local[opts.port].message = opts.message
         //console.log(opts.m)
         var id = state.user.uuid+''+opts.port
-        multiPeer.sendToAll(JSON.stringify({type: 'osc', message: opts.message, peer: state.user.uuid, id: id}))
+        multiPeer.sendToAll(JSON.stringify({type: 'osc', message: opts.message, peer: state.user.uuid, id: id, name:state.user.osc.local[opts.port].name}))
         bus.emit('render')
       })
     }
@@ -1506,7 +1506,8 @@ function userModel (state, bus) {
            bus.emit('ui:receivedNewChat', data.data.message)
          } else if (data.data.type === 'osc'){
           // state.user.osc.
-          state.user.osc.remote[data.data.id] = xtend(data.data, state.user.osc.remote[data.data.id])
+          console.log("received osc", data)
+          processRemoteOsc(data)
           bus.emit('render')
         //  console.log("received osc ", data.data)
          }
@@ -1517,6 +1518,10 @@ function userModel (state, bus) {
 
     bus.emit('render')
   })
+  function processRemoteOsc(data){
+    //  state.user.osc.remote[data.data.id] = xtend(data.data, state.user.osc.remote[data.data.id])
+    state.user.osc.remote[data.data.id] = data.data
+  }
 
   bus.on('user:updateBroadcastStream', function(){
     if(multiPeer !== null) {
@@ -2161,7 +2166,16 @@ function oscView (state, emit) {
       return html`<p><span class="b"> ${localOsc[port].name}</span>::: ${port} :: <span class="f7"> ${oscArgs} </span> </p>`
     })}
     </div>`
-  console.log("OSC", localOsc, localOscEl)
+//  console.log("OSC", localOsc, localOscEl)
+  var remoteOsc = state.user.osc.remote
+
+  var remoteOscEl = html`<div>
+  ${Object.keys(remoteOsc).map((port)=>{
+  //  console.log("poo", port, localOsc[port])
+    var oscArgs = remoteOsc[port].message==null? '' : JSON.stringify(remoteOsc[port].message)
+    return html`<p><span class="b"> ${remoteOsc[port].name}</span>::: ${port} :: <span class="f7"> ${oscArgs} </span> </p>`
+  })}
+  </div>`
   var addBroadcast = ''
 
   if(state.ui.osc.addBroadcast.visible===true){
@@ -2187,6 +2201,7 @@ function oscView (state, emit) {
   }
   return html`<div class="pa2">
     ${localOscEl}
+    ${remoteOscEl}
     ${addBroadcast}
 
   </div>`

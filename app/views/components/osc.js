@@ -14,7 +14,16 @@ function oscView (state, emit) {
       return html`<p><span class="b"> ${localOsc[port].name}</span>::: ${port} :: <span class="f7"> ${oscArgs} </span> </p>`
     })}
     </div>`
-  console.log("OSC", localOsc, localOscEl)
+//  console.log("OSC", localOsc, localOscEl)
+  var remoteOsc = state.user.osc.remote
+
+  var remoteOscEl = html`<div>
+  ${Object.keys(remoteOsc).map((port)=>{
+  //  console.log("poo", port, localOsc[port])
+    var oscArgs = remoteOsc[port].message==null? '' : JSON.stringify(remoteOsc[port].message)
+    return html`<p><span class="b"> ${remoteOsc[port].name}</span>::: ${port} :: <span class="f7"> ${oscArgs} </span> </p>`
+  })}
+  </div>`
   var addBroadcast = ''
 
   if(state.ui.osc.addBroadcast.visible===true){
@@ -40,6 +49,7 @@ function oscView (state, emit) {
   }
   return html`<div class="pa2">
     ${localOscEl}
+    ${remoteOscEl}
     ${addBroadcast}
 
   </div>`
