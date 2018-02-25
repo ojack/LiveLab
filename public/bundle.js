@@ -1906,7 +1906,7 @@ var Nano = require('nanocomponent')
 
 module.exports = AudioContainer
 
-// Video container component that accepts a mediaStreamTrack as well as display parameters
+// audio container component that accepts a mediaStreamTrack and volume parameter
 function AudioContainer () {
   if (!(this instanceof AudioContainer)) return new AudioContainer()
   this.props = {
