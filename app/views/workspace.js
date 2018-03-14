@@ -9,7 +9,7 @@ const chat = require('./components/chat.js')
 const osc = require('./components/osc.js')
 const windowManager = require('./windowmanager.js')
 const AddBroadcast = require('./addBroadcast.js')
-
+const ConfigureOsc = require('./configureOscForwarding')
 
 module.exports = workspaceView
 
@@ -76,7 +76,7 @@ function workspaceView (state, emit) {
         ${oscEl}
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
-
+      ${ConfigureOsc(state.ui.osc.configureForwarding, emit, state.ui.osc.configureForwarding.visible)}
     </div>
     `
 }

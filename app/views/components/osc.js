@@ -17,8 +17,10 @@ function oscView (state, emit) {
         <td class="pa1" >${localOsc[port].name}</td>
         <td class="pa1" >${port}</td>
         <td class="pa1" ></td>
-        <td class="pa1 f7"><div style="width:100px;overflow:hidden;height:20px">${oscArgs}</div></td>
-        <td class="pa1" > <i class="fas fa-link dim pointer" aria-hidden="true"></i><i class="fas fa-times-circle dim pointer" aria-hidden="true"></i></td>
+        <td class="pa1 f7"><div style="width:80px;overflow:hidden;height:20px">${oscArgs}</div></td>
+        <td class="pa1" >
+          <i class="fas fa-times-circle dim pointer" aria-hidden="true"></i>
+        </td>
       </tr>
     `
     })
@@ -37,9 +39,11 @@ function oscView (state, emit) {
       <td class="pa1" >other person</td>
       <td class="pa1" >${remoteOsc[id].name}</td>
       <td class="pa1" > -- </td>
-      <td class="pa1" >remoteOsc[id].port</td>
-      <td class="pa1 f7" ><div style="width:100px;overflow:hidden;height:20px">${oscArgs}</div></td>
-      <td class="pa1" > <i class="fas fa-link dim pointer" aria-hidden="true"></i><i class="fas fa-times-circle dim pointer" aria-hidden="true"></i></td>
+      <td class="pa1" >${remoteOsc[id].port}</td>
+      <td class="pa1 f7" ><div style="width:80px;overflow:hidden;height:20px">${oscArgs}</div></td>
+      <td class="pa1" >
+        <i class="fas fa-link dim pointer" aria-hidden="true" onclick=${()=>(emit('ui:configureForwarding', id))}></i>
+        </td>
 
 
     </tr>
@@ -73,7 +77,7 @@ function oscView (state, emit) {
    var headerStyle = "font-size:12px;font-weight:200;padding:4px;border-bottom: solid white 1px"
   return html`<div class="pa2">
       <div style="max-height:180px;overflow-y:auto">
-  <table style="max-width:100%;word-wrap:break-word;table-layout:fixed" cellspacing="0" cellpadding="1" >
+  <table style="max-width:100%;word-wrap:break-word;table-layout:fixed;font-size:12px" cellspacing="0" cellpadding="1" >
     <thead>
       <tr>
         <th style=${headerStyle}>Peer</th>

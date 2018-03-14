@@ -19,6 +19,11 @@ function uiModel (state, bus) {
       visible: false,
       port: 5271,
       name: ''
+    },
+    configureForwarding: {
+      visible: false,
+      port: '',
+      oscId: null
     }
   },
   windows:
@@ -75,6 +80,28 @@ function uiModel (state, bus) {
     bus.emit('render')
   })
 
+  bus.on('ui:configureForwarding', function(remoteOscId){
+    state.ui.osc.configureForwarding = {
+      visible: true,
+      id: remoteOscId,
+      port: ''
+    }
+    bus.emit('render')
+  })
+
+  bus.on('ui:setLocalOscForward', function(port){
+    state.ui.osc.configureForwarding.port = port
+    bus.emit('render')
+  })
+
+  bus.on('ui:doneConfiguringOsc', function(){
+    state.ui.osc.configureForwarding = {
+      visible: false,
+      id: null,
+      port: ''
+    }
+    bus.emit('render')
+  })
   // bus.on('ui:toggleWindow', function(bool){
   //   //if passed a variable, use variable. Otherwise, toggle current value
   //   if(bool !== undefined){

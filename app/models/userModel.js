@@ -225,9 +225,20 @@ function userModel (state, bus) {
     bus.emit('render')
   })
   function processRemoteOsc(data){
+
+    console.log("processing", data)
     //  state.user.osc.remote[data.data.id] = xtend(data.data, state.user.osc.remote[data.data.id])
-    state.user.osc.remote[data.data.id] = data.data
-    state.user.osc.remote[data.data.id].port = ''
+if(state.user.osc.remote[data.data.id]){
+  state.user.osc.remote[data.data.id] = xtend(state.user.osc.remote[data.data.id], data.data)
+} else {
+  state.user.osc.remote[data.data.id] = data.data
+}
+  //  state.user.osc.remote[data.data.id].port = ''
+
+  console.log("processing ", data.data.id, state.user.osc.remote)
+    if(state.user.osc.remote[data.data.id].port){
+      osc.sendOSC(data.data.message, state.user.osc.remote[data.data.id].port, 'localhost')
+    }
   }
 
   bus.on('user:updateBroadcastStream', function(){

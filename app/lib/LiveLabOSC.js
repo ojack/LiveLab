@@ -36,7 +36,9 @@ LiveLabOSC.prototype.sendOSC = function(_message, _port, _ip){
  // }
  //
  // setInterval(sendMessage, 1000)
-  //this.emitter.send(_message, 0, _message.length, _port, ip)
+ console.log("sending osc to ", _message, _port, _ip)
+  var buf = osc.toBuffer(_message)
+  this.emitter.send(buf, 0, buf.length, _port, _ip)
 }
 
 LiveLabOSC.prototype.listenOnPort = function(port){
