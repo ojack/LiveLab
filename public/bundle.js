@@ -1430,6 +1430,11 @@ function userModel (state, bus) {
         bus.emit('render')
       })
 
+      bus.on('user:setLocalOscForward', function(opts){
+        console.log(opts)
+        state.user.osc.remote[opts.id].port = opts.port
+        bus.emit('render')
+      })
       //called when osc message received locally
       osc.on('received osc', function(opts){
         state.user.osc.local[opts.port].message = opts.message
@@ -1521,6 +1526,7 @@ function userModel (state, bus) {
   function processRemoteOsc(data){
     //  state.user.osc.remote[data.data.id] = xtend(data.data, state.user.osc.remote[data.data.id])
     state.user.osc.remote[data.data.id] = data.data
+    state.user.osc.remote[data.data.id].port = ''
   }
 
   bus.on('user:updateBroadcastStream', function(){
@@ -2159,23 +2165,45 @@ module.exports = oscView
 function oscView (state, emit) {
   var localOsc = state.user.osc.local
 
-  var localOscEl = html`<div>
-    ${Object.keys(localOsc).map((port)=>{
+  var localOscEl =
+    Object.keys(localOsc).map((port)=>{
       console.log("poo", port, localOsc[port])
       var oscArgs = localOsc[port].message==null? '' : JSON.stringify(localOsc[port].message)
-      return html`<p><span class="b"> ${localOsc[port].name}</span>::: ${port} :: <span class="f7"> ${oscArgs} </span> </p>`
-    })}
-    </div>`
+      return html`
+      <tr >
+        <td class="pa1" >${state.user.nickname}</td>
+        <td class="pa1" >${localOsc[port].name}</td>
+        <td class="pa1" >${port}</td>
+        <td class="pa1" ></td>
+        <td class="pa1 f7"><div style="width:100px;overflow:hidden;height:20px">${oscArgs}</div></td>
+        <td class="pa1" > <i class="fas fa-link dim pointer" aria-hidden="true"></i><i class="fas fa-times-circle dim pointer" aria-hidden="true"></i></td>
+      </tr>
+    `
+    })
+
 //  console.log("OSC", localOsc, localOscEl)
   var remoteOsc = state.user.osc.remote
 
-  var remoteOscEl = html`<div>
-  ${Object.keys(remoteOsc).map((port)=>{
-  //  console.log("poo", port, localOsc[port])
-    var oscArgs = remoteOsc[port].message==null? '' : JSON.stringify(remoteOsc[port].message)
-    return html`<p><span class="b"> ${remoteOsc[port].name}</span>::: ${port} :: <span class="f7"> ${oscArgs} </span> </p>`
-  })}
-  </div>`
+  var remoteOscEl = Object.keys(remoteOsc).map((id)=>{
+  //  console.log("poo", id, localOsc[id])
+  // <input type="text" name="fname" value=${remoteOsc[id].port} onkeyup=${(e)=>{emit('user:setLocalOscForward', {port: e.target.value, id: id})}}>
+  // <div class="f6 fr ma2 link ph3 pv2 mb2 white pointer" onclick=${() => (emit('ui:StartForward'))}>Start Forward</div>
+
+    var oscArgs = remoteOsc[id].message==null? '' : JSON.stringify(remoteOsc[id].message)
+    return html`
+    <tr>
+      <td class="pa1" >other person</td>
+      <td class="pa1" >${remoteOsc[id].name}</td>
+      <td class="pa1" > -- </td>
+      <td class="pa1" >remoteOsc[id].port</td>
+      <td class="pa1 f7" ><div style="width:100px;overflow:hidden;height:20px">${oscArgs}</div></td>
+      <td class="pa1" > <i class="fas fa-link dim pointer" aria-hidden="true"></i><i class="fas fa-times-circle dim pointer" aria-hidden="true"></i></td>
+
+
+    </tr>
+      `
+  })
+
   var addBroadcast = ''
 
   if(state.ui.osc.addBroadcast.visible===true){
@@ -2199,9 +2227,27 @@ function oscView (state, emit) {
   } else {
     addBroadcast = html`<div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('ui:addOSC', true))}>+ Add OSC Broadcast</div>`
   }
+   //var headerStyle = "width:20%;font-size:11px;padding:2px"
+   var headerStyle = "font-size:12px;font-weight:200;padding:4px;border-bottom: solid white 1px"
   return html`<div class="pa2">
-    ${localOscEl}
-    ${remoteOscEl}
+      <div style="max-height:180px;overflow-y:auto">
+  <table style="max-width:100%;word-wrap:break-word;table-layout:fixed" cellspacing="0" cellpadding="1" >
+    <thead>
+      <tr>
+        <th style=${headerStyle}>Peer</th>
+        <th style=${headerStyle}>Name</th>
+        <th style=${headerStyle}>Listening on Local Port</th>
+        <th style=${headerStyle}>Forwarding to Local Port</th>
+        <th style=${headerStyle}>Params</th>
+      </tr>
+    </thead>
+
+        <tbody>
+      ${localOscEl}
+      ${remoteOscEl}
+      </tbody>
+  </table>
+  </div>
     ${addBroadcast}
 
   </div>`
@@ -2886,6 +2932,17 @@ function workspaceView (state, emit) {
          }
        )
   }
+
+  // ${panel(
+  //      {
+  //        htmlProps: {
+  //          class: "w-100"
+  //        },
+  //        contents: windowManager(state, emit),
+  //        closable: false,
+  //        header:   "Output"
+  //      }
+  //    )}
     return html`
     <div class="f6 dt fw2 w-100 h-100 mw-100">
       <div class="fl w-70-ns w-100 pa2">
@@ -2912,16 +2969,7 @@ function workspaceView (state, emit) {
                header:   "Chat"
              }
            )}
-           ${panel(
-                {
-                  htmlProps: {
-                    class: "w-100"
-                  },
-                  contents: windowManager(state, emit),
-                  closable: false,
-                  header:   "Output"
-                }
-              )}
+
         ${oscEl}
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}

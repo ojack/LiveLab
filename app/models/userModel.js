@@ -131,6 +131,11 @@ function userModel (state, bus) {
         bus.emit('render')
       })
 
+      bus.on('user:setLocalOscForward', function(opts){
+        console.log(opts)
+        state.user.osc.remote[opts.id].port = opts.port
+        bus.emit('render')
+      })
       //called when osc message received locally
       osc.on('received osc', function(opts){
         state.user.osc.local[opts.port].message = opts.message
@@ -222,6 +227,7 @@ function userModel (state, bus) {
   function processRemoteOsc(data){
     //  state.user.osc.remote[data.data.id] = xtend(data.data, state.user.osc.remote[data.data.id])
     state.user.osc.remote[data.data.id] = data.data
+    state.user.osc.remote[data.data.id].port = ''
   }
 
   bus.on('user:updateBroadcastStream', function(){
