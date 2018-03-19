@@ -721,8 +721,8 @@ function devicesModel (state, bus) {
 
   //add available constraint options to devices model
   function loadConstraints(){
-    xtend(state.devices.addBroadcast.kinds.audio, constraintsJSON.audio)
-    xtend(state.devices.addBroadcast.kinds.video, constraintsJSON.video)
+    // xtend(state.devices.addBroadcast.kinds.audio, constraintsJSON.audio)
+    // xtend(state.devices.addBroadcast.kinds.video, constraintsJSON.video)
   }
 
   bus.on('devices:updateBroadcastPreview', function () {
@@ -2482,7 +2482,7 @@ ShowWindow.prototype.directOpen = function(){
 ShowWindow.prototype.initWindow = function(){
   console.log("initing window")
   var windowSettings = "popup=yes,menubar=no,location=no,resizable=no,scrollbars=no,status=no,toolbar=no,location=no,chrome=yes";
-  this.win = window.open(null, JSON.stringify(Date.now()), windowSettings)
+  this.win = window.open('', JSON.stringify(Date.now()), windowSettings)
 
   this.win.onbeforeunload = this.onClose
 
@@ -3012,16 +3012,7 @@ function workspaceView (state, emit) {
        )
   }
 
-  // ${panel(
-  //      {
-  //        htmlProps: {
-  //          class: "w-100"
-  //        },
-  //        contents: windowManager(state, emit),
-  //        closable: false,
-  //        header:   "Output"
-  //      }
-  //    )}
+
     return html`
     <div class="f6 dt fw2 w-100 h-100 mw-100">
       <div class="fl w-70-ns w-100 pa2">
@@ -3048,7 +3039,16 @@ function workspaceView (state, emit) {
                header:   "Chat"
              }
            )}
-
+           ${panel(
+                {
+                  htmlProps: {
+                    class: "w-100"
+                  },
+                  contents: windowManager(state, emit),
+                  closable: false,
+                  header:   "Output"
+                }
+              )}
         ${oscEl}
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}

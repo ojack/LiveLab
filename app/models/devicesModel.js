@@ -201,8 +201,8 @@ function devicesModel (state, bus) {
 
   //add available constraint options to devices model
   function loadConstraints(){
-    xtend(state.devices.addBroadcast.kinds.audio, constraintsJSON.audio)
-    xtend(state.devices.addBroadcast.kinds.video, constraintsJSON.video)
+    // xtend(state.devices.addBroadcast.kinds.audio, constraintsJSON.audio)
+    // xtend(state.devices.addBroadcast.kinds.video, constraintsJSON.video)
   }
 
   bus.on('devices:updateBroadcastPreview', function () {

@@ -52,7 +52,7 @@ ShowWindow.prototype.directOpen = function(){
 ShowWindow.prototype.initWindow = function(){
   console.log("initing window")
   var windowSettings = "popup=yes,menubar=no,location=no,resizable=no,scrollbars=no,status=no,toolbar=no,location=no,chrome=yes";
-  this.win = window.open(null, JSON.stringify(Date.now()), windowSettings)
+  this.win = window.open('', JSON.stringify(Date.now()), windowSettings)
 
   this.win.onbeforeunload = this.onClose
 

@@ -36,16 +36,7 @@ function workspaceView (state, emit) {
        )
   }
 
-  // ${panel(
-  //      {
-  //        htmlProps: {
-  //          class: "w-100"
-  //        },
-  //        contents: windowManager(state, emit),
-  //        closable: false,
-  //        header:   "Output"
-  //      }
-  //    )}
+
     return html`
     <div class="f6 dt fw2 w-100 h-100 mw-100">
       <div class="fl w-70-ns w-100 pa2">
@@ -72,7 +63,16 @@ function workspaceView (state, emit) {
                header:   "Chat"
              }
            )}
-
+           ${panel(
+                {
+                  htmlProps: {
+                    class: "w-100"
+                  },
+                  contents: windowManager(state, emit),
+                  closable: false,
+                  header:   "Output"
+                }
+              )}
         ${oscEl}
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
