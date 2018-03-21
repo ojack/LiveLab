@@ -63,9 +63,14 @@ MultiPeer.prototype.reinitAll = function(){
 
 // Once the new peer receives a list of connected peers from the server,
 // creates new simple peer object for each connected peer.
-MultiPeer.prototype._connectToPeers = function (_t, peers) {
+MultiPeer.prototype._connectToPeers = function (_t, peers, servers) {
   this.emit('peers', peers)
-
+  console.log('servers', servers)
+  if(servers) {
+    this._peerOptions.config = {
+      iceServers : servers
+    }
+  }
   peers.forEach(function (id) {
     this.emit('new peer', {id: id})
     var newOptions = {initiator: true}
@@ -75,7 +80,7 @@ MultiPeer.prototype._connectToPeers = function (_t, peers) {
       console.log('stream is null')
     }
     var options = extend(newOptions, this._peerOptions)
-
+    console.log("options", options)
     this.peers[id] = new SimplePeer(options)
     this._attachPeerEvents(this.peers[id], id)
   }.bind(this))

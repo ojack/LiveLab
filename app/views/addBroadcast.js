@@ -23,9 +23,7 @@ function addBroadcast (devices, emit, showElement) {
       var selectedDevice = bState.kinds[bState.kind].deviceId
       defaultLabel += devices[bState.kind+'input'].byId[selectedDevice].label
     }
-  }
-
-  if(bState.kind==="audio") {
+  } else if(bState.kind==="audio") {
     constraintOptions = html`
     <div id="audio-constraints" >
           ${deviceDropdown.render({
