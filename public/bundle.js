@@ -225,7 +225,7 @@ MultiPeer.prototype.reinitAll = function(){
 // creates new simple peer object for each connected peer.
 MultiPeer.prototype._connectToPeers = function (_t, peers, servers) {
   this.emit('peers', peers)
-  console.log('servers', servers)
+//  console.log('servers', servers)
   if(servers) {
     this._peerOptions.config = {
       iceServers : servers
@@ -670,6 +670,7 @@ function devicesModel (state, bus) {
         state.devices.addBroadcast.previewTrack = null
       }
     }
+  
     bus.emit('render')
   })
 
@@ -1672,7 +1673,7 @@ const previewVid = VideoEl()
 
 function addBroadcast (devices, emit, showElement) {
   var bState = devices.addBroadcast
-  var constraintOptions = html``
+  var constraintOptions = html`<div id="screen-constraints"></div>`
 
   var defaultLabel = ''
   if(bState.kind !== "screen"){
@@ -1680,7 +1681,14 @@ function addBroadcast (devices, emit, showElement) {
       var selectedDevice = bState.kinds[bState.kind].deviceId
       defaultLabel += devices[bState.kind+'input'].byId[selectedDevice].label
     }
-  } else if(bState.kind==="audio") {
+  }
+  if(bState.kind==="audio") {
+    var options = devices.audioinput.all.map((id) => (
+      {
+        value: id,
+        label: devices.audioinput.byId[id].label
+      }
+    ))
     constraintOptions = html`
     <div id="audio-constraints" >
           ${deviceDropdown.render({
@@ -1703,7 +1711,8 @@ function addBroadcast (devices, emit, showElement) {
     </div>
 
     `
-  } else if (bState.kind==="video"){
+  }
+  if (bState.kind==="video"){
     constraintOptions = html`
     <div id="video-constraints">
 
@@ -1725,9 +1734,10 @@ function addBroadcast (devices, emit, showElement) {
         })
       }
     </div`
-  } else {
-      constraintOptions = html`<div id="screen-constraints"></div>`
-  }
+}
+  // } else {
+  //     constraintOptions = html`<div id="screen-constraints"></div>`
+  // }
 
   return html`
 
@@ -2457,7 +2467,7 @@ ShowWindow.prototype = Object.create(Nano.prototype)
 
 ShowWindow.prototype.createElement = function (props, onClose) {
     this.onClose = onClose
-    console.log("creating el", props, this.props.open, this)
+  //  console.log("creating el", props, this.props.open, this)
     if(props.open===true){
       this.initWindow()
     }
@@ -2483,7 +2493,7 @@ ShowWindow.prototype.directOpen = function(){
 }
 //to do: check whether popup blocked
 ShowWindow.prototype.initWindow = function(){
-  console.log("initing window")
+//  console.log("initing window")
   var windowSettings = "popup=yes,menubar=no,location=no,resizable=no,scrollbars=no,status=no,toolbar=no,location=no,chrome=yes";
   this.win = window.open('', JSON.stringify(Date.now()), windowSettings)
 
@@ -2960,7 +2970,7 @@ function windowManagerView (state, emit) {
       <div  style = "width:100%;height:60px">
         ${el}
         ${show[index].render(state.ui.windows[index], ()=>{
-             console.log("window closing")
+            // console.log("window closing")
              emit('ui:closeWindow', index)
            })}
 

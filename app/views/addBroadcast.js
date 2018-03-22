@@ -15,7 +15,7 @@ const previewVid = VideoEl()
 
 function addBroadcast (devices, emit, showElement) {
   var bState = devices.addBroadcast
-  var constraintOptions = html``
+  var constraintOptions = html`<div id="screen-constraints"></div>`
 
   var defaultLabel = ''
   if(bState.kind !== "screen"){
@@ -23,7 +23,14 @@ function addBroadcast (devices, emit, showElement) {
       var selectedDevice = bState.kinds[bState.kind].deviceId
       defaultLabel += devices[bState.kind+'input'].byId[selectedDevice].label
     }
-  } else if(bState.kind==="audio") {
+  }
+  if(bState.kind==="audio") {
+    var options = devices.audioinput.all.map((id) => (
+      {
+        value: id,
+        label: devices.audioinput.byId[id].label
+      }
+    ))
     constraintOptions = html`
     <div id="audio-constraints" >
           ${deviceDropdown.render({
@@ -46,7 +53,8 @@ function addBroadcast (devices, emit, showElement) {
     </div>
 
     `
-  } else if (bState.kind==="video"){
+  }
+  if (bState.kind==="video"){
     constraintOptions = html`
     <div id="video-constraints">
 
@@ -68,9 +76,10 @@ function addBroadcast (devices, emit, showElement) {
         })
       }
     </div`
-  } else {
-      constraintOptions = html`<div id="screen-constraints"></div>`
-  }
+}
+  // } else {
+  //     constraintOptions = html`<div id="screen-constraints"></div>`
+  // }
 
   return html`
 

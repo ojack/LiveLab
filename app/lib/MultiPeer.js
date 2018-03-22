@@ -65,7 +65,7 @@ MultiPeer.prototype.reinitAll = function(){
 // creates new simple peer object for each connected peer.
 MultiPeer.prototype._connectToPeers = function (_t, peers, servers) {
   this.emit('peers', peers)
-  console.log('servers', servers)
+//  console.log('servers', servers)
   if(servers) {
     this._peerOptions.config = {
       iceServers : servers

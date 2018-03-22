@@ -145,6 +145,7 @@ function devicesModel (state, bus) {
         state.devices.addBroadcast.previewTrack = null
       }
     }
+  
     bus.emit('render')
   })
 

@@ -60,7 +60,7 @@ function windowManagerView (state, emit) {
       <div  style = "width:100%;height:60px">
         ${el}
         ${show[index].render(state.ui.windows[index], ()=>{
-             console.log("window closing")
+            // console.log("window closing")
              emit('ui:closeWindow', index)
            })}
 

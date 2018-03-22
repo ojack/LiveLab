@@ -24,7 +24,7 @@ ShowWindow.prototype = Object.create(Nano.prototype)
 
 ShowWindow.prototype.createElement = function (props, onClose) {
     this.onClose = onClose
-    console.log("creating el", props, this.props.open, this)
+  //  console.log("creating el", props, this.props.open, this)
     if(props.open===true){
       this.initWindow()
     }
@@ -50,7 +50,7 @@ ShowWindow.prototype.directOpen = function(){
 }
 //to do: check whether popup blocked
 ShowWindow.prototype.initWindow = function(){
-  console.log("initing window")
+//  console.log("initing window")
   var windowSettings = "popup=yes,menubar=no,location=no,resizable=no,scrollbars=no,status=no,toolbar=no,location=no,chrome=yes";
   this.win = window.open('', JSON.stringify(Date.now()), windowSettings)
 
