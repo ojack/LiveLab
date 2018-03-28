@@ -15,12 +15,12 @@ function configureOscForwarding (oscInfo, emit, showElement) {
             ${input('port', 'port', {
               value: oscInfo.port,
               onkeyup: (e) => {
-                emit('ui:setLocalOscForward', e.target.value)
+                emit('osc:setOscForwardPort', e.target.value)
               }
             })}
-            <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('user:setLocalOscForward', oscInfo))}>Start</div>
+            <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('osc:setLocalOscForward', oscInfo))}>Start</div>
         </div>`,
-      close: () => (emit('ui:doneConfiguringOsc'))
+      close: () => (emit('osc:doneConfiguringOsc'))
     })}
     `
 }

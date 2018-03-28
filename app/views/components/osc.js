@@ -4,7 +4,7 @@ const html = require('choo/html')
 module.exports = oscView
 
 function oscView (state, emit) {
-  var localOsc = state.user.osc.local
+  var localOsc = state.osc.local
 
   var localOscEl =
     Object.keys(localOsc).map((port) => {
@@ -18,14 +18,14 @@ function oscView (state, emit) {
         <td class="pa1" >--</td>
         <td class="pa1 f7"><div style="width:80px;overflow:hidden;height:20px">${oscArgs}</div></td>
         <td class="pa1" >
-          <i class="fas fa-times-circle dim pointer" aria-hidden="true" onclick=${() => (emit('user:removeLocalOscBroadcast', port))}></i>
+          <i class="fas fa-times-circle dim pointer" aria-hidden="true" onclick=${() => (emit('osc:removeLocalOscBroadcast', port))}></i>
         </td>
       </tr>
     `
     })
 
 //  console.log("OSC", localOsc, localOscEl)
-  var remoteOsc = state.user.osc.remote
+  var remoteOsc = state.osc.remote
 
   var remoteOscEl = Object.keys(remoteOsc).map((id) => {
   //  console.log("poo", id, localOsc[id])
@@ -41,7 +41,7 @@ function oscView (state, emit) {
       <td class="pa1" >${remoteOsc[id].port}</td>
       <td class="pa1 f7" ><div style="width:80px;overflow:hidden;height:20px">${oscArgs}</div></td>
       <td class="pa1" >
-        <i class="fas fa-link dim pointer" aria-hidden="true" onclick=${() => (emit('ui:configureForwarding', id))}></i>
+        <i class="fas fa-link dim pointer" aria-hidden="true" onclick=${() => (emit('osc:configureForwarding', id))}></i>
         </td>
 
 
@@ -49,7 +49,7 @@ function oscView (state, emit) {
       `
   })
 
-  var addBroadcast = html`<div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('ui:addOSC', true))}>+ Add OSC Broadcast</div>`
+  var addBroadcast = html`<div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('osc:addOSC', true))}>+ Add OSC Broadcast</div>`
 
    // var headerStyle = "width:20%;font-size:11px;padding:2px"
   var headerStyle = 'font-size:12px;font-weight:200;padding:4px;border-bottom: solid white 1px'

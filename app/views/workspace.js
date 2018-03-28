@@ -74,8 +74,8 @@ function workspaceView (state, emit) {
 
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
-      ${ConfigureOsc(state.ui.osc.configureForwarding, emit, state.ui.osc.configureForwarding.visible)}
-      ${AddOscBroadcast(state.ui.osc.addBroadcast, emit, state.ui.osc.addBroadcast.visible)}
+      ${ConfigureOsc(state.osc.configureForwarding, emit, state.osc.configureForwarding.visible)}
+      ${AddOscBroadcast(state.osc.addBroadcast, emit, state.osc.addBroadcast.visible)}
     </div>
     `
 }

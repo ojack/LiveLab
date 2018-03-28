@@ -1,9 +1,9 @@
+/* global nw */
 const expose = require('choo-expose')
 const log = require('choo-log')
 const choo = require('choo')
 
 const app = choo()
-
 
 app.use(log())
 app.use(expose())
@@ -26,7 +26,7 @@ if(typeof nw == "object"){
   var win = nw.Window.get()
   win.width = WIN_WIDTH
   win.height = WIN_HEIGHT
-  //console.log(win)
+  // console.log(win)
   win.x = Math.floor(winX)
   win.y = Math.floor(winY)
 
@@ -52,18 +52,14 @@ if(typeof nw == "object"){
   // nw.Screen.on('displayRemoved', screenCB.onDisplayRemoved)
 }
 
-
-
-
-
-
 app.use(require('./models/devicesModel.js'))
 app.use(require('./models/mediaModel.js'))
 app.use(require('./models/peersModel.js'))
 app.use(require('./models/userModel.js'))
 app.use(require('./models/uiModel.js'))
+app.use(require('./models/oscModel.js'))
 
-//routing is different in nwjs vs browser version...include both routes to cover bases
+// routing is different in nwjs vs browser version...include both routes to cover bases
 app.route('/public/index.html', require('./views/main.js'))
 app.route('', require('./views/main.js'))
 

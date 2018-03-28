@@ -82,37 +82,7 @@ function uiModel (state, bus) {
     bus.emit('render')
   })
 
-  bus.on('ui:configureForwarding', function (remoteOscId) {
-    state.ui.osc.configureForwarding = {
-      visible: true,
-      id: remoteOscId,
-      port: ''
-    }
-    bus.emit('render')
-  })
 
-  bus.on('ui:setLocalOscForward', function (port) {
-    state.ui.osc.configureForwarding.port = port
-    bus.emit('render')
-  })
-
-  bus.on('ui:doneConfiguringOsc', function () {
-    state.ui.osc.configureForwarding = {
-      visible: false,
-      id: null,
-      port: ''
-    }
-    bus.emit('render')
-  })
-
-  bus.on('ui:closeAddOscBroadcast', function () {
-    state.ui.osc.addBroadcast = {
-      visible: false,
-      name: null,
-      port: null
-    }
-    bus.emit('render')
-  })
   // bus.on('ui:toggleWindow', function(bool) {
   //   //if passed a variable, use variable. Otherwise, toggle current value
   //   if(bool !== undefined) {
@@ -188,32 +158,5 @@ function uiModel (state, bus) {
 
     }
 
-    //Events related to OSC
-    bus.on('ui:addOSC', function () {
-      state.ui.osc.addBroadcast.visible = true
-      bus.emit('render')
-    })
 
-    bus.on('ui:setOSCBroadcastPort', function (val) {
-      state.ui.osc.addBroadcast.port = val
-      bus.emit('render')
-    })
-
-    bus.on('ui:setOSCBroadcastName', function (val) {
-      state.ui.osc.addBroadcast.name = val
-      bus.emit('render')
-    })
-
-    bus.on('ui:listenOnLocalPort', function () {
-      bus.emit('user:newOSCBroadcast', {
-        port: state.ui.osc.addBroadcast.port,
-        name: state.ui.osc.addBroadcast.name
-      })
-
-      //to do: add error checking for if port is in use
-      state.ui.osc.addBroadcast.port = null
-      state.ui.osc.addBroadcast.name = null
-      state.ui.osc.addBroadcast.visible = false
-      bus.emit('render')
-    })
  }

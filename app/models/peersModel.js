@@ -39,11 +39,10 @@ function peersModel (state, bus) {
       }
     }, state.peers.byId[peer.peerId], peer)
 
-    console.log("NEW  PEER INFO", state.peers.byId)
+    console.log('NEW  PEER INFO', state.peers.byId)
     bus.emit('ui:addPeer', peer.peerId)
     if (state.peers.all.indexOf(peer.peerId) < 0) {
       state.peers.all.push(peer.peerId)
-
     }
     bus.emit('render')
   })
@@ -56,7 +55,7 @@ function peersModel (state, bus) {
     if (opts.isDefault) {
       state.peers.byId[opts.peerId].defaultTracks[opts.kind] = opts.trackId
     }
-    console.log("peersTracks", state.peers.byId[opts.peerId].tracks)
+    // console.log("peersTracks", state.peers.byId[opts.peerId].tracks)
     bus.emit('render')
   })
 
@@ -64,14 +63,12 @@ function peersModel (state, bus) {
     // remove all tracks associated with this peer
     state.peers.byId[peerId].tracks.forEach(function (trackId) {
       bus.emit('media:removeTrack', trackId)
-
     })
     state.peers.byId[peerId].tracks = []
     var index = state.peers.all.indexOf(peerId)
     if (index > -1) state.peers.all.splice(index, 1)
     delete state.peers.byId[peerId]
-      bus.emit('ui:removePeer', peerId)
-      bus.emit('render')
+    bus.emit('ui:removePeer', peerId)
+    bus.emit('render')
   })
-
 }

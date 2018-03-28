@@ -1,7 +1,7 @@
 var xtend = Object.assign
 var shortid = require('shortid')
 var MultiPeer = require('./../lib/MultiPeer.js')
-var LiveLabOSC = require('./../lib/LiveLabOSC.js')
+
 // To do: separate ui events (logged in) and connection state/ status log from user model
 // status log contains all peer connection related information
 
@@ -16,11 +16,7 @@ function userModel (state, bus) {
     loggedIn: false,
     nickname: "olivia",
     statusMessage: '',
-    multiPeer: null,
-    osc: {
-      local: {},
-      remote: {}
-    }
+    multiPeer: null
   }, state.user)
 
 
@@ -117,43 +113,11 @@ function userModel (state, bus) {
       }
     })
 
-    if(typeof nw == "object"){
+  //  if(typeof nw == "object"){
     // osc channels
-      osc = new LiveLabOSC()
 
-      //start listening for messages on local port
-      bus.on('user:newOSCBroadcast', function (opts) {
-        osc.listenOnPort(opts.port)
-        state.user.osc.local[opts.port] = {
-          name: opts.name,
-          message: null
-        }
-        bus.emit('render')
-      })
 
-      bus.on('user:removeLocalOscBroadcast', function (port) {
 
-        osc.stopListening(port)
-        delete state.user.osc.local[port]
-        bus.emit('render')
-      })
-
-      bus.on('user:setLocalOscForward', function (opts) {
-        // console.log(opts)
-        state.user.osc.remote[opts.id].port = opts.port
-        state.ui.osc.configureForwarding.visible = false
-        bus.emit('render')
-      })
-
-      //called when osc message received locally
-      osc.on('received osc', function(opts){
-        state.user.osc.local[opts.port].message = opts.message
-        //console.log(opts.m)
-        var id = state.user.uuid+''+opts.port
-        multiPeer.sendToAll(JSON.stringify({type: 'osc', message: opts.message, peer: state.user.uuid, id: id, name:state.user.osc.local[opts.port].name}))
-        bus.emit('render')
-      })
-    }
     //received initial list of peers from signalling server, update local peer information
     multiPeer.on('peers', function (peers) {
       state.user.loggedIn = true
@@ -221,8 +185,9 @@ function userModel (state, bus) {
            bus.emit('ui:receivedNewChat', data.data.message)
          } else if (data.data.type === 'osc'){
           // state.user.osc.
-          console.log("received osc", data)
-          processRemoteOsc(data)
+        //  console.log("received osc", data)
+          //processRemoteOsc(data)
+          bus.emit('osc:processRemoteOsc', data)
           bus.emit('render')
         //  console.log("received osc ", data.data)
          }
@@ -233,22 +198,8 @@ function userModel (state, bus) {
 
     bus.emit('render')
   })
-  function processRemoteOsc(data){
 
-    console.log("processing", data)
-    //  state.user.osc.remote[data.data.id] = xtend(data.data, state.user.osc.remote[data.data.id])
-if(state.user.osc.remote[data.data.id]){
-  state.user.osc.remote[data.data.id] = xtend(state.user.osc.remote[data.data.id], data.data)
-} else {
-  state.user.osc.remote[data.data.id] = data.data
-}
-  //  state.user.osc.remote[data.data.id].port = ''
 
-  console.log("processing ", data.data.id, state.user.osc.remote)
-    if(state.user.osc.remote[data.data.id].port){
-      osc.sendOSC(data.data.message, state.user.osc.remote[data.data.id].port, 'localhost')
-    }
-  }
 
   bus.on('user:updateBroadcastStream', function(){
     if(multiPeer !== null) {
@@ -262,6 +213,10 @@ if(state.user.osc.remote[data.data.id]){
 
   bus.on('user:sendChatMessage', function(msg){
      multiPeer.sendToAll(JSON.stringify({type: 'chatMessage', message: msg}))
+   })
+
+   bus.on('user:sendToAll', function (msg) {
+     multiPeer.sendToAll(msg)
    })
 
   function getLocalCommunicationStream () {
