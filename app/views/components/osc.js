@@ -28,21 +28,21 @@ function oscView (state, emit) {
 //  console.log("OSC", localOsc, localOscEl)
   var remoteOsc = state.user.osc.remote
 
-  var remoteOscEl = Object.keys(remoteOsc).map((id)=>{
+  var remoteOscEl = Object.keys(remoteOsc).map((id) => {
   //  console.log("poo", id, localOsc[id])
   // <input type="text" name="fname" value=${remoteOsc[id].port} onkeyup=${(e)=>{emit('user:setLocalOscForward', {port: e.target.value, id: id})}}>
   // <div class="f6 fr ma2 link ph3 pv2 mb2 white pointer" onclick=${() => (emit('ui:StartForward'))}>Start Forward</div>
 
-    var oscArgs = remoteOsc[id].message==null? '' : JSON.stringify(remoteOsc[id].message)
+    var oscArgs = remoteOsc[id].message == null ? '' : JSON.stringify(remoteOsc[id].message)
     return html`
     <tr>
-      <td class="pa1" >other person</td>
+      <td class="pa1" >${state.peers.byId[remoteOsc[id].peer].nickname}</td>
       <td class="pa1" >${remoteOsc[id].name}</td>
       <td class="pa1" > -- </td>
       <td class="pa1" >${remoteOsc[id].port}</td>
       <td class="pa1 f7" ><div style="width:80px;overflow:hidden;height:20px">${oscArgs}</div></td>
       <td class="pa1" >
-        <i class="fas fa-link dim pointer" aria-hidden="true" onclick=${()=>(emit('ui:configureForwarding', id))}></i>
+        <i class="fas fa-link dim pointer" aria-hidden="true" onclick=${() => (emit('ui:configureForwarding', id))}></i>
         </td>
 
 
