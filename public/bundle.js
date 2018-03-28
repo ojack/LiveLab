@@ -1007,6 +1007,7 @@ function oscModel (state, bus) {
     configureForwarding: {
       visible: false,
       port: '',
+      ip: 'localhost',
       oscId: null
     }
   }, state.osc)
@@ -1025,6 +1026,7 @@ function oscModel (state, bus) {
     bus.on('osc:setLocalOscForward', function (opts) {
       // console.log(opts)
       state.osc.remote[opts.id].port = opts.port
+      state.osc.remote[opts.id].ip = opts.ip
       state.osc.configureForwarding.visible = false
       bus.emit('render')
     })
@@ -1055,7 +1057,7 @@ function oscModel (state, bus) {
       //  state.user.osc.remote[data.data.id].port = ''
       //  console.log("processing ", data.data.id, state.user.osc.remote)
       if (state.osc.remote[data.data.id].port) {
-        osc.sendOSC(data.data.message, state.osc.remote[data.data.id].port, 'localhost')
+        osc.sendOSC(data.data.message, state.osc.remote[data.data.id].port, state.osc.remote[data.data.id].ip)
       }
     })
 
@@ -1064,10 +1066,15 @@ function oscModel (state, bus) {
       bus.emit('render')
     })
 
+    bus.on('osc:setOscForwardIp', function (ip) {
+      state.osc.configureForwarding.ip = ip
+      bus.emit('render')
+    })
+
     bus.on('osc:doneConfiguringOsc', function () {
-      state.ui.osc.configureForwarding = {
+      state.osc.configureForwarding = {
         visible: false,
-        id: null,
+        id: '',
         port: ''
       }
       bus.emit('render')
@@ -1115,7 +1122,8 @@ function oscModel (state, bus) {
       state.osc.configureForwarding = {
         visible: true,
         id: remoteOscId,
-        port: ''
+        port: '',
+        ip: 'localhost'
       }
       bus.emit('render')
     })
@@ -2726,6 +2734,12 @@ function configureOscForwarding (oscInfo, emit, showElement) {
               value: oscInfo.port,
               onkeyup: (e) => {
                 emit('osc:setOscForwardPort', e.target.value)
+              }
+            })}
+            ${input('IP', 'IP', {
+              value: oscInfo.ip,
+              onkeyup: (e) => {
+                emit('osc:setOscForwardIp', e.target.value)
               }
             })}
             <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('osc:setLocalOscForward', oscInfo))}>Start</div>

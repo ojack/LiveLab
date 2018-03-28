@@ -18,6 +18,12 @@ function configureOscForwarding (oscInfo, emit, showElement) {
                 emit('osc:setOscForwardPort', e.target.value)
               }
             })}
+            ${input('IP', 'IP', {
+              value: oscInfo.ip,
+              onkeyup: (e) => {
+                emit('osc:setOscForwardIp', e.target.value)
+              }
+            })}
             <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('osc:setLocalOscForward', oscInfo))}>Start</div>
         </div>`,
       close: () => (emit('osc:doneConfiguringOsc'))
