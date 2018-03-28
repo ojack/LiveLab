@@ -1043,7 +1043,8 @@ function oscModel (state, bus) {
     osc.on('received osc', function (opts) {
       state.osc.local[opts.port].message = opts.message
       // console.log(opts.m)
-      var id = state.user.uuid + '' + opts.port
+  //    var id = state.user.uuid + '' + opts.port
+      var id = opts.port
       bus.emit('user:sendToAll', JSON.stringify({
         type: 'osc',
         message: opts.message,
@@ -1072,8 +1073,8 @@ function oscModel (state, bus) {
       }
       //  state.user.osc.remote[data.data.id].port = ''
       //  console.log("processing ", data.data.id, state.user.osc.remote)
-      if (state.osc.forwarding[data.data.id] && state.osc.forwarding[data.data.id].port) {
-        osc.sendOSC(data.data.message, state.osc.forwarding[data.data.id].port, state.osc.forwarding[data.data.id].ip)
+      if (state.osc.forwarding[data.data.peer + data.data.id] && state.osc.forwarding[data.data.peer + data.data.id].port) {
+        osc.sendOSC(data.data.message, state.osc.forwarding[data.data.peer + data.data.id].port, state.osc.forwarding[data.data.peer + data.data.id].ip)
       }
     })
 
@@ -2334,7 +2335,7 @@ function oscView (state, emit) {
 
 //  console.log("OSC", localOsc, localOscEl)
   var remoteOsc = state.osc.remote
-
+  console.log("STATE", state.osc.remote)
   var remoteOscEl = []
   Object.keys(remoteOsc).forEach((peerId) => {
   //  console.log("poo", id, localOsc[id])
@@ -2351,7 +2352,7 @@ function oscView (state, emit) {
         <td class="pa1" >${state.osc.forwarding[id] ? state.osc.forwarding[id].port : null}</td>
         <td class="pa1 f7" ><div style="width:80px;overflow:hidden;height:20px">${oscArgs}</div></td>
         <td class="pa1" >
-          <i class="fas fa-link dim pointer" aria-hidden="true" onclick=${() => (emit('osc:configureForwarding', id))}></i>
+          <i class="fas fa-link dim pointer" aria-hidden="true" onclick=${() => (emit('osc:configureForwarding', peerId+id))}></i>
           </td>
 
 
