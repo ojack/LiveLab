@@ -10,16 +10,13 @@ const osc = require('./components/osc.js')
 const windowManager = require('./windowmanager.js')
 const AddBroadcast = require('./addBroadcast.js')
 const ConfigureOsc = require('./configureOscForwarding')
+const AddOscBroadcast = require('./addOscBroadcast')
 
 module.exports = workspaceView
-
-
 //  <!--${AddBroadcast(state, emit)}-->
 //  ${login(state, emit)}
 // ${allVideos(state, emit)}
 //contents: mediaList(state, emit),
-
-
 
 function workspaceView (state, emit) {
   var oscEl = ''
@@ -54,7 +51,7 @@ function workspaceView (state, emit) {
           }
         )}
         ${panel(
-             {
+          {
                htmlProps: {
                  class: "w-100"
                },
@@ -63,20 +60,22 @@ function workspaceView (state, emit) {
                header:   "Chat"
              }
            )}
-           ${panel(
-                {
-                  htmlProps: {
-                    class: "w-100"
-                  },
-                  contents: windowManager(state, emit),
-                  closable: false,
-                  header:   "Output"
-                }
-              )}
-        ${oscEl}
+         ${oscEl}
+         ${panel(
+            {
+              htmlProps: {
+                class: "w-100"
+              },
+              contents: windowManager(state, emit),
+              closable: false,
+              header:   "Output"
+            }
+          )}
+
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
       ${ConfigureOsc(state.ui.osc.configureForwarding, emit, state.ui.osc.configureForwarding.visible)}
+      ${AddOscBroadcast(state.ui.osc.addBroadcast, emit, state.ui.osc.addBroadcast.visible)}
     </div>
     `
 }

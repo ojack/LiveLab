@@ -7,67 +7,69 @@ module.exports = uiModel
 
 function uiModel (state, bus) {
   state.ui = xtend({
-  communication: {},
-  inspector: {
-    trackId: null,
-    pc: null, //peer connection to be inspected
-    selectedTab: "track" //which inspector tab is currently open
-  },
-  osc: {
-    enabled: typeof nw === "object" ? true : false,
-    addBroadcast: {
-      visible: false,
-      port: 5271,
-      name: ''
+    communication: {},
+    inspector: {
+      trackId: null,
+      pc: null, // peer connection to be inspected
+      selectedTab: 'track' // which inspector tab is currently open
     },
-    configureForwarding: {
-      visible: false,
-      port: '',
-      oscId: null
-    }
-  },
-  windows:
+    osc: {
+      enabled: typeof nw === 'object' ? true : false,
+      addBroadcast: {
+        visible: false,
+        port: 5271,
+        name: ''
+      },
+      configureForwarding: {
+        visible: false,
+        port: '',
+        oscId: null
+      }
+    },
+    windows:
     [
       {
         track: null,
         open: false
-      },{
+      },
+      {
         track: null,
         open: false
-      },{
+      },
+      {
         track: null,
         open: false
       }
     ],
-  chat: {
-    messages: [
+    chat: {
+      messages: [
 
-    ],
-    current: ""
-  }
+      ],
+      current: ''
+    }
   }, state.ui)
 
   bus.on('ui:addPeer', function (peerId) {
     var vol = 1.0
-    if(peerId === state.user.uuid) vol = 0.0
+    if (peerId === state.user.uuid) vol = 0.0
     state.ui.communication[peerId] = {
       volume: vol
     }
   })
 
-  bus.on('ui:toggleFullscreen', function(){
-    state.ui.windows.fullscreen =! state.ui.windows.fullscreen
+  bus.on('ui:toggleFullscreen', function () {
+    state.ui.windows.fullscreen = !state.ui.windows.fullscreen
     bus.emit('render')
   })
 
-  bus.on('ui:updateWindowTrack', function(opts){
+  bus.on('ui:updateWindowTrack', function (opts) {
     state.ui.windows[opts.index].track = state.media.byId[opts.value].track
     bus.emit('render')
   })
 
-  bus.on('ui:openWindow', function(index){
-    if(state.ui.windows[index].track===null){
-      //console.log("user default", state.peers, state.user.uuid)
+  bus.on('ui:openWindow', function (index) {
+    if (state.ui.windows[index].track === null) {
+      // console.log("user default", state.peers, state.user.uuid)
       var trackId = state.peers.byId[state.user.uuid].defaultTracks.video
       state.ui.windows[index].track = state.media.byId[trackId].track
     }
@@ -75,12 +77,12 @@ function uiModel (state, bus) {
     bus.emit('render')
   })
 
-  bus.on('ui:closeWindow', function(index){
+  bus.on('ui:closeWindow', function (index) {
     state.ui.windows[index].open = false
     bus.emit('render')
   })
 
-  bus.on('ui:configureForwarding', function(remoteOscId){
+  bus.on('ui:configureForwarding', function (remoteOscId) {
     state.ui.osc.configureForwarding = {
       visible: true,
       id: remoteOscId,
@@ -89,12 +91,12 @@ function uiModel (state, bus) {
     bus.emit('render')
   })
 
-  bus.on('ui:setLocalOscForward', function(port){
+  bus.on('ui:setLocalOscForward', function (port) {
     state.ui.osc.configureForwarding.port = port
     bus.emit('render')
   })
 
-  bus.on('ui:doneConfiguringOsc', function(){
+  bus.on('ui:doneConfiguringOsc', function () {
     state.ui.osc.configureForwarding = {
       visible: false,
       id: null,
@@ -102,19 +104,28 @@ function uiModel (state, bus) {
     }
     bus.emit('render')
   })
-  // bus.on('ui:toggleWindow', function(bool){
+
+  bus.on('ui:closeAddOscBroadcast', function () {
+    state.ui.osc.addBroadcast = {
+      visible: false,
+      name: null,
+      port: null
+    }
+    bus.emit('render')
+  })
+  // bus.on('ui:toggleWindow', function(bool) {
   //   //if passed a variable, use variable. Otherwise, toggle current value
-  //   if(bool !== undefined){
+  //   if(bool !== undefined) {
   //     console.log("choosing window ", bool)
   //     state.ui.windows.open = bool
   //   } else {
-  //     if(state.ui.windows.open){
+  //     if(state.ui.windows.open) {
   //       state.ui.windows.open = false
   //     } else {
   //       state.ui.windows.open = true
   //     }
   //   }
-  //   if(state.ui.windows.open){
+  //   if(state.ui.windows.open) {
   //     if(state.ui.windows.track===null) {
   //       console.log("setting track")
   //       //set to default
@@ -127,7 +138,7 @@ function uiModel (state, bus) {
   // })
 
   bus.on('ui:toggleCommunicationVolume', function (peerId) {
-    state.ui.communication[peerId].volume==0? state.ui.communication[peerId].volume = 1 : state.ui.communication[peerId].volume = 0
+    state.ui.communication[peerId].volume === 0 ? state.ui.communication[peerId].volume = 1 : state.ui.communication[peerId].volume = 0
     console.log(state.ui.communication)
     bus.emit('render')
   })
@@ -137,39 +148,37 @@ function uiModel (state, bus) {
   })
 
   bus.on('ui:updateInspectorTrack', function (opts) {
-
-      state.ui.inspector = xtend(state.ui.inspector, opts)
-      console.log("PEER CONNECTION", state.ui.inspector)
-      bus.emit('render')
+    state.ui.inspector = xtend(state.ui.inspector, opts)
+    // console.log('PEER CONNECTION', state.ui.inspector)
+    bus.emit('render')
   })
 
-  //Events related to UI
-  bus.on('ui:sendChatMessage', function(){
-     var chatObj = {
-       peerId: state.user.uuid,
-       message: state.ui.chat.current,
-       date: Date.now()
-     }
-     bus.emit('user:sendChatMessage', chatObj)
-     appendNewChat(chatObj)
-     state.ui.chat.current = ""
-     bus.emit('render')
+  // Events related to UI
+  bus.on('ui:sendChatMessage', function () {
+    var chatObj = {
+      peerId: state.user.uuid,
+      message: state.ui.chat.current,
+      date: Date.now()
+    }
+    bus.emit('user:sendChatMessage', chatObj)
+    appendNewChat(chatObj)
+    state.ui.chat.current = ''
+    bus.emit('render')
+  })
 
+   bus.on('ui:receivedNewChat', function (chatObj) {
+     appendNewChat(chatObj)
+     bus.emit('render')
    })
 
-   bus.on('ui:receivedNewChat', function (chatObj){
-     appendNewChat(chatObj)
-     bus.emit('render')
-   })
-
-   bus.on('ui:updateChat', function(text){
+   bus.on('ui:updateChat', function (text) {
      state.ui.chat.current = text
    })
 
-   function appendNewChat(chatObj){
+   function appendNewChat(chatObj) {
       console.log("appending chat", chatObj)		     //  console.log(chatObj)
       // state.ui.chat.messages.push(chatObj)
-      if(state.peers.byId[chatObj.peerId]){
+      if(state.peers.byId[chatObj.peerId]) {
         console.log(state.ui.chat)
         chatObj.nickname = state.peers.byId[chatObj.peerId].nickname
         state.ui.chat.messages.push(chatObj)
@@ -180,22 +189,22 @@ function uiModel (state, bus) {
     }
 
     //Events related to OSC
-    bus.on('ui:addOSC', function(){
+    bus.on('ui:addOSC', function () {
       state.ui.osc.addBroadcast.visible = true
       bus.emit('render')
     })
 
-    bus.on('ui:setOSCBroadcastPort', function(val){
+    bus.on('ui:setOSCBroadcastPort', function (val) {
       state.ui.osc.addBroadcast.port = val
       bus.emit('render')
     })
 
-    bus.on('ui:setOSCBroadcastName', function(val){
+    bus.on('ui:setOSCBroadcastName', function (val) {
       state.ui.osc.addBroadcast.name = val
       bus.emit('render')
     })
 
-    bus.on('ui:listenOnLocalPort', function(){
+    bus.on('ui:listenOnLocalPort', function () {
       bus.emit('user:newOSCBroadcast', {
         port: state.ui.osc.addBroadcast.port,
         name: state.ui.osc.addBroadcast.name

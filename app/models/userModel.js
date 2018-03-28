@@ -122,12 +122,19 @@ function userModel (state, bus) {
       osc = new LiveLabOSC()
 
       //start listening for messages on local port
-      bus.on('user:newOSCBroadcast', function(opts){
+      bus.on('user:newOSCBroadcast', function (opts) {
         osc.listenOnPort(opts.port)
         state.user.osc.local[opts.port] = {
           name: opts.name,
           message: null
         }
+        bus.emit('render')
+      })
+
+      bus.on('user:removeLocalOscBroadcast', function (port) {
+
+        osc.stopListening(port)
+        delete state.user.osc.local[port]
         bus.emit('render')
       })
 
