@@ -26,7 +26,7 @@ function oscView (state, emit) {
 
 //  console.log("OSC", localOsc, localOscEl)
   var remoteOsc = state.osc.remote
-  console.log("STATE", state.osc.remote)
+
   var remoteOscEl = []
   Object.keys(remoteOsc).forEach((peerId) => {
   //  console.log("poo", id, localOsc[id])
@@ -40,7 +40,7 @@ function oscView (state, emit) {
         <td class="pa1" >${state.peers.byId[peerId].nickname}</td>
         <td class="pa1" >${peerStreams[id].name}</td>
         <td class="pa1" > -- </td>
-        <td class="pa1" >${state.osc.forwarding[id] ? state.osc.forwarding[id].port : null}</td>
+        <td class="pa1" >${state.osc.forwarding[peerId + id] ? state.osc.forwarding[peerId + id].port : null}</td>
         <td class="pa1 f7" ><div style="width:80px;overflow:hidden;height:20px">${oscArgs}</div></td>
         <td class="pa1" >
           <i class="fas fa-link dim pointer" aria-hidden="true" onclick=${() => (emit('osc:configureForwarding', peerId+id))}></i>

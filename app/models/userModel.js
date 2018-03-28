@@ -175,7 +175,7 @@ function userModel (state, bus) {
 
     //received data from remote peer
       multiPeer.on('data', function (data) {
-        console.log("RECEIVED", data)
+        // console.log("RECEIVED", data)
         // data is updated user and track information
         if (data.data){
           if (data.data.type === 'updatePeerInfo') {
@@ -268,7 +268,7 @@ function updateLocalInfo(id){
       tracks: trackInfo,
       osc: state.osc.local
     }
-    console.log("SHARING USER INFO", updateObj)
+  //  console.log("SHARING USER INFO", updateObj)
     if(id){
       multiPeer.sendToPeer(id, JSON.stringify({ type: 'updatePeerInfo', message: updateObj}))
     } else {
