@@ -6,7 +6,9 @@ module.exports = oscModel
 function oscModel (state, bus) {
   state.osc = xtend({
     remote: {},
+    forwarding: {},
     local: {},
+    enabled: false,
     addBroadcast: {
       visible: false,
       port: '',
@@ -23,18 +25,24 @@ function oscModel (state, bus) {
 // only activate osc channels if in desktop app
   if (typeof nw === 'object') {
   // osc channels
+    state.osc.enabled = true
     var osc = new LiveLabOSC()
 
     bus.on('osc:removeLocalOscBroadcast', function (port) {
       osc.stopListening(port)
       delete state.osc.local[port]
+      syncWithRemote(state.osc.local)
       bus.emit('render')
     })
 
     bus.on('osc:setLocalOscForward', function (opts) {
       // console.log(opts)
-      state.osc.remote[opts.id].port = opts.port
-      state.osc.remote[opts.id].ip = opts.ip
+      // state.osc.remote[opts.id].port = opts.port
+      // state.osc.remote[opts.id].ip = opts.ip
+      state.osc.forwarding[opts.id] = {
+        ip: opts.ip,
+        port: opts.port
+      }
       state.osc.configureForwarding.visible = false
       bus.emit('render')
     })
@@ -54,18 +62,26 @@ function oscModel (state, bus) {
       bus.emit('render')
     })
 
+    bus.on('osc:updateRemoteOscInfo', function (data) {
+      // console.log('REMOTE', data.peerId, data.osc)
+      state.osc.remote[data.peerId] = data.osc
+      bus.emit('render')
+      // get port forwarding info for current channels in peer
+    })
+
     bus.on('osc:processRemoteOsc', function (data) {
-      // console.log("processing", data)
+    //  console.log("processing", data)
       //  state.user.osc.remote[data.data.id] = xtend(data.data, state.user.osc.remote[data.data.id])
-      if (state.osc.remote[data.data.id]) {
-        state.osc.remote[data.data.id] = xtend(state.osc.remote[data.data.id], data.data)
+      if (state.osc.remote[data.data.peer]) {
+        state.osc.remote[data.data.peer][data.data.id] = data.data
       } else {
-        state.osc.remote[data.data.id] = data.data
+        state.osc.remote[data.data.peer] = {}
+        state.osc.remote[data.data.peer][data.data.id] = data.data
       }
       //  state.user.osc.remote[data.data.id].port = ''
       //  console.log("processing ", data.data.id, state.user.osc.remote)
-      if (state.osc.remote[data.data.id].port) {
-        osc.sendOSC(data.data.message, state.osc.remote[data.data.id].port, state.osc.remote[data.data.id].ip)
+      if (state.osc.forwarding[data.data.id] && state.osc.forwarding[data.data.id].port) {
+        osc.sendOSC(data.data.message, state.osc.forwarding[data.data.id].port, state.osc.forwarding[data.data.id].ip)
       }
     })
 
@@ -123,6 +139,8 @@ function oscModel (state, bus) {
       state.osc.addBroadcast.port = null
       state.osc.addBroadcast.name = null
       state.osc.addBroadcast.visible = false
+
+      syncWithRemote(state.osc.local)
       bus.emit('render')
     })
 
@@ -135,5 +153,16 @@ function oscModel (state, bus) {
       }
       bus.emit('render')
     })
+  }
+
+  function syncWithRemote (info) {
+    bus.emit('user:sendToAll', JSON.stringify(
+      {
+        type: 'updatePeerInfo',
+        message: {
+          osc: info
+        }
+      }
+    ))
   }
 }

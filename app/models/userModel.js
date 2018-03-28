@@ -175,11 +175,16 @@ function userModel (state, bus) {
 
     //received data from remote peer
       multiPeer.on('data', function (data) {
+        console.log("RECEIVED", data)
         // data is updated user and track information
         if (data.data){
           if (data.data.type === 'updatePeerInfo') {
             if('peer' in data.data.message) bus.emit('peers:updatePeer', data.data.message.peer)
             if('tracks' in data.data.message) bus.emit('media:updateTrackInfo', data.data.message.tracks)
+            if('osc' in data.data.message) bus.emit('osc:updateRemoteOscInfo', {
+              osc: data.data.message.osc,
+              peerId: data.id
+            })
           } else if(data.data.type=== 'chatMessage'){
            console.log("RECEIVED CHAT MESSAGE", data)
            bus.emit('ui:receivedNewChat', data.data.message)
@@ -260,7 +265,8 @@ function updateLocalInfo(id){
     })
     var updateObj = {
       peer: userInfo,
-      tracks: trackInfo
+      tracks: trackInfo,
+      osc: state.osc.local
     }
     console.log("SHARING USER INFO", updateObj)
     if(id){

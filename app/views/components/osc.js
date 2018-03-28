@@ -27,26 +27,29 @@ function oscView (state, emit) {
 //  console.log("OSC", localOsc, localOscEl)
   var remoteOsc = state.osc.remote
 
-  var remoteOscEl = Object.keys(remoteOsc).map((id) => {
+  var remoteOscEl = []
+  Object.keys(remoteOsc).forEach((peerId) => {
   //  console.log("poo", id, localOsc[id])
+    var peerStreams = remoteOsc[peerId]
   // <input type="text" name="fname" value=${remoteOsc[id].port} onkeyup=${(e)=>{emit('user:setLocalOscForward', {port: e.target.value, id: id})}}>
   // <div class="f6 fr ma2 link ph3 pv2 mb2 white pointer" onclick=${() => (emit('ui:StartForward'))}>Start Forward</div>
+    Object.keys(peerStreams).forEach((id) => {
+      var oscArgs = peerStreams[id].message == null ? '' : JSON.stringify(peerStreams[id].message)
+      remoteOscEl.push(html`
+      <tr>
+        <td class="pa1" >${state.peers.byId[peerId].nickname}</td>
+        <td class="pa1" >${peerStreams[id].name}</td>
+        <td class="pa1" > -- </td>
+        <td class="pa1" >${state.osc.forwarding[id] ? state.osc.forwarding[id].port : null}</td>
+        <td class="pa1 f7" ><div style="width:80px;overflow:hidden;height:20px">${oscArgs}</div></td>
+        <td class="pa1" >
+          <i class="fas fa-link dim pointer" aria-hidden="true" onclick=${() => (emit('osc:configureForwarding', id))}></i>
+          </td>
 
-    var oscArgs = remoteOsc[id].message == null ? '' : JSON.stringify(remoteOsc[id].message)
-    return html`
-    <tr>
-      <td class="pa1" >${state.peers.byId[remoteOsc[id].peer].nickname}</td>
-      <td class="pa1" >${remoteOsc[id].name}</td>
-      <td class="pa1" > -- </td>
-      <td class="pa1" >${remoteOsc[id].port}</td>
-      <td class="pa1 f7" ><div style="width:80px;overflow:hidden;height:20px">${oscArgs}</div></td>
-      <td class="pa1" >
-        <i class="fas fa-link dim pointer" aria-hidden="true" onclick=${() => (emit('osc:configureForwarding', id))}></i>
-        </td>
 
-
-    </tr>
-      `
+      </tr>
+      `)
+    })
   })
 
   var addBroadcast = html`<div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('osc:addOSC', true))}>+ Add OSC Broadcast</div>`

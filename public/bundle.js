@@ -998,7 +998,9 @@ module.exports = oscModel
 function oscModel (state, bus) {
   state.osc = xtend({
     remote: {},
+    forwarding: {},
     local: {},
+    enabled: false,
     addBroadcast: {
       visible: false,
       port: '',
@@ -1015,18 +1017,24 @@ function oscModel (state, bus) {
 // only activate osc channels if in desktop app
   if (typeof nw === 'object') {
   // osc channels
+    state.osc.enabled = true
     var osc = new LiveLabOSC()
 
     bus.on('osc:removeLocalOscBroadcast', function (port) {
       osc.stopListening(port)
       delete state.osc.local[port]
+      syncWithRemote(state.osc.local)
       bus.emit('render')
     })
 
     bus.on('osc:setLocalOscForward', function (opts) {
       // console.log(opts)
-      state.osc.remote[opts.id].port = opts.port
-      state.osc.remote[opts.id].ip = opts.ip
+      // state.osc.remote[opts.id].port = opts.port
+      // state.osc.remote[opts.id].ip = opts.ip
+      state.osc.forwarding[opts.id] = {
+        ip: opts.ip,
+        port: opts.port
+      }
       state.osc.configureForwarding.visible = false
       bus.emit('render')
     })
@@ -1046,18 +1054,26 @@ function oscModel (state, bus) {
       bus.emit('render')
     })
 
+    bus.on('osc:updateRemoteOscInfo', function (data) {
+      // console.log('REMOTE', data.peerId, data.osc)
+      state.osc.remote[data.peerId] = data.osc
+      bus.emit('render')
+      // get port forwarding info for current channels in peer
+    })
+
     bus.on('osc:processRemoteOsc', function (data) {
-      // console.log("processing", data)
+    //  console.log("processing", data)
       //  state.user.osc.remote[data.data.id] = xtend(data.data, state.user.osc.remote[data.data.id])
-      if (state.osc.remote[data.data.id]) {
-        state.osc.remote[data.data.id] = xtend(state.osc.remote[data.data.id], data.data)
+      if (state.osc.remote[data.data.peer]) {
+        state.osc.remote[data.data.peer][data.data.id] = data.data
       } else {
-        state.osc.remote[data.data.id] = data.data
+        state.osc.remote[data.data.peer] = {}
+        state.osc.remote[data.data.peer][data.data.id] = data.data
       }
       //  state.user.osc.remote[data.data.id].port = ''
       //  console.log("processing ", data.data.id, state.user.osc.remote)
-      if (state.osc.remote[data.data.id].port) {
-        osc.sendOSC(data.data.message, state.osc.remote[data.data.id].port, state.osc.remote[data.data.id].ip)
+      if (state.osc.forwarding[data.data.id] && state.osc.forwarding[data.data.id].port) {
+        osc.sendOSC(data.data.message, state.osc.forwarding[data.data.id].port, state.osc.forwarding[data.data.id].ip)
       }
     })
 
@@ -1115,6 +1131,8 @@ function oscModel (state, bus) {
       state.osc.addBroadcast.port = null
       state.osc.addBroadcast.name = null
       state.osc.addBroadcast.visible = false
+
+      syncWithRemote(state.osc.local)
       bus.emit('render')
     })
 
@@ -1127,6 +1145,17 @@ function oscModel (state, bus) {
       }
       bus.emit('render')
     })
+  }
+
+  function syncWithRemote (info) {
+    bus.emit('user:sendToAll', JSON.stringify(
+      {
+        type: 'updatePeerInfo',
+        message: {
+          osc: info
+        }
+      }
+    ))
   }
 }
 
@@ -1259,19 +1288,6 @@ function uiModel (state, bus) {
       trackId: null,
       pc: null, // peer connection to be inspected
       selectedTab: 'track' // which inspector tab is currently open
-    },
-    osc: {
-      enabled: typeof nw === 'object' ? true : false,
-      addBroadcast: {
-        visible: false,
-        port: 5271,
-        name: ''
-      },
-      configureForwarding: {
-        visible: false,
-        port: '',
-        oscId: null
-      }
     },
     windows:
     [
@@ -1586,11 +1602,16 @@ function userModel (state, bus) {
 
     //received data from remote peer
       multiPeer.on('data', function (data) {
+        console.log("RECEIVED", data)
         // data is updated user and track information
         if (data.data){
           if (data.data.type === 'updatePeerInfo') {
             if('peer' in data.data.message) bus.emit('peers:updatePeer', data.data.message.peer)
             if('tracks' in data.data.message) bus.emit('media:updateTrackInfo', data.data.message.tracks)
+            if('osc' in data.data.message) bus.emit('osc:updateRemoteOscInfo', {
+              osc: data.data.message.osc,
+              peerId: data.id
+            })
           } else if(data.data.type=== 'chatMessage'){
            console.log("RECEIVED CHAT MESSAGE", data)
            bus.emit('ui:receivedNewChat', data.data.message)
@@ -1671,7 +1692,8 @@ function updateLocalInfo(id){
     })
     var updateObj = {
       peer: userInfo,
-      tracks: trackInfo
+      tracks: trackInfo,
+      osc: state.osc.local
     }
     console.log("SHARING USER INFO", updateObj)
     if(id){
@@ -2313,26 +2335,29 @@ function oscView (state, emit) {
 //  console.log("OSC", localOsc, localOscEl)
   var remoteOsc = state.osc.remote
 
-  var remoteOscEl = Object.keys(remoteOsc).map((id) => {
+  var remoteOscEl = []
+  Object.keys(remoteOsc).forEach((peerId) => {
   //  console.log("poo", id, localOsc[id])
+    var peerStreams = remoteOsc[peerId]
   // <input type="text" name="fname" value=${remoteOsc[id].port} onkeyup=${(e)=>{emit('user:setLocalOscForward', {port: e.target.value, id: id})}}>
   // <div class="f6 fr ma2 link ph3 pv2 mb2 white pointer" onclick=${() => (emit('ui:StartForward'))}>Start Forward</div>
+    Object.keys(peerStreams).forEach((id) => {
+      var oscArgs = peerStreams[id].message == null ? '' : JSON.stringify(peerStreams[id].message)
+      remoteOscEl.push(html`
+      <tr>
+        <td class="pa1" >${state.peers.byId[peerId].nickname}</td>
+        <td class="pa1" >${peerStreams[id].name}</td>
+        <td class="pa1" > -- </td>
+        <td class="pa1" >${state.osc.forwarding[id] ? state.osc.forwarding[id].port : null}</td>
+        <td class="pa1 f7" ><div style="width:80px;overflow:hidden;height:20px">${oscArgs}</div></td>
+        <td class="pa1" >
+          <i class="fas fa-link dim pointer" aria-hidden="true" onclick=${() => (emit('osc:configureForwarding', id))}></i>
+          </td>
 
-    var oscArgs = remoteOsc[id].message == null ? '' : JSON.stringify(remoteOsc[id].message)
-    return html`
-    <tr>
-      <td class="pa1" >${state.peers.byId[remoteOsc[id].peer].nickname}</td>
-      <td class="pa1" >${remoteOsc[id].name}</td>
-      <td class="pa1" > -- </td>
-      <td class="pa1" >${remoteOsc[id].port}</td>
-      <td class="pa1 f7" ><div style="width:80px;overflow:hidden;height:20px">${oscArgs}</div></td>
-      <td class="pa1" >
-        <i class="fas fa-link dim pointer" aria-hidden="true" onclick=${() => (emit('osc:configureForwarding', id))}></i>
-        </td>
 
-
-    </tr>
-      `
+      </tr>
+      `)
+    })
   })
 
   var addBroadcast = html`<div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('osc:addOSC', true))}>+ Add OSC Broadcast</div>`
@@ -3056,7 +3081,7 @@ module.exports = workspaceView
 
 function workspaceView (state, emit) {
   var oscEl = ''
-  if(state.ui.osc.enabled==true){
+  if(state.osc.enabled==true){
     oscEl = panel(
          {
            htmlProps: {

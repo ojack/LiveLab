@@ -13,19 +13,6 @@ function uiModel (state, bus) {
       pc: null, // peer connection to be inspected
       selectedTab: 'track' // which inspector tab is currently open
     },
-    osc: {
-      enabled: typeof nw === 'object' ? true : false,
-      addBroadcast: {
-        visible: false,
-        port: 5271,
-        name: ''
-      },
-      configureForwarding: {
-        visible: false,
-        port: '',
-        oscId: null
-      }
-    },
     windows:
     [
       {

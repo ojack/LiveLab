@@ -20,7 +20,7 @@ module.exports = workspaceView
 
 function workspaceView (state, emit) {
   var oscEl = ''
-  if(state.ui.osc.enabled==true){
+  if(state.osc.enabled==true){
     oscEl = panel(
          {
            htmlProps: {
