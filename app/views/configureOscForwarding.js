@@ -10,9 +10,9 @@ function configureOscForwarding (oscInfo, emit, showElement) {
   return html`
     ${Modal({
       show: showElement,
-      header: 'Configure OSC Forwarding',
+      header: 'Configure OSC Forwarding on Local Network',
       contents: html`<div class="pa3 f6 fw3">
-            ${input('port', 'port', {
+            ${input('Port', 'Port', {
               value: oscInfo.port,
               onkeyup: (e) => {
                 emit('osc:setOscForwardPort', e.target.value)
