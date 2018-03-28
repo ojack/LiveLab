@@ -131,11 +131,13 @@ function userModel (state, bus) {
         bus.emit('render')
       })
 
-      bus.on('user:setLocalOscForward', function(opts){
-        console.log(opts)
+      bus.on('user:setLocalOscForward', function (opts) {
+        // console.log(opts)
         state.user.osc.remote[opts.id].port = opts.port
+        state.ui.osc.configureForwarding.visible = false
         bus.emit('render')
       })
+
       //called when osc message received locally
       osc.on('received osc', function(opts){
         state.user.osc.local[opts.port].message = opts.message
