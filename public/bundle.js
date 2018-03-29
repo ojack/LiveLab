@@ -9,20 +9,20 @@ const app = choo()
 app.use(log())
 app.use(expose())
 
-console.log("type", typeof nw)
-if(typeof nw == "object"){
+// console.log("type", typeof nw)
+if(typeof nw === 'object'){
   const WIN_WIDTH = 1280
   const WIN_HEIGHT = 720
   // if in dev mode, show logging in console and expose global app object
   // if (process.env.NODE_ENV === 'development') {
-  //calculate screen dimensions to center window
+  // calculate screen dimensions to center window
   nw.Screen.Init()
-  console.log("screens", nw.Screen.screens)
+  console.log('screens', nw.Screen.screens)
 
   var screenPos = nw.Screen.screens[0].work_area
 
-  var winX = screenPos.x + (screenPos.width - WIN_WIDTH)/2
-  var winY = screenPos.y + (screenPos.height - WIN_HEIGHT)/2
+  var winX = screenPos.x + (screenPos.width - WIN_WIDTH) / 2
+  var winY = screenPos.y + (screenPos.height - WIN_HEIGHT) / 2
 
   var win = nw.Window.get()
   win.width = WIN_WIDTH
@@ -30,8 +30,6 @@ if(typeof nw == "object"){
   // console.log(win)
   win.x = Math.floor(winX)
   win.y = Math.floor(winY)
-
-
 
   // var screenCB = {
   //   onDisplayBoundsChanged: function(screen) {
@@ -59,6 +57,7 @@ app.use(require('./models/peersModel.js'))
 app.use(require('./models/userModel.js'))
 app.use(require('./models/uiModel.js'))
 app.use(require('./models/oscModel.js'))
+app.use(require('./models/showModel.js'))
 
 // routing is different in nwjs vs browser version...include both routes to cover bases
 app.route('/public/index.html', require('./views/main.js'))
@@ -66,7 +65,7 @@ app.route('', require('./views/main.js'))
 
 app.mount('body div')
 
-},{"./models/devicesModel.js":6,"./models/mediaModel.js":7,"./models/oscModel.js":8,"./models/peersModel.js":9,"./models/uiModel.js":11,"./models/userModel.js":12,"./views/main.js":32,"choo":50,"choo-expose":47,"choo-log":48}],2:[function(require,module,exports){
+},{"./models/devicesModel.js":6,"./models/mediaModel.js":7,"./models/oscModel.js":8,"./models/peersModel.js":9,"./models/showModel.js":11,"./models/uiModel.js":12,"./models/userModel.js":13,"./views/main.js":35,"choo":54,"choo-expose":51,"choo-log":52}],2:[function(require,module,exports){
 /* global nw */
 // Server side module for managing osc connections. Only works with nw.js
 
@@ -144,7 +143,7 @@ LiveLabOSC.prototype.listenOnPort = function (port) {
 
 module.exports = LiveLabOSC
 
-},{"events":73,"inherits":86}],3:[function(require,module,exports){
+},{"events":77,"inherits":90}],3:[function(require,module,exports){
 // Module for handling connections to multiple peers
 
 var io = require('socket.io-client')
@@ -278,7 +277,7 @@ MultiPeer.prototype._attachPeerEvents = function (p, _id) {
 
 module.exports = MultiPeer
 
-},{"events":73,"inherits":86,"simple-peer":139,"socket.io-client":140}],4:[function(require,module,exports){
+},{"events":77,"inherits":90,"simple-peer":143,"socket.io-client":144}],4:[function(require,module,exports){
 var adapter = require('webrtc-adapter');
 
 // cache for constraints and callback
@@ -465,7 +464,7 @@ typeof window !== 'undefined' && window.addEventListener('message', function (ev
     }
 });
 
-},{"webrtc-adapter":158}],5:[function(require,module,exports){
+},{"webrtc-adapter":162}],5:[function(require,module,exports){
 module.exports=/*
   Options for constraints as defined in: https://w3c.github.io/mediacapture-main/getusermedia.html
   constraints not added: latency, facingMode, sampleRate, sampleSize, volume
@@ -876,7 +875,7 @@ function getConstraintsFromSettings(settings, callback) {
   }
 }
 
-},{"./availableConstraints.json":5,"./screenmedia.js":10,"enumerate-devices":72,"getusermedia":76}],7:[function(require,module,exports){
+},{"./availableConstraints.json":5,"./screenmedia.js":10,"enumerate-devices":76,"getusermedia":80}],7:[function(require,module,exports){
 // MEDIA::
 // For now: each peer only broadcasts one stream, each stream has an unlimited number of tracks corresponding to each audio and video device + specific constraint settings.
 // (i.e. the same device could broadcast multiple tracks at different framerates/bandwidths/ etc.)
@@ -1275,6 +1274,54 @@ module.exports = function (options) {
 }
 
 },{"./../lib/getscreenmedia.js":4}],11:[function(require,module,exports){
+var xtend = Object.assign
+
+module.exports = showModel
+
+function showModel (state, bus) {
+  state.show = xtend({
+    audio: [],
+    displays: [
+      {
+        type: 'window',
+        active: 0,
+        opacity: 100,
+        open: true,
+        title: 'Output 1',
+        fullscreen: false,
+        tracks: [null, null, null, null]
+      }
+    ]
+  }, state.show)
+
+  bus.on('show:setVideoTrack', ({displayIndex, trackIndex}) => {
+    console.log(state.ui.dragging)
+    if (state.ui.dragging !== null && state.ui.dragging.track.kind === 'video') {
+      state.show.displays[displayIndex].tracks[trackIndex] = state.ui.dragging
+    }
+    console.log(state.show.displays)
+    bus.emit('ui:dragClear')
+  //  state.show.displays[displayIndex].tracks[trackIndex] = trackId
+    // bus.emit('render')
+  })
+
+  bus.on('show:clearVideoTrack', ({displayIndex, trackIndex}) => {
+    state.show.displays[displayIndex].tracks[trackIndex] = null
+    bus.emit('render')
+  })
+
+  bus.on('show:setActiveVideo', ({displayIndex, trackIndex}) => {
+    state.show.displays[displayIndex].active = trackIndex
+    bus.emit('render')
+  })
+
+  bus.on('show:updateDisplayProperty', ({displayIndex, property, value}) => {
+    state.show.displays[displayIndex][property] = value
+    bus.emit('render')
+  })
+}
+
+},{}],12:[function(require,module,exports){
 // State information specifically related to the ui
 // to do: unify ui information in this model
 // const MAX_NUM_PEERS = 8 // to do: put this all in one place
@@ -1284,12 +1331,15 @@ module.exports = uiModel
 
 function uiModel (state, bus) {
   state.ui = xtend({
+    tabs: ['Communication', 'Show Control'],
+    selectedTab: 0,
     communication: {},
     inspector: {
       trackId: null,
       pc: null, // peer connection to be inspected
       selectedTab: 'track' // which inspector tab is currently open
     },
+    dragging: null,
     windows:
     [
       {
@@ -1312,6 +1362,22 @@ function uiModel (state, bus) {
       current: ''
     }
   }, state.ui)
+
+  bus.on('ui:dragStart', (mediaId) => {
+    var media = state.media.byId[mediaId]
+    state.ui.dragging = media
+    bus.emit('render')
+  })
+
+  bus.on('ui:dragClear', () => {
+    state.dragging = null
+    bus.emit('render')
+  })
+
+  bus.on('ui:setTab', (index) => {
+    state.ui.selectedTab = index
+    bus.emit('render')
+  })
 
   bus.on('ui:addPeer', function (peerId) {
     var vol = 1.0
@@ -1345,7 +1411,6 @@ function uiModel (state, bus) {
     state.ui.windows[index].open = false
     bus.emit('render')
   })
-
 
   // bus.on('ui:toggleWindow', function(bool) {
   //   //if passed a variable, use variable. Otherwise, toggle current value
@@ -1400,32 +1465,27 @@ function uiModel (state, bus) {
     bus.emit('render')
   })
 
-   bus.on('ui:receivedNewChat', function (chatObj) {
-     appendNewChat(chatObj)
-     bus.emit('render')
-   })
+  bus.on('ui:receivedNewChat', function (chatObj) {
+    appendNewChat(chatObj)
+    bus.emit('render')
+  })
 
-   bus.on('ui:updateChat', function (text) {
-     state.ui.chat.current = text
-   })
+  bus.on('ui:updateChat', function (text) {
+    state.ui.chat.current = text
+  })
 
-   function appendNewChat(chatObj) {
-      console.log("appending chat", chatObj)		     //  console.log(chatObj)
-      // state.ui.chat.messages.push(chatObj)
-      if(state.peers.byId[chatObj.peerId]) {
-        console.log(state.ui.chat)
-        chatObj.nickname = state.peers.byId[chatObj.peerId].nickname
-        state.ui.chat.messages.push(chatObj)
-      } else {
-        console.log("USER NOT FOUND", chatObj)
-      }
-
+  function appendNewChat (chatObj) {
+    if (state.peers.byId[chatObj.peerId]) {
+      console.log(state.ui.chat)
+      chatObj.nickname = state.peers.byId[chatObj.peerId].nickname
+      state.ui.chat.messages.push(chatObj)
+    } else {
+      console.log('USER NOT FOUND', chatObj)
     }
+  }
+}
 
-
- }
-
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var xtend = Object.assign
 var shortid = require('shortid')
 var MultiPeer = require('./../lib/MultiPeer.js')
@@ -1719,7 +1779,7 @@ function updateLocalInfo(id){
   }
 }
 
-},{"./../lib/MultiPeer.js":3,"shortid":129}],13:[function(require,module,exports){
+},{"./../lib/MultiPeer.js":3,"shortid":133}],14:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -1857,7 +1917,7 @@ function addBroadcast (devices, emit, showElement) {
 
 }
 
-},{"./components/dropdown.js":19,"./components/input.js":20,"./components/modal.js":21,"./components/radioSelect.js":24,"./components/settingsUI.js":25,"./components/videocontainer.js":28,"choo/html":49}],14:[function(require,module,exports){
+},{"./components/dropdown.js":21,"./components/input.js":22,"./components/modal.js":23,"./components/radioSelect.js":26,"./components/settingsUI.js":27,"./components/videocontainer.js":31,"choo/html":53}],15:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -1891,7 +1951,7 @@ function addOscBroadcast (oscInfo, emit, showElement) {
     `
 }
 
-},{"./components/input.js":20,"./components/modal.js":21,"choo/html":49}],15:[function(require,module,exports){
+},{"./components/input.js":22,"./components/modal.js":23,"choo/html":53}],16:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const VideoEl = require('./components/videocontainer.js')
@@ -1928,9 +1988,7 @@ function communicationView (state, emit) {
           id: (trackId in state.media.byId) ?  state.media.byId[trackId].track.id : null
         })}
         ${peerAudio[index].render({
-          htmlProps: {
-
-          },
+          htmlProps: {},
           track: (trackId in state.media.byId)  ? state.media.byId[audioId].track : null,
           id: (trackId in state.media.byId) ?  state.media.byId[audioId].track.id : null,
           volume: state.ui.communication[peerIndex].volume
@@ -1953,7 +2011,7 @@ function communicationView (state, emit) {
     `
 }
 
-},{"./components/audiocontainer.js":17,"./components/videocontainer.js":28,"choo/html":49}],16:[function(require,module,exports){
+},{"./components/audiocontainer.js":18,"./components/videocontainer.js":31,"choo/html":53}],17:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2054,7 +2112,7 @@ RTCInspector.prototype.stopMonitoring = function() {
   clearInterval(this.interval)
 }
 
-},{"choo/html":49,"nanocomponent":93,"xtend":167}],17:[function(require,module,exports){
+},{"choo/html":53,"nanocomponent":97,"xtend":171}],18:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2119,7 +2177,7 @@ AudioContainer.prototype.update = function (props) {
   return false
 }
 
-},{"choo/html":49,"nanocomponent":93,"xtend":167}],18:[function(require,module,exports){
+},{"choo/html":53,"nanocomponent":97,"xtend":171}],19:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const input = require('./input.js')
@@ -2164,7 +2222,29 @@ var overall =  html`  <div  class="pa3 dib w-100">
     return overall
 }
 
-},{"./input.js":20,"choo/html":49}],19:[function(require,module,exports){
+},{"./input.js":22,"choo/html":53}],20:[function(require,module,exports){
+'use strict'
+const html = require('choo/html')
+
+module.exports = displayPreview
+
+function displayPreview (display, emit) {
+  return html`
+    <div class="display row">
+      <div class="video-holder">
+        <div class="video"></div>
+        <div class="video-title display-title">
+          ${display.title}
+        </div>
+      </div>
+      <div class="slider-container">
+          <input type="range" orient="vertical" min="1" max="100" value=${display.opacity} class="slider" id="myRange">
+      </div>
+    </div>
+  `
+}
+
+},{"choo/html":53}],21:[function(require,module,exports){
 const Nano = require('nanocomponent')
 const css = 0
 const html = require('choo/html')
@@ -2242,7 +2322,7 @@ Dropdown.prototype.update = function (props) {
 
 }
 
-},{"choo/html":49,"juliangruber-shallow-equal/objects":89,"nanocomponent":93,"sheetify/insert":128,"xtend":167}],20:[function(require,module,exports){
+},{"choo/html":53,"juliangruber-shallow-equal/objects":93,"nanocomponent":97,"sheetify/insert":132,"xtend":171}],22:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2270,7 +2350,7 @@ function inputElement (name, defaultText, opts) {
   </div>`
 }
 
-},{"choo/html":49,"xtend":167}],21:[function(require,module,exports){
+},{"choo/html":53,"xtend":171}],23:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2306,7 +2386,7 @@ function Modal (opts) {
   }
 }
 
-},{"./panel.js":23,"assert":38,"choo/html":49,"xtend":167}],22:[function(require,module,exports){
+},{"./panel.js":25,"assert":42,"choo/html":53,"xtend":171}],24:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 
@@ -2387,7 +2467,7 @@ function oscView (state, emit) {
   </div>`
 }
 
-},{"choo/html":49}],23:[function(require,module,exports){
+},{"choo/html":53}],25:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2428,7 +2508,7 @@ function Panel (opts) {
 
 }
 
-},{"assert":38,"choo/html":49,"xtend":167}],24:[function(require,module,exports){
+},{"assert":42,"choo/html":53,"xtend":171}],26:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2445,7 +2525,7 @@ function radioSelect(opts){
   </div>`
 }
 
-},{"choo/html":49}],25:[function(require,module,exports){
+},{"choo/html":53}],27:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2514,7 +2594,7 @@ function createBooleanElement(label, obj, callback){
   })
 }
 
-},{"./radioSelect.js":24,"./slider.js":27,"choo/html":49,"xtend":167}],26:[function(require,module,exports){
+},{"./radioSelect.js":26,"./slider.js":29,"choo/html":53,"xtend":171}],28:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2666,7 +2746,7 @@ ShowWindow.prototype.update = function (props) {
   return false
 }
 
-},{"choo/html":49,"nanocomponent":93,"xtend":167}],27:[function(require,module,exports){
+},{"choo/html":53,"nanocomponent":97,"xtend":171}],29:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2682,7 +2762,43 @@ function slider(opts){
   </div>`
 }
 
-},{"choo/html":49}],28:[function(require,module,exports){
+},{"choo/html":53}],30:[function(require,module,exports){
+'use strict'
+const html = require('choo/html')
+
+module.exports = trackSelector
+
+function trackSelector (selectorInfo, selectorIndex, state, emit) {
+  return html`
+    <div class="row">
+      ${selectorInfo.tracks.map((media, index) =>
+        html`
+          <div class="video-holder selectable"
+          onclick=${() => (emit('show:setActiveVideo', {
+            displayIndex: selectorIndex,
+            trackIndex: index
+          }))}
+
+          draggable = "true"
+
+          ondragstart=${() => (emit('show:clearVideoTrack', {displayIndex: selectorIndex, trackIndex: index}))}
+
+          ondragover=${(ev) => (ev.preventDefault())}
+
+          ondrop=${(ev) => (emit('show:setVideoTrack', {displayIndex: selectorIndex, trackIndex: index}))}
+          >
+            <div class="video"></div>
+            <div class="video-title ${selectorInfo.active === index ? 'selected' : ''}">
+              ${media === null ? '' : state.peers.byId[media.peerId].nickname + '-' + media.name + '-' + media.track.kind}
+            </div>
+          </div>
+        `
+      )}
+    </div>
+  `
+}
+
+},{"choo/html":53}],31:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2741,7 +2857,7 @@ VideoContainer.prototype.update = function (props) {
   return false
 }
 
-},{"choo/html":49,"nanocomponent":93,"xtend":167}],29:[function(require,module,exports){
+},{"choo/html":53,"nanocomponent":97,"xtend":171}],32:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2775,7 +2891,7 @@ function configureOscForwarding (oscInfo, emit, showElement) {
     `
 }
 
-},{"./components/input.js":20,"./components/modal.js":21,"choo/html":49}],30:[function(require,module,exports){
+},{"./components/input.js":22,"./components/modal.js":23,"choo/html":53}],33:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const RTCInspector = require('./components/RTCInspector.js')
@@ -2807,7 +2923,7 @@ function inspectorComponent (state, emit) {
   </div>`
 }
 
-},{"./components/RTCInspector.js":16,"./components/videocontainer.js":28,"choo/html":49}],31:[function(require,module,exports){
+},{"./components/RTCInspector.js":17,"./components/videocontainer.js":31,"choo/html":53}],34:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2906,7 +3022,7 @@ function loginView (state, emit) {
   }
 }
 
-},{"./components/dropdown.js":19,"./components/input.js":20,"./components/videocontainer.js":28,"choo/html":49}],32:[function(require,module,exports){
+},{"./components/dropdown.js":21,"./components/input.js":22,"./components/videocontainer.js":31,"choo/html":53}],35:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2933,7 +3049,7 @@ function mainView (state, emit) {
   }
 }
 
-},{"./login.js":31,"./workspace.js":35,"choo/html":49}],33:[function(require,module,exports){
+},{"./login.js":34,"./workspace.js":39,"choo/html":53}],36:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const inspector = require('./inspector.js')
@@ -2959,10 +3075,15 @@ function mediaListView (state, emit) {
           <tbody>
           ${state.media.all.map((id) => {
             var media = state.media.byId[id]
-            var className = id == state.ui.inspector.trackId ? "bg-gray pointer" : "dim pointer"
-            //console.log(id, state.ui.inspector.trackId)
+            var className = id === state.ui.inspector.trackId ? 'bg-gray pointer' : 'dim pointer'
+            // console.log(id, state.ui.inspector.trackId)
             return html`
-              <tr class=${className} style="height:20px" onclick=${()=>{emit('user:setInspectMedia', id)}}>
+              <tr class=${className}
+                  draggable="true"
+                  style="height:20px"
+                  onclick=${() => { emit('user:setInspectMedia', id) }}
+                  ondragstart=${() => { emit('ui:dragStart', id) }}
+              >
                 <td class="pa1" style="width:20%;height:20px">${state.peers.byId[media.peerId].nickname}</td>
                 <td class="pa1" style="width:20%;height:20px">${media.name}</td>
                 <td class="pa1" style="width:20%;height:20px">${media.track.kind}</td>
@@ -2980,7 +3101,40 @@ function mediaListView (state, emit) {
     `
 }
 
-},{"./components/panel.js":23,"./inspector.js":30,"choo/html":49}],34:[function(require,module,exports){
+},{"./components/panel.js":25,"./inspector.js":33,"choo/html":53}],37:[function(require,module,exports){
+'use strict'
+const html = require('choo/html')
+const displayPreview = require('./components/displayPreview.js')
+const trackSelector = require('./components/trackSelector.js')
+
+module.exports = showControlView
+
+function showControlView (state, emit) {
+  return html`
+  <div class="flex-container">
+    <div class="header">
+      <div class="col-sticky">
+        <div class="header-text"> Displays </div>
+      </div>
+      <div class="col-scrollable">
+        <div class="header-text">
+          Video streams (Drag from shared media to add to workspace)
+        </div>
+      </div>
+    </div>
+    <div class="content-scrollable">
+      <div class="col-sticky">
+        ${state.show.displays.map((el) => displayPreview(el, emit))}
+      </div>
+      <div class="col-scrollable">
+         ${state.show.displays.map((el, index) => trackSelector(el, index, state, emit))}
+      </div>
+    </div>
+  </div>
+  `
+}
+
+},{"./components/displayPreview.js":20,"./components/trackSelector.js":30,"choo/html":53}],38:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const Window = require('./components/showwindow.js')
@@ -3059,11 +3213,12 @@ function windowManagerView (state, emit) {
     `
 }
 
-},{"./components/dropdown.js":19,"./components/showwindow.js":26,"choo/html":49}],35:[function(require,module,exports){
+},{"./components/dropdown.js":21,"./components/showwindow.js":28,"choo/html":53}],39:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
 const communication = require('./communication.js')
+const showControl = require('./showControl.js')
 // const allVideos = require('./allVideos.js')
 const mediaList = require('./mediaList.js')
 const panel = require('./components/panel.js')
@@ -3098,9 +3253,19 @@ function workspaceView (state, emit) {
 
     return html`
     <div class="f6 dt fw2 w-100 h-100 mw-100">
-      <div class="fl w-70-ns w-100 pa2">
-        ${communication(state, emit)}
-      </div>
+        <div class="fl w-70-ns">
+          <div class = "tab-header">
+            ${state.ui.tabs.map((el, index) =>
+              html`<div
+                    class="tab-element ${state.ui.selectedTab === index ? 'selected' : ''}"
+                    onclick=${() => (emit('ui:setTab', index))}
+                    >${el}</div>`
+            )}
+          </div>
+          <div class="w-100 pa2">
+            ${state.ui.selectedTab === 0 ? communication(state, emit) : showControl(state, emit)}
+          </div>
+        </div>
       <div class="fl w-30-ns w-100 mw6 h-100">
         ${panel(
           {
@@ -3142,7 +3307,7 @@ function workspaceView (state, emit) {
     `
 }
 
-},{"./addBroadcast.js":13,"./addOscBroadcast":14,"./communication.js":15,"./components/chat.js":18,"./components/osc.js":22,"./components/panel.js":23,"./configureOscForwarding":29,"./mediaList.js":33,"./windowmanager.js":34,"choo/html":49}],36:[function(require,module,exports){
+},{"./addBroadcast.js":14,"./addOscBroadcast":15,"./communication.js":16,"./components/chat.js":19,"./components/osc.js":24,"./components/panel.js":25,"./configureOscForwarding":32,"./mediaList.js":36,"./showControl.js":37,"./windowmanager.js":38,"choo/html":53}],40:[function(require,module,exports){
 module.exports = after
 
 function after(count, callback, err_cb) {
@@ -3172,7 +3337,7 @@ function after(count, callback, err_cb) {
 
 function noop() {}
 
-},{}],37:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 /**
  * An abstraction for slicing an arraybuffer even when
  * ArrayBuffer.prototype.slice is not supported
@@ -3203,7 +3368,7 @@ module.exports = function(arraybuffer, start, end) {
   return result.buffer;
 };
 
-},{}],38:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -3697,7 +3862,7 @@ var objectKeys = Object.keys || function (obj) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"util/":155}],39:[function(require,module,exports){
+},{"util/":159}],43:[function(require,module,exports){
 
 /**
  * Expose `Backoff`.
@@ -3784,7 +3949,7 @@ Backoff.prototype.setJitter = function(jitter){
 };
 
 
-},{}],40:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 /*
  * base64-arraybuffer
  * https://github.com/niklasvh/base64-arraybuffer
@@ -3853,7 +4018,7 @@ Backoff.prototype.setJitter = function(jitter){
   };
 })();
 
-},{}],41:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -3969,7 +4134,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],42:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 var document = require('global/document')
 var hyperx = require('hyperx')
 var onload = require('on-load')
@@ -4124,7 +4289,7 @@ module.exports = hyperx(belCreateElement, {comments: true})
 module.exports.default = module.exports
 module.exports.createElement = belCreateElement
 
-},{"global/document":77,"hyperx":83,"on-load":108}],43:[function(require,module,exports){
+},{"global/document":81,"hyperx":87,"on-load":112}],47:[function(require,module,exports){
 (function (global){
 /**
  * Create a blob builder even when vendor prefixes exist
@@ -4224,9 +4389,9 @@ module.exports = (function() {
 })();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],44:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 
-},{}],45:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -4412,7 +4577,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],46:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -6128,7 +6293,7 @@ function numberIsNaN (obj) {
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-},{"base64-js":41,"ieee754":84}],47:[function(require,module,exports){
+},{"base64-js":45,"ieee754":88}],51:[function(require,module,exports){
 var removeItems = require('remove-array-items')
 var onIdle = require('on-idle')
 var stateCopy = require('state-copy')
@@ -6194,7 +6359,7 @@ function Event (name, data) {
   this.data = data
 }
 
-},{"on-idle":107,"plucker":112,"remove-array-items":125,"state-copy":149}],48:[function(require,module,exports){
+},{"on-idle":111,"plucker":116,"remove-array-items":129,"state-copy":153}],52:[function(require,module,exports){
 var nanologger = require('nanologger')
 
 module.exports = logger
@@ -6267,10 +6432,10 @@ function logger (opts) {
   }
 }
 
-},{"nanologger":99}],49:[function(require,module,exports){
+},{"nanologger":103}],53:[function(require,module,exports){
 module.exports = require('bel')
 
-},{"bel":42}],50:[function(require,module,exports){
+},{"bel":46}],54:[function(require,module,exports){
 var documentReady = require('document-ready')
 var nanohistory = require('nanohistory')
 var nanorouter = require('nanorouter')
@@ -6410,7 +6575,7 @@ function createLocation () {
   return pathname + hash
 }
 
-},{"assert":38,"document-ready":58,"nanobus":92,"nanohistory":97,"nanohref":98,"nanomorph":100,"nanomount":103,"nanoraf":104,"nanorouter":105}],51:[function(require,module,exports){
+},{"assert":42,"document-ready":62,"nanobus":96,"nanohistory":101,"nanohref":102,"nanomorph":104,"nanomount":107,"nanoraf":108,"nanorouter":109}],55:[function(require,module,exports){
 /**
  * Slice reference.
  */
@@ -6435,7 +6600,7 @@ module.exports = function(obj, fn){
   }
 };
 
-},{}],52:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -6600,7 +6765,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],53:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 
 module.exports = function(a, b){
   var fn = function(){};
@@ -6608,7 +6773,7 @@ module.exports = function(a, b){
   a.prototype = new fn;
   a.prototype.constructor = a;
 };
-},{}],54:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 'use strict';
 module.exports = input => {
 	const el = document.createElement('textarea');
@@ -6647,7 +6812,7 @@ module.exports = input => {
 	return success;
 };
 
-},{}],55:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -6758,7 +6923,7 @@ function objectToString(o) {
 }
 
 }).call(this,{"isBuffer":require("../../is-buffer/index.js")})
-},{"../../is-buffer/index.js":88}],56:[function(require,module,exports){
+},{"../../is-buffer/index.js":92}],60:[function(require,module,exports){
 (function (process){
 /**
  * This is the web browser implementation of `debug()`.
@@ -6947,7 +7112,7 @@ function localstorage() {
 }
 
 }).call(this,require('_process'))
-},{"./debug":57,"_process":45}],57:[function(require,module,exports){
+},{"./debug":61,"_process":49}],61:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -7151,7 +7316,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":91}],58:[function(require,module,exports){
+},{"ms":95}],62:[function(require,module,exports){
 'use strict'
 
 var assert = require('assert')
@@ -7170,11 +7335,11 @@ function ready (callback) {
   })
 }
 
-},{"assert":38}],59:[function(require,module,exports){
+},{"assert":42}],63:[function(require,module,exports){
 
 module.exports = require('./lib/index');
 
-},{"./lib/index":60}],60:[function(require,module,exports){
+},{"./lib/index":64}],64:[function(require,module,exports){
 
 module.exports = require('./socket');
 
@@ -7186,7 +7351,7 @@ module.exports = require('./socket');
  */
 module.exports.parser = require('engine.io-parser');
 
-},{"./socket":61,"engine.io-parser":69}],61:[function(require,module,exports){
+},{"./socket":65,"engine.io-parser":73}],65:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -7934,7 +8099,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./transport":62,"./transports/index":63,"component-emitter":52,"debug":56,"engine.io-parser":69,"indexof":85,"parsejson":109,"parseqs":110,"parseuri":111}],62:[function(require,module,exports){
+},{"./transport":66,"./transports/index":67,"component-emitter":56,"debug":60,"engine.io-parser":73,"indexof":89,"parsejson":113,"parseqs":114,"parseuri":115}],66:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -8093,7 +8258,7 @@ Transport.prototype.onClose = function () {
   this.emit('close');
 };
 
-},{"component-emitter":52,"engine.io-parser":69}],63:[function(require,module,exports){
+},{"component-emitter":56,"engine.io-parser":73}],67:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies
@@ -8150,7 +8315,7 @@ function polling (opts) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling-jsonp":64,"./polling-xhr":65,"./websocket":67,"xmlhttprequest-ssl":68}],64:[function(require,module,exports){
+},{"./polling-jsonp":68,"./polling-xhr":69,"./websocket":71,"xmlhttprequest-ssl":72}],68:[function(require,module,exports){
 (function (global){
 
 /**
@@ -8385,7 +8550,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":66,"component-inherit":53}],65:[function(require,module,exports){
+},{"./polling":70,"component-inherit":57}],69:[function(require,module,exports){
 (function (global){
 /**
  * Module requirements.
@@ -8802,7 +8967,7 @@ function unloadHandler () {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":66,"component-emitter":52,"component-inherit":53,"debug":56,"xmlhttprequest-ssl":68}],66:[function(require,module,exports){
+},{"./polling":70,"component-emitter":56,"component-inherit":57,"debug":60,"xmlhttprequest-ssl":72}],70:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -9049,7 +9214,7 @@ Polling.prototype.uri = function () {
   return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
 };
 
-},{"../transport":62,"component-inherit":53,"debug":56,"engine.io-parser":69,"parseqs":110,"xmlhttprequest-ssl":68,"yeast":169}],67:[function(require,module,exports){
+},{"../transport":66,"component-inherit":57,"debug":60,"engine.io-parser":73,"parseqs":114,"xmlhttprequest-ssl":72,"yeast":173}],71:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -9339,7 +9504,7 @@ WS.prototype.check = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../transport":62,"component-inherit":53,"debug":56,"engine.io-parser":69,"parseqs":110,"ws":44,"yeast":169}],68:[function(require,module,exports){
+},{"../transport":66,"component-inherit":57,"debug":60,"engine.io-parser":73,"parseqs":114,"ws":48,"yeast":173}],72:[function(require,module,exports){
 (function (global){
 // browser shim for xmlhttprequest module
 
@@ -9380,7 +9545,7 @@ module.exports = function (opts) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"has-cors":81}],69:[function(require,module,exports){
+},{"has-cors":85}],73:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -9990,7 +10155,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./keys":70,"./utf8":71,"after":36,"arraybuffer.slice":37,"base64-arraybuffer":40,"blob":43,"has-binary2":79}],70:[function(require,module,exports){
+},{"./keys":74,"./utf8":75,"after":40,"arraybuffer.slice":41,"base64-arraybuffer":44,"blob":47,"has-binary2":83}],74:[function(require,module,exports){
 
 /**
  * Gets the keys for an object.
@@ -10011,7 +10176,7 @@ module.exports = Object.keys || function keys (obj){
   return arr;
 };
 
-},{}],71:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/utf8js v2.1.2 by @mathias */
 ;(function(root) {
@@ -10270,7 +10435,7 @@ module.exports = Object.keys || function keys (obj){
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],72:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 module.exports = function (cb) {
     if (typeof Promise !== 'function') {
       var err = new Error('Device enumeration not supported.');
@@ -10325,7 +10490,7 @@ module.exports = function (cb) {
     });
 };
 
-},{}],73:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -10629,7 +10794,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],74:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 module.exports = stringify
 stringify.default = stringify
 function stringify (obj) {
@@ -10677,7 +10842,7 @@ function decirc (val, k, stack, parent) {
   stack.pop()
 }
 
-},{}],75:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 // originally pulled out of simple-peer
 
 module.exports = function getBrowserRTC () {
@@ -10694,7 +10859,7 @@ module.exports = function getBrowserRTC () {
   return wrtc
 }
 
-},{}],76:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg used for navigator.getUserMedia shim
 var adapter = require('webrtc-adapter');
 
@@ -10771,7 +10936,7 @@ module.exports = function (constraints, cb) {
     });
 };
 
-},{"webrtc-adapter":158}],77:[function(require,module,exports){
+},{"webrtc-adapter":162}],81:[function(require,module,exports){
 (function (global){
 var topLevel = typeof global !== 'undefined' ? global :
     typeof window !== 'undefined' ? window : {}
@@ -10792,7 +10957,7 @@ if (typeof document !== 'undefined') {
 module.exports = doccy;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"min-document":44}],78:[function(require,module,exports){
+},{"min-document":48}],82:[function(require,module,exports){
 (function (global){
 var win;
 
@@ -10809,7 +10974,7 @@ if (typeof window !== "undefined") {
 module.exports = win;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],79:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 (function (global){
 /* global Blob File */
 
@@ -10875,14 +11040,14 @@ function hasBinary (obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"isarray":80}],80:[function(require,module,exports){
+},{"isarray":84}],84:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],81:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -10901,7 +11066,7 @@ try {
   module.exports = false;
 }
 
-},{}],82:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 module.exports = attributeToProperty
 
 var transform = {
@@ -10922,7 +11087,7 @@ function attributeToProperty (h) {
   }
 }
 
-},{}],83:[function(require,module,exports){
+},{}],87:[function(require,module,exports){
 var attrToProp = require('hyperscript-attribute-to-property')
 
 var VAR = 0, TEXT = 1, OPEN = 2, CLOSE = 3, ATTR = 4
@@ -11202,7 +11367,7 @@ var closeRE = RegExp('^(' + [
 ].join('|') + ')(?:[\.#][a-zA-Z0-9\u007F-\uFFFF_:-]+)*$')
 function selfClosing (tag) { return closeRE.test(tag) }
 
-},{"hyperscript-attribute-to-property":82}],84:[function(require,module,exports){
+},{"hyperscript-attribute-to-property":86}],88:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -11288,7 +11453,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],85:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -11299,7 +11464,7 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
-},{}],86:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -11324,7 +11489,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],87:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 var containers = []; // will store container HTMLElement references
 var styleElements = []; // will store {prepend: HTMLElement, append: HTMLElement}
 
@@ -11384,7 +11549,7 @@ function createStyleElement() {
 module.exports = insertCss;
 module.exports.insertCss = insertCss;
 
-},{}],88:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -11407,7 +11572,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],89:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 var is = require('./is')
 
 module.exports = function shallowEqualObjects(objA, objB) {
@@ -11434,7 +11599,7 @@ module.exports = function shallowEqualObjects(objA, objB) {
   return true;
 };
 
-},{"./is":90}],90:[function(require,module,exports){
+},{"./is":94}],94:[function(require,module,exports){
 const hasElement = typeof Element !== 'undefined'
 
 module.exports = function is(a, b) {
@@ -11446,7 +11611,7 @@ module.exports = function is(a, b) {
   return a === b;
 }
 
-},{}],91:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -11600,7 +11765,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],92:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 var nanotiming = require('nanotiming')
 var assert = require('assert')
 
@@ -11748,7 +11913,7 @@ Nanobus.prototype._emit = function (arr, eventName, data) {
   }
 }
 
-},{"assert":38,"nanotiming":106}],93:[function(require,module,exports){
+},{"assert":42,"nanotiming":110}],97:[function(require,module,exports){
 var document = require('global/document')
 var morph = require('nanomorph')
 var onload = require('on-load')
@@ -11866,7 +12031,7 @@ Nanocomponent.prototype.update = function () {
   throw new Error('nanocomponent: update should be implemented!')
 }
 
-},{"assert":38,"global/document":77,"nanomorph":94,"on-load":108}],94:[function(require,module,exports){
+},{"assert":42,"global/document":81,"nanomorph":98,"on-load":112}],98:[function(require,module,exports){
 var assert = require('assert')
 var morph = require('./lib/morph')
 
@@ -12017,7 +12182,7 @@ function same (a, b) {
   return false
 }
 
-},{"./lib/morph":96,"assert":38}],95:[function(require,module,exports){
+},{"./lib/morph":100,"assert":42}],99:[function(require,module,exports){
 module.exports = [
   // attribute events (can be set with attributes)
   'onclick',
@@ -12057,7 +12222,7 @@ module.exports = [
   'onfocusout'
 ]
 
-},{}],96:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 var events = require('./events')
 var eventsLength = events.length
 
@@ -12221,7 +12386,7 @@ function updateAttribute (newNode, oldNode, name) {
   }
 }
 
-},{"./events":95}],97:[function(require,module,exports){
+},{"./events":99}],101:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = history
@@ -12235,7 +12400,7 @@ function history (cb) {
   }
 }
 
-},{"assert":38}],98:[function(require,module,exports){
+},{"assert":42}],102:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = href
@@ -12271,7 +12436,7 @@ function href (cb, root) {
   }
 }
 
-},{"assert":38}],99:[function(require,module,exports){
+},{"assert":42}],103:[function(require,module,exports){
 var assert = require('assert')
 var xtend = require('xtend')
 
@@ -12435,7 +12600,7 @@ function pad (str) {
   return str.length !== 2 ? 0 + str : str
 }
 
-},{"assert":38,"xtend":167}],100:[function(require,module,exports){
+},{"assert":42,"xtend":171}],104:[function(require,module,exports){
 var assert = require('assert')
 var morph = require('./lib/morph')
 var rootLabelRegex = /^data-onloadid/
@@ -12530,9 +12695,9 @@ function persistStatefulRoot (newNode, oldNode) {
   }
 }
 
-},{"./lib/morph":102,"assert":38}],101:[function(require,module,exports){
-arguments[4][95][0].apply(exports,arguments)
-},{"dup":95}],102:[function(require,module,exports){
+},{"./lib/morph":106,"assert":42}],105:[function(require,module,exports){
+arguments[4][99][0].apply(exports,arguments)
+},{"dup":99}],106:[function(require,module,exports){
 var events = require('./events')
 var eventsLength = events.length
 
@@ -12707,7 +12872,7 @@ function updateAttribute (newNode, oldNode, name) {
   }
 }
 
-},{"./events":101}],103:[function(require,module,exports){
+},{"./events":105}],107:[function(require,module,exports){
 var nanomorph = require('nanomorph')
 var assert = require('assert')
 
@@ -12729,7 +12894,7 @@ function nanomount (target, newTree) {
     target.outerHTML.nodeName + '.')
 }
 
-},{"assert":38,"nanomorph":100}],104:[function(require,module,exports){
+},{"assert":42,"nanomorph":104}],108:[function(require,module,exports){
 'use strict'
 
 var assert = require('assert')
@@ -12766,7 +12931,7 @@ function nanoraf (render, raf) {
   }
 }
 
-},{"assert":38}],105:[function(require,module,exports){
+},{"assert":42}],109:[function(require,module,exports){
 var wayfarer = require('wayfarer')
 
 var isLocalFile = (/file:\/\//.test(typeof window === 'object' &&
@@ -12826,7 +12991,7 @@ function pathname (route, isElectron) {
   return route.replace(suffix, '').replace(normalize, '/')
 }
 
-},{"wayfarer":156}],106:[function(require,module,exports){
+},{"wayfarer":160}],110:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = Nanotiming
@@ -12852,7 +13017,7 @@ Nanotiming.prototype.end = function (partial) {
   window.performance.measure(name, name + '-start', name + '-end')
 }
 
-},{"assert":38}],107:[function(require,module,exports){
+},{"assert":42}],111:[function(require,module,exports){
 var assert = require('assert')
 
 var dftOpts = {}
@@ -12877,7 +13042,7 @@ function onIdle (cb, opts) {
   }
 }
 
-},{"assert":38}],108:[function(require,module,exports){
+},{"assert":42}],112:[function(require,module,exports){
 /* global MutationObserver */
 var document = require('global/document')
 var window = require('global/window')
@@ -12966,7 +13131,7 @@ function eachMutation (nodes, fn) {
   }
 }
 
-},{"global/document":77,"global/window":78}],109:[function(require,module,exports){
+},{"global/document":81,"global/window":82}],113:[function(require,module,exports){
 (function (global){
 /**
  * JSON parse.
@@ -13001,7 +13166,7 @@ module.exports = function parsejson(data) {
   }
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],110:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 /**
  * Compiles a querystring
  * Returns string representation of the object
@@ -13040,7 +13205,7 @@ exports.decode = function(qs){
   return qry;
 };
 
-},{}],111:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 /**
  * Parses an URI
  *
@@ -13081,7 +13246,7 @@ module.exports = function parseuri(str) {
     return uri;
 };
 
-},{}],112:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 module.exports = plucker
 
 function plucker(path, object) {
@@ -13118,7 +13283,7 @@ function pluck(path) {
   }
 }
 
-},{}],113:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -13165,7 +13330,7 @@ function nextTick(fn, arg1, arg2, arg3) {
 }
 
 }).call(this,require('_process'))
-},{"_process":45}],114:[function(require,module,exports){
+},{"_process":49}],118:[function(require,module,exports){
 (function (process,global){
 'use strict'
 
@@ -13207,7 +13372,7 @@ function randomBytes (size, cb) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":45,"safe-buffer":126}],115:[function(require,module,exports){
+},{"_process":49,"safe-buffer":130}],119:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -13332,7 +13497,7 @@ function forEach(xs, f) {
     f(xs[i], i);
   }
 }
-},{"./_stream_readable":117,"./_stream_writable":119,"core-util-is":55,"inherits":86,"process-nextick-args":113}],116:[function(require,module,exports){
+},{"./_stream_readable":121,"./_stream_writable":123,"core-util-is":59,"inherits":90,"process-nextick-args":117}],120:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -13380,7 +13545,7 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":118,"core-util-is":55,"inherits":86}],117:[function(require,module,exports){
+},{"./_stream_transform":122,"core-util-is":59,"inherits":90}],121:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -14390,7 +14555,7 @@ function indexOf(xs, x) {
   return -1;
 }
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_stream_duplex":115,"./internal/streams/BufferList":120,"./internal/streams/destroy":121,"./internal/streams/stream":122,"_process":45,"core-util-is":55,"events":73,"inherits":86,"isarray":123,"process-nextick-args":113,"safe-buffer":126,"string_decoder/":150,"util":44}],118:[function(require,module,exports){
+},{"./_stream_duplex":119,"./internal/streams/BufferList":124,"./internal/streams/destroy":125,"./internal/streams/stream":126,"_process":49,"core-util-is":59,"events":77,"inherits":90,"isarray":127,"process-nextick-args":117,"safe-buffer":130,"string_decoder/":154,"util":48}],122:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -14605,7 +14770,7 @@ function done(stream, er, data) {
 
   return stream.push(null);
 }
-},{"./_stream_duplex":115,"core-util-is":55,"inherits":86}],119:[function(require,module,exports){
+},{"./_stream_duplex":119,"core-util-is":59,"inherits":90}],123:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -15272,7 +15437,7 @@ Writable.prototype._destroy = function (err, cb) {
   cb(err);
 };
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_stream_duplex":115,"./internal/streams/destroy":121,"./internal/streams/stream":122,"_process":45,"core-util-is":55,"inherits":86,"process-nextick-args":113,"safe-buffer":126,"util-deprecate":152}],120:[function(require,module,exports){
+},{"./_stream_duplex":119,"./internal/streams/destroy":125,"./internal/streams/stream":126,"_process":49,"core-util-is":59,"inherits":90,"process-nextick-args":117,"safe-buffer":130,"util-deprecate":156}],124:[function(require,module,exports){
 'use strict';
 
 /*<replacement>*/
@@ -15347,7 +15512,7 @@ module.exports = function () {
 
   return BufferList;
 }();
-},{"safe-buffer":126}],121:[function(require,module,exports){
+},{"safe-buffer":130}],125:[function(require,module,exports){
 'use strict';
 
 /*<replacement>*/
@@ -15420,12 +15585,12 @@ module.exports = {
   destroy: destroy,
   undestroy: undestroy
 };
-},{"process-nextick-args":113}],122:[function(require,module,exports){
+},{"process-nextick-args":117}],126:[function(require,module,exports){
 module.exports = require('events').EventEmitter;
 
-},{"events":73}],123:[function(require,module,exports){
-arguments[4][80][0].apply(exports,arguments)
-},{"dup":80}],124:[function(require,module,exports){
+},{"events":77}],127:[function(require,module,exports){
+arguments[4][84][0].apply(exports,arguments)
+},{"dup":84}],128:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = exports;
 exports.Readable = exports;
@@ -15434,7 +15599,7 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":115,"./lib/_stream_passthrough.js":116,"./lib/_stream_readable.js":117,"./lib/_stream_transform.js":118,"./lib/_stream_writable.js":119}],125:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":119,"./lib/_stream_passthrough.js":120,"./lib/_stream_readable.js":121,"./lib/_stream_transform.js":122,"./lib/_stream_writable.js":123}],129:[function(require,module,exports){
 'use strict'
 
 /**
@@ -15464,7 +15629,7 @@ module.exports = function removeItems(arr, startIdx, removeCount)
   arr.length = len
 }
 
-},{}],126:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
 var Buffer = buffer.Buffer
@@ -15528,7 +15693,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":46}],127:[function(require,module,exports){
+},{"buffer":50}],131:[function(require,module,exports){
  /* eslint-env node */
 'use strict';
 
@@ -16136,14 +16301,14 @@ SDPUtils.isRejected = function(mediaSection) {
 // Expose public methods.
 module.exports = SDPUtils;
 
-},{}],128:[function(require,module,exports){
+},{}],132:[function(require,module,exports){
 module.exports = require('insert-css')
 
-},{"insert-css":87}],129:[function(require,module,exports){
+},{"insert-css":91}],133:[function(require,module,exports){
 'use strict';
 module.exports = require('./lib/index');
 
-},{"./lib/index":134}],130:[function(require,module,exports){
+},{"./lib/index":138}],134:[function(require,module,exports){
 'use strict';
 
 var randomFromSeed = require('./random/random-from-seed');
@@ -16243,7 +16408,7 @@ module.exports = {
     shuffled: getShuffled
 };
 
-},{"./random/random-from-seed":137}],131:[function(require,module,exports){
+},{"./random/random-from-seed":141}],135:[function(require,module,exports){
 'use strict';
 
 var encode = require('./encode');
@@ -16293,7 +16458,7 @@ function build(clusterWorkerId) {
 
 module.exports = build;
 
-},{"./alphabet":130,"./encode":133}],132:[function(require,module,exports){
+},{"./alphabet":134,"./encode":137}],136:[function(require,module,exports){
 'use strict';
 var alphabet = require('./alphabet');
 
@@ -16312,7 +16477,7 @@ function decode(id) {
 
 module.exports = decode;
 
-},{"./alphabet":130}],133:[function(require,module,exports){
+},{"./alphabet":134}],137:[function(require,module,exports){
 'use strict';
 
 var randomByte = require('./random/random-byte');
@@ -16333,7 +16498,7 @@ function encode(lookup, number) {
 
 module.exports = encode;
 
-},{"./random/random-byte":136}],134:[function(require,module,exports){
+},{"./random/random-byte":140}],138:[function(require,module,exports){
 'use strict';
 
 var alphabet = require('./alphabet');
@@ -16400,7 +16565,7 @@ module.exports.characters = characters;
 module.exports.decode = decode;
 module.exports.isValid = isValid;
 
-},{"./alphabet":130,"./build":131,"./decode":132,"./encode":133,"./is-valid":135,"./util/cluster-worker-id":138}],135:[function(require,module,exports){
+},{"./alphabet":134,"./build":135,"./decode":136,"./encode":137,"./is-valid":139,"./util/cluster-worker-id":142}],139:[function(require,module,exports){
 'use strict';
 var alphabet = require('./alphabet');
 
@@ -16421,7 +16586,7 @@ function isShortId(id) {
 
 module.exports = isShortId;
 
-},{"./alphabet":130}],136:[function(require,module,exports){
+},{"./alphabet":134}],140:[function(require,module,exports){
 'use strict';
 
 var crypto = typeof window === 'object' && (window.crypto || window.msCrypto); // IE 11 uses window.msCrypto
@@ -16437,7 +16602,7 @@ function randomByte() {
 
 module.exports = randomByte;
 
-},{}],137:[function(require,module,exports){
+},{}],141:[function(require,module,exports){
 'use strict';
 
 // Found this seed-based random generator somewhere
@@ -16464,12 +16629,12 @@ module.exports = {
     seed: setSeed
 };
 
-},{}],138:[function(require,module,exports){
+},{}],142:[function(require,module,exports){
 'use strict';
 
 module.exports = 0;
 
-},{}],139:[function(require,module,exports){
+},{}],143:[function(require,module,exports){
 (function (Buffer){
 module.exports = Peer
 
@@ -17275,7 +17440,7 @@ Peer.prototype._transformConstraints = function (constraints) {
 function noop () {}
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":46,"debug":56,"get-browser-rtc":75,"inherits":86,"randombytes":114,"readable-stream":124}],140:[function(require,module,exports){
+},{"buffer":50,"debug":60,"get-browser-rtc":79,"inherits":90,"randombytes":118,"readable-stream":128}],144:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -17371,7 +17536,7 @@ exports.connect = lookup;
 exports.Manager = require('./manager');
 exports.Socket = require('./socket');
 
-},{"./manager":141,"./socket":143,"./url":144,"debug":56,"socket.io-parser":146}],141:[function(require,module,exports){
+},{"./manager":145,"./socket":147,"./url":148,"debug":60,"socket.io-parser":150}],145:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -17946,7 +18111,7 @@ Manager.prototype.onreconnect = function () {
   this.emitAll('reconnect', attempt);
 };
 
-},{"./on":142,"./socket":143,"backo2":39,"component-bind":51,"component-emitter":52,"debug":56,"engine.io-client":59,"indexof":85,"socket.io-parser":146}],142:[function(require,module,exports){
+},{"./on":146,"./socket":147,"backo2":43,"component-bind":55,"component-emitter":56,"debug":60,"engine.io-client":63,"indexof":89,"socket.io-parser":150}],146:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -17972,7 +18137,7 @@ function on (obj, ev, fn) {
   };
 }
 
-},{}],143:[function(require,module,exports){
+},{}],147:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -18392,7 +18557,7 @@ Socket.prototype.compress = function (compress) {
   return this;
 };
 
-},{"./on":142,"component-bind":51,"component-emitter":52,"debug":56,"parseqs":110,"socket.io-parser":146,"to-array":151}],144:[function(require,module,exports){
+},{"./on":146,"component-bind":55,"component-emitter":56,"debug":60,"parseqs":114,"socket.io-parser":150,"to-array":155}],148:[function(require,module,exports){
 (function (global){
 
 /**
@@ -18471,7 +18636,7 @@ function url (uri, loc) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"debug":56,"parseuri":111}],145:[function(require,module,exports){
+},{"debug":60,"parseuri":115}],149:[function(require,module,exports){
 (function (global){
 /*global Blob,File*/
 
@@ -18616,7 +18781,7 @@ exports.removeBlobs = function(data, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./is-buffer":147,"isarray":148}],146:[function(require,module,exports){
+},{"./is-buffer":151,"isarray":152}],150:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -19018,7 +19183,7 @@ function error() {
   };
 }
 
-},{"./binary":145,"./is-buffer":147,"component-emitter":52,"debug":56,"has-binary2":79}],147:[function(require,module,exports){
+},{"./binary":149,"./is-buffer":151,"component-emitter":56,"debug":60,"has-binary2":83}],151:[function(require,module,exports){
 (function (global){
 
 module.exports = isBuf;
@@ -19035,9 +19200,9 @@ function isBuf(obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],148:[function(require,module,exports){
-arguments[4][80][0].apply(exports,arguments)
-},{"dup":80}],149:[function(require,module,exports){
+},{}],152:[function(require,module,exports){
+arguments[4][84][0].apply(exports,arguments)
+},{"dup":84}],153:[function(require,module,exports){
 var fastSafeStringify = require('fast-safe-stringify')
 var copy = require('copy-text-to-clipboard')
 
@@ -19055,7 +19220,7 @@ function stateCopy (obj) {
 module.exports = stateCopy
 
 
-},{"copy-text-to-clipboard":54,"fast-safe-stringify":74}],150:[function(require,module,exports){
+},{"copy-text-to-clipboard":58,"fast-safe-stringify":78}],154:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('safe-buffer').Buffer;
@@ -19328,7 +19493,7 @@ function simpleWrite(buf) {
 function simpleEnd(buf) {
   return buf && buf.length ? this.write(buf) : '';
 }
-},{"safe-buffer":126}],151:[function(require,module,exports){
+},{"safe-buffer":130}],155:[function(require,module,exports){
 module.exports = toArray
 
 function toArray(list, index) {
@@ -19343,7 +19508,7 @@ function toArray(list, index) {
     return array
 }
 
-},{}],152:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 (function (global){
 
 /**
@@ -19414,16 +19579,16 @@ function config (name) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],153:[function(require,module,exports){
-arguments[4][86][0].apply(exports,arguments)
-},{"dup":86}],154:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
+arguments[4][90][0].apply(exports,arguments)
+},{"dup":90}],158:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],155:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -20013,7 +20178,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":154,"_process":45,"inherits":153}],156:[function(require,module,exports){
+},{"./support/isBuffer":158,"_process":49,"inherits":157}],160:[function(require,module,exports){
 var assert = require('assert')
 var trie = require('./trie')
 
@@ -20080,7 +20245,7 @@ function Wayfarer (dft) {
   }
 }
 
-},{"./trie":157,"assert":38}],157:[function(require,module,exports){
+},{"./trie":161,"assert":42}],161:[function(require,module,exports){
 var mutate = require('xtend/mutable')
 var assert = require('assert')
 var xtend = require('xtend')
@@ -20219,7 +20384,7 @@ Trie.prototype.mount = function (route, trie) {
   }
 }
 
-},{"assert":38,"xtend":167,"xtend/mutable":168}],158:[function(require,module,exports){
+},{"assert":42,"xtend":171,"xtend/mutable":172}],162:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -20313,7 +20478,7 @@ Trie.prototype.mount = function (route, trie) {
   }
 })();
 
-},{"./chrome/chrome_shim":159,"./edge/edge_shim":161,"./firefox/firefox_shim":163,"./safari/safari_shim":165,"./utils":166}],159:[function(require,module,exports){
+},{"./chrome/chrome_shim":163,"./edge/edge_shim":165,"./firefox/firefox_shim":167,"./safari/safari_shim":169,"./utils":170}],163:[function(require,module,exports){
 
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
@@ -20580,7 +20745,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils.js":166,"./getusermedia":160}],160:[function(require,module,exports){
+},{"../utils.js":170,"./getusermedia":164}],164:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -20780,7 +20945,7 @@ module.exports = function() {
   }
 };
 
-},{"../utils.js":166}],161:[function(require,module,exports){
+},{"../utils.js":170}],165:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -21909,7 +22074,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils":166,"./getusermedia":162,"sdp":127}],162:[function(require,module,exports){
+},{"../utils":170,"./getusermedia":166,"sdp":131}],166:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -21943,7 +22108,7 @@ module.exports = function() {
   };
 };
 
-},{}],163:[function(require,module,exports){
+},{}],167:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -22107,7 +22272,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils":166,"./getusermedia":164}],164:[function(require,module,exports){
+},{"../utils":170,"./getusermedia":168}],168:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -22270,7 +22435,7 @@ module.exports = function() {
   };
 };
 
-},{"../utils":166}],165:[function(require,module,exports){
+},{"../utils":170}],169:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -22300,7 +22465,7 @@ module.exports = {
   // shimPeerConnection: safariShim.shimPeerConnection
 };
 
-},{}],166:[function(require,module,exports){
+},{}],170:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -22433,7 +22598,7 @@ module.exports = {
   extractVersion: utils.extractVersion
 };
 
-},{}],167:[function(require,module,exports){
+},{}],171:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -22454,7 +22619,7 @@ function extend() {
     return target
 }
 
-},{}],168:[function(require,module,exports){
+},{}],172:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -22473,7 +22638,7 @@ function extend(target) {
     return target
 }
 
-},{}],169:[function(require,module,exports){
+},{}],173:[function(require,module,exports){
 'use strict';
 
 var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')

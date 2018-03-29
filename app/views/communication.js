@@ -34,9 +34,7 @@ function communicationView (state, emit) {
           id: (trackId in state.media.byId) ?  state.media.byId[trackId].track.id : null
         })}
         ${peerAudio[index].render({
-          htmlProps: {
-
-          },
+          htmlProps: {},
           track: (trackId in state.media.byId)  ? state.media.byId[audioId].track : null,
           id: (trackId in state.media.byId) ?  state.media.byId[audioId].track.id : null,
           volume: state.ui.communication[peerIndex].volume

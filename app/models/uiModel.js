@@ -8,12 +8,14 @@ module.exports = uiModel
 function uiModel (state, bus) {
   state.ui = xtend({
     tabs: ['Communication', 'Show Control'],
+    selectedTab: 0,
     communication: {},
     inspector: {
       trackId: null,
       pc: null, // peer connection to be inspected
       selectedTab: 'track' // which inspector tab is currently open
     },
+    dragging: null,
     windows:
     [
       {
@@ -36,6 +38,22 @@ function uiModel (state, bus) {
       current: ''
     }
   }, state.ui)
+
+  bus.on('ui:dragStart', (mediaId) => {
+    var media = state.media.byId[mediaId]
+    state.ui.dragging = media
+    bus.emit('render')
+  })
+
+  bus.on('ui:dragClear', () => {
+    state.dragging = null
+    bus.emit('render')
+  })
+
+  bus.on('ui:setTab', (index) => {
+    state.ui.selectedTab = index
+    bus.emit('render')
+  })
 
   bus.on('ui:addPeer', function (peerId) {
     var vol = 1.0
