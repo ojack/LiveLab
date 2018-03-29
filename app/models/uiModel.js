@@ -7,6 +7,7 @@ module.exports = uiModel
 
 function uiModel (state, bus) {
   state.ui = xtend({
+    tabs: ['Communication', 'Show Control'],
     communication: {},
     inspector: {
       trackId: null,
@@ -69,7 +70,6 @@ function uiModel (state, bus) {
     bus.emit('render')
   })
 
-
   // bus.on('ui:toggleWindow', function(bool) {
   //   //if passed a variable, use variable. Otherwise, toggle current value
   //   if(bool !== undefined) {
@@ -123,27 +123,22 @@ function uiModel (state, bus) {
     bus.emit('render')
   })
 
-   bus.on('ui:receivedNewChat', function (chatObj) {
-     appendNewChat(chatObj)
-     bus.emit('render')
-   })
+  bus.on('ui:receivedNewChat', function (chatObj) {
+    appendNewChat(chatObj)
+    bus.emit('render')
+  })
 
-   bus.on('ui:updateChat', function (text) {
-     state.ui.chat.current = text
-   })
+  bus.on('ui:updateChat', function (text) {
+    state.ui.chat.current = text
+  })
 
-   function appendNewChat(chatObj) {
-      console.log("appending chat", chatObj)		     //  console.log(chatObj)
-      // state.ui.chat.messages.push(chatObj)
-      if(state.peers.byId[chatObj.peerId]) {
-        console.log(state.ui.chat)
-        chatObj.nickname = state.peers.byId[chatObj.peerId].nickname
-        state.ui.chat.messages.push(chatObj)
-      } else {
-        console.log("USER NOT FOUND", chatObj)
-      }
-
+  function appendNewChat (chatObj) {
+    if (state.peers.byId[chatObj.peerId]) {
+      console.log(state.ui.chat)
+      chatObj.nickname = state.peers.byId[chatObj.peerId].nickname
+      state.ui.chat.messages.push(chatObj)
+    } else {
+      console.log('USER NOT FOUND', chatObj)
     }
-
-
- }
+  }
+}
