@@ -42,15 +42,26 @@ function addTrackToElement(track, element){
 VideoContainer.prototype.update = function (props) {
 
 
-  if (props.track && props.track != null) {
+  if (props.track) {
 
   //  if(props.needsUpdate === true || props.id !== this.props.id) {
-    if(props.track !== this.props.track) {
-      console.log("rendering", props.track)
+    if(props.track !== null) {
+      if(props.track !== this.props.track) {
+
+        this.props.track = props.track
+        this.props.id = props.id
+        addTrackToElement(this.props.track, this.element)
+      }
+    } else {
+      this.element.srcObject = null
       this.props.track = props.track
       this.props.id = props.id
-      addTrackToElement(this.props.track, this.element)
+    //  return true
     }
+  } else {
+      this.element.srcObject = null
+      this.props.track = props.track
+      this.props.id = props.id
   }
 
   return false

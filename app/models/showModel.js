@@ -14,6 +14,14 @@ function showModel (state, bus) {
         title: 'Output 1',
         fullscreen: false,
         tracks: [null, null, null, null]
+      }, {
+        type: 'window',
+        active: 0,
+        opacity: 100,
+        open: true,
+        title: 'Output 2',
+        fullscreen: false,
+        tracks: [null, null, null, null]
       }
     ]
   }, state.show)

@@ -1,13 +1,28 @@
 'use strict'
 const html = require('choo/html')
+const Video = require('./funvideocontainer.js')
+const VideoEl = require('./videocontainer.js')
 
+// ${Video({
+//   htmlProps: {
+//     class: 'h-100 w-100'
+//   },
+//   index: 'selector'+'video'+selectorIndex+index,
+//   track: media !== null  ? media.track : null,
+//   id: media !== null ?  media.track.id : null
+// })}
 module.exports = trackSelector
+var selectorVids = []
+
+for(var i = 0; i < 4; i++){
+  selectorVids[i] = new VideoEl()
+}
 
 function trackSelector (selectorInfo, selectorIndex, state, emit) {
   return html`
     <div class="row">
-      ${selectorInfo.tracks.map((media, index) =>
-        html`
+      ${selectorInfo.tracks.map((media, index) => {
+        return html`
           <div class="video-holder selectable"
           onclick=${() => (emit('show:setActiveVideo', {
             displayIndex: selectorIndex,
@@ -22,12 +37,22 @@ function trackSelector (selectorInfo, selectorIndex, state, emit) {
 
           ondrop=${(ev) => (emit('show:setVideoTrack', {displayIndex: selectorIndex, trackIndex: index}))}
           >
-            <div class="video"></div>
+            <div class="video">
+              ${Video({
+                htmlProps: {
+                  class: 'h-100 w-100'
+                },
+                index: 'selector'+'video'+selectorIndex+index,
+                track: media !== null  ? media.track : null,
+                id: media !== null ?  media.track.id : null
+              })}
+            </div>
             <div class="video-title ${selectorInfo.active === index ? 'selected' : ''}">
               ${media === null ? '' : state.peers.byId[media.peerId].nickname + '-' + media.name + '-' + media.track.kind}
             </div>
           </div>
         `
+      }
       )}
     </div>
   `

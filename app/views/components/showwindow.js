@@ -93,7 +93,7 @@ addRule("::-webkit-media-controls", {
 }
 
 ShowWindow.prototype.displayTrack = function(track){
-  console.log("CHANGING TRACK", track)
+//  console.log("CHANGING TRACK", track)
   var tracks = []
   tracks.push(track)
   var stream = new MediaStream(tracks) // stream must be initialized with array of tracks, even though documentation says otherwise
@@ -103,7 +103,7 @@ ShowWindow.prototype.displayTrack = function(track){
 
 // update stream if track id has changed
 ShowWindow.prototype.update = function (props) {
-  console.log("update win", props, this.props)
+//  console.log("update win", props, this.props)
 
   if(props.open===true){
     if(this.props.open !== true){

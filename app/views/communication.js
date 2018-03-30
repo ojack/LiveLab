@@ -2,6 +2,7 @@
 const html = require('choo/html')
 const VideoEl = require('./components/videocontainer.js')
 const AudioEl = require('./components/audiocontainer.js')
+// const Video = require('./components/funvideocontainer.js')
 
 const MAX_NUM_PEERS = 8 // can be changed (stub for initializing video containers)
 

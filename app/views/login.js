@@ -24,7 +24,7 @@ function loginView (state, emit) {
 
   return html`
   <div>
-  
+
     <div>
      ${defaultVid.render({
        htmlProps: {
