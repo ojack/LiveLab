@@ -2234,22 +2234,21 @@ var overall =  html`  <div  class="pa3 dib w-100">
 },{"./input.js":23,"choo/html":54}],20:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
-const VideoEl = require('./videocontainer.js')
-
-const displayVideo = new VideoEl()
+const Video = require('./funvideocontainer.js')
 
 module.exports = displayPreview
 
-function displayPreview (display, emit) {
+function displayPreview (display, index, emit) {
   var track = display.tracks[display.active]
   return html`
     <div class="display row">
       <div class="video-holder">
         <div class="video">
-        ${displayVideo.render({
+        ${Video({
           htmlProps: {
             class: 'h-100 w-100'
           },
+          index: 'display-video-' +index,
           track: track !== null  ? track.track : null,
           id: track !== null ?  track.track.id : null
         })}
@@ -2265,7 +2264,7 @@ function displayPreview (display, emit) {
   `
 }
 
-},{"./videocontainer.js":32,"choo/html":54}],21:[function(require,module,exports){
+},{"./funvideocontainer.js":22,"choo/html":54}],21:[function(require,module,exports){
 const Nano = require('nanocomponent')
 const css = 0
 const html = require('choo/html')
@@ -2856,22 +2855,8 @@ function slider(opts){
 'use strict'
 const html = require('choo/html')
 const Video = require('./funvideocontainer.js')
-const VideoEl = require('./videocontainer.js')
 
-// ${Video({
-//   htmlProps: {
-//     class: 'h-100 w-100'
-//   },
-//   index: 'selector'+'video'+selectorIndex+index,
-//   track: media !== null  ? media.track : null,
-//   id: media !== null ?  media.track.id : null
-// })}
 module.exports = trackSelector
-var selectorVids = []
-
-for(var i = 0; i < 4; i++){
-  selectorVids[i] = new VideoEl()
-}
 
 function trackSelector (selectorInfo, selectorIndex, state, emit) {
   return html`
@@ -2913,7 +2898,7 @@ function trackSelector (selectorInfo, selectorIndex, state, emit) {
   `
 }
 
-},{"./funvideocontainer.js":22,"./videocontainer.js":32,"choo/html":54}],32:[function(require,module,exports){
+},{"./funvideocontainer.js":22,"choo/html":54}],32:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -3250,7 +3235,7 @@ function showControlView (state, emit) {
     </div>
     <div class="content-scrollable">
       <div class="col-sticky">
-        ${state.show.displays.map((el) => displayPreview(el, emit))}
+        ${state.show.displays.map((el, index) => displayPreview(el, index, emit))}
       </div>
       <div class="col-scrollable">
          ${state.show.displays.map((el, index) => trackSelector(el, index, state, emit))}

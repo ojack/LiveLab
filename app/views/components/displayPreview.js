@@ -1,21 +1,20 @@
 'use strict'
 const html = require('choo/html')
-const VideoEl = require('./videocontainer.js')
-
-const displayVideo = new VideoEl()
+const Video = require('./funvideocontainer.js')
 
 module.exports = displayPreview
 
-function displayPreview (display, emit) {
+function displayPreview (display, index, emit) {
   var track = display.tracks[display.active]
   return html`
     <div class="display row">
       <div class="video-holder">
         <div class="video">
-        ${displayVideo.render({
+        ${Video({
           htmlProps: {
             class: 'h-100 w-100'
           },
+          index: 'display-video-' +index,
           track: track !== null  ? track.track : null,
           id: track !== null ?  track.track.id : null
         })}

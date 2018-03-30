@@ -1,22 +1,8 @@
 'use strict'
 const html = require('choo/html')
 const Video = require('./funvideocontainer.js')
-const VideoEl = require('./videocontainer.js')
 
-// ${Video({
-//   htmlProps: {
-//     class: 'h-100 w-100'
-//   },
-//   index: 'selector'+'video'+selectorIndex+index,
-//   track: media !== null  ? media.track : null,
-//   id: media !== null ?  media.track.id : null
-// })}
 module.exports = trackSelector
-var selectorVids = []
-
-for(var i = 0; i < 4; i++){
-  selectorVids[i] = new VideoEl()
-}
 
 function trackSelector (selectorInfo, selectorIndex, state, emit) {
   return html`

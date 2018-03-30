@@ -20,7 +20,7 @@ function showControlView (state, emit) {
     </div>
     <div class="content-scrollable">
       <div class="col-sticky">
-        ${state.show.displays.map((el) => displayPreview(el, emit))}
+        ${state.show.displays.map((el, index) => displayPreview(el, index, emit))}
       </div>
       <div class="col-scrollable">
          ${state.show.displays.map((el, index) => trackSelector(el, index, state, emit))}
