@@ -1989,10 +1989,11 @@ function communicationView (state, emit) {
       var audioId = state.peers.byId[peerIndex].defaultTracks.audio
       return html`
       <div class="fl w-50 pa1">
-        ${peerVids[index].render({
+        ${Video({
           htmlProps: {
             class: 'h-50 w-100'
           },
+          index: 'communication-' + index,
           track: (trackId in state.media.byId)  ? state.media.byId[trackId].track : null,
           id: (trackId in state.media.byId) ?  state.media.byId[trackId].track.id : null
         })}
@@ -2364,7 +2365,7 @@ const VideoContainer = component(function element (ctx, props) {
 
   var el = html`<video ${_htmlProps}></video>`
   ctx.el = el
-  // if (props.id && props.track) addTrackToElement(props.track, el)
+  if (props.id && props.track) addTrackToElement(props.track, el)
   // el.play().then(() => {
   //   console.log('returning', el.srcObject)
   //   reload(props.id)
@@ -2391,6 +2392,7 @@ VideoContainer.on('update', function (ctx, props) {
       }
     }
   } else {
+    console.log('removing null', props[0].id, ctx.prev.id)
     ctx.el.srcObject = null
   }
   ctx.prev = Object.assign({}, props[0])
@@ -3072,7 +3074,7 @@ function loginView (state, emit) {
        index: "login",
        track: state.devices.default.previewTracks.video,
        id: state.devices.default.previewTracks.video === null ? null : state.devices.default.previewTracks.video.id
-       })}
+     })}
     </div>
     <div class="vh-100 dt w-100 fixed top-0 left-0">
       <div class="dtc v-mid">

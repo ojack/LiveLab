@@ -27,10 +27,11 @@ function communicationView (state, emit) {
       var audioId = state.peers.byId[peerIndex].defaultTracks.audio
       return html`
       <div class="fl w-50 pa1">
-        ${peerVids[index].render({
+        ${Video({
           htmlProps: {
             class: 'h-50 w-100'
           },
+          index: 'communication-' + index,
           track: (trackId in state.media.byId)  ? state.media.byId[trackId].track : null,
           id: (trackId in state.media.byId) ?  state.media.byId[trackId].track.id : null
         })}

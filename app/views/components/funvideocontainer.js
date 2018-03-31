@@ -18,7 +18,7 @@ const VideoContainer = component(function element (ctx, props) {
 
   var el = html`<video ${_htmlProps}></video>`
   ctx.el = el
-  // if (props.id && props.track) addTrackToElement(props.track, el)
+  if (props.id && props.track) addTrackToElement(props.track, el)
   // el.play().then(() => {
   //   console.log('returning', el.srcObject)
   //   reload(props.id)
@@ -45,6 +45,7 @@ VideoContainer.on('update', function (ctx, props) {
       }
     }
   } else {
+    console.log('removing null', props[0].id, ctx.prev.id)
     ctx.el.srcObject = null
   }
   ctx.prev = Object.assign({}, props[0])
