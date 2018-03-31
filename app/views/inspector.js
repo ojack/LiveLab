@@ -1,7 +1,6 @@
 'use strict'
 const html = require('choo/html')
 const RTCInspector = require('./components/RTCInspector.js')
-const VideoEl = require('./components/videocontainer.js')
 const Video = require('./components/funvideocontainer.js')
 
 module.exports = inspectorComponent
