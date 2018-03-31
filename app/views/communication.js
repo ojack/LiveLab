@@ -1,6 +1,5 @@
 'use strict'
 const html = require('choo/html')
-const VideoEl = require('./components/videocontainer.js')
 const AudioEl = require('./components/audiocontainer.js')
 const Video = require('./components/funvideocontainer.js')
 
@@ -8,18 +7,15 @@ const MAX_NUM_PEERS = 8 // can be changed (stub for initializing video container
 
 module.exports = communicationView
 
-// initialize peer video holders
-var peerVids = []
 var peerAudio = []
 
 for (var i = 0; i < MAX_NUM_PEERS; i++) {
-  peerVids[i] = new VideoEl()
   peerAudio[i] = new AudioEl()
 }
 
 function communicationView (state, emit) {
   // create containers for each
-  var communicationContainers = peerVids.map(function (vidEl, index) {
+  var communicationContainers = peerAudio.map(function (vidEl, index) {
     var peerIndex = state.peers.all[index]
 
     if (peerIndex) {

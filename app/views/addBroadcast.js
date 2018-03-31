@@ -4,6 +4,7 @@ const html = require('choo/html')
 const Modal = require('./components/modal.js')
 const Dropdown = require('./components/dropdown.js')
 const VideoEl = require('./components/videocontainer.js')
+const Video = require('./components/funvideocontainer.js')
 const radioSelect = require('./components/radioSelect.js')
 const settingsUI = require('./components/settingsUI.js')
 const input = require('./components/input.js')
@@ -11,7 +12,7 @@ const input = require('./components/input.js')
 module.exports = addBroadcast
 
 const deviceDropdown = Dropdown()
-const previewVid = VideoEl()
+//const previewVid = VideoEl()
 
 function addBroadcast (devices, emit, showElement) {
   var bState = devices.addBroadcast
@@ -112,10 +113,11 @@ function addBroadcast (devices, emit, showElement) {
             <div class="f6 link dim ph3 pv2 mb2 dib white bg-gray pointer" onclick=${() => (emit('devices:updateBroadcastPreview', true))}>Update Preview</div>
             <div class="f6 link dim ph3 pv2 mb2 dib white bg-dark-pink pointer" onclick=${() => (emit('devices:addNewMediaToBroadcast'))}>Start Broadcast</div>
             <p class="red">${bState.errorMessage}</p>
-            ${previewVid.render({
+            ${Video({
               htmlProps: {
                 style: "max-width:300px;max-height:200px"
               },
+              index: "add-broadcast",
               track: bState.previewTrack,
               id: bState.previewTrack ?  bState.previewTrack.id : null
             })}

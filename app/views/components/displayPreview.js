@@ -1,6 +1,7 @@
 'use strict'
 const html = require('choo/html')
 const Video = require('./funvideocontainer.js')
+const slider = require('./verticalSlider.js')
 
 module.exports = displayPreview
 
@@ -9,7 +10,7 @@ function displayPreview (display, index, emit) {
   return html`
     <div class="display row">
       <div class="video-holder">
-        <div class="video">
+        <div class="video" style="opacity:${parseFloat(display.opacity)/100}">
         ${Video({
           htmlProps: {
             class: 'h-100 w-100'
@@ -23,9 +24,15 @@ function displayPreview (display, index, emit) {
           ${display.title}
         </div>
       </div>
-      <div class="slider-container">
-          <input type="range" orient="vertical" min="1" max="100" value=${display.opacity} class="slider" id="myRange">
-      </div>
+      ${slider({
+        value: display.opacity,
+        onChange: (e) => {
+        //  console.log("changing", val)
+          emit('show:updateDisplayProperty', {
+          displayIndex: index,
+          property: 'opacity',
+          value: e.target.value
+        })}})}
     </div>
   `
 }

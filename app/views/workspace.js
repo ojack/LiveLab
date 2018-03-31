@@ -37,7 +37,7 @@ function workspaceView (state, emit) {
 
     return html`
     <div class="f6 dt fw2 w-100 h-100 mw-100">
-        <div class="fl w-70-ns">
+        <div class="fl w-70-ns h-100 workspace">
           <div class = "tab-header">
             ${state.ui.tabs.map((el, index) =>
               html`<div

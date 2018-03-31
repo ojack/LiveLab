@@ -1,6 +1,10 @@
 html, body, div {
   /* background-color: #222; */
 }
+.workspace {
+  background-color: #222;
+}
+
 .tab-header {
   background-color: #000;
 }
@@ -9,12 +13,12 @@ html, body, div {
   padding: 4px;
   padding-left: 30px;
   padding-right: 30px;
-  color: #666;
+  color: #ccc;
   cursor: pointer;
 }
 
 .tab-element:hover {
-  color: #333;
+  color: #999;
 }
 .tab-element.selected {
   background-color: #222;
@@ -135,13 +139,13 @@ html, body, div {
   -webkit-transition: .2s;
   transition: opacity .2s;
   margin: 0px;
-  transform: rotate(90deg);
-  transform-origin: 100% 100%;
+  transform: rotate(-90deg);
+  transform-origin: 100% 0%;
   position: absolute;
   height: 20px;
   width: 116px;
   right: 20px;
-  bottom: 4px;
+  top: 0px;
 }
 
 .slider:hover {
