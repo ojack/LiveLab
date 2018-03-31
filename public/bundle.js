@@ -1964,7 +1964,7 @@ function addOscBroadcast (oscInfo, emit, showElement) {
 const html = require('choo/html')
 const VideoEl = require('./components/videocontainer.js')
 const AudioEl = require('./components/audiocontainer.js')
-// const Video = require('./components/funvideocontainer.js')
+const Video = require('./components/funvideocontainer.js')
 
 const MAX_NUM_PEERS = 8 // can be changed (stub for initializing video containers)
 
@@ -1989,13 +1989,14 @@ function communicationView (state, emit) {
       var audioId = state.peers.byId[peerIndex].defaultTracks.audio
       return html`
       <div class="fl w-50 pa1">
-        ${vidEl.render({
+        ${peerVids[index].render({
           htmlProps: {
             class: 'h-50 w-100'
           },
           track: (trackId in state.media.byId)  ? state.media.byId[trackId].track : null,
           id: (trackId in state.media.byId) ?  state.media.byId[trackId].track.id : null
         })}
+
         ${peerAudio[index].render({
           htmlProps: {},
           track: (trackId in state.media.byId)  ? state.media.byId[audioId].track : null,
@@ -2020,7 +2021,7 @@ function communicationView (state, emit) {
     `
 }
 
-},{"./components/audiocontainer.js":18,"./components/videocontainer.js":32,"choo/html":54}],17:[function(require,module,exports){
+},{"./components/audiocontainer.js":18,"./components/funvideocontainer.js":22,"./components/videocontainer.js":32,"choo/html":54}],17:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -3040,17 +3041,18 @@ function inspectorComponent (state, emit) {
 const html = require('choo/html')
 const input = require('./components/input.js')
 const Dropdown = require('./components/dropdown.js')
-const VideoEl = require('./components/videocontainer.js')
+//const VideoEl = require('./components/videocontainer.js')
+const Video = require('./components/funvideocontainer.js')
 // const Popup = require('./components/popup.js')
 
 module.exports = loginView
 
 const audioDropdown = Dropdown()
 const videoDropdown = Dropdown()
-const defaultVid = VideoEl()
+// const defaultVid = VideoEl()
 // const testPopup = Popup()
 // const demoVideo = Video()
-
+// ${defaultVid.render({
 function loginView (state, emit) {
 //   console.log("media ", state.media)
 
@@ -3063,10 +3065,11 @@ function loginView (state, emit) {
   <div>
 
     <div>
-     ${defaultVid.render({
+     ${Video({
        htmlProps: {
          class: 'w-100 h-100'
        },
+       index: "login",
        track: state.devices.default.previewTracks.video,
        id: state.devices.default.previewTracks.video === null ? null : state.devices.default.previewTracks.video.id
        })}
@@ -3133,7 +3136,7 @@ function loginView (state, emit) {
   }
 }
 
-},{"./components/dropdown.js":21,"./components/input.js":23,"./components/videocontainer.js":32,"choo/html":54}],36:[function(require,module,exports){
+},{"./components/dropdown.js":21,"./components/funvideocontainer.js":22,"./components/input.js":23,"choo/html":54}],36:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')

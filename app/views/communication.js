@@ -2,7 +2,7 @@
 const html = require('choo/html')
 const VideoEl = require('./components/videocontainer.js')
 const AudioEl = require('./components/audiocontainer.js')
-// const Video = require('./components/funvideocontainer.js')
+const Video = require('./components/funvideocontainer.js')
 
 const MAX_NUM_PEERS = 8 // can be changed (stub for initializing video containers)
 
@@ -27,13 +27,14 @@ function communicationView (state, emit) {
       var audioId = state.peers.byId[peerIndex].defaultTracks.audio
       return html`
       <div class="fl w-50 pa1">
-        ${vidEl.render({
+        ${peerVids[index].render({
           htmlProps: {
             class: 'h-50 w-100'
           },
           track: (trackId in state.media.byId)  ? state.media.byId[trackId].track : null,
           id: (trackId in state.media.byId) ?  state.media.byId[trackId].track.id : null
         })}
+
         ${peerAudio[index].render({
           htmlProps: {},
           track: (trackId in state.media.byId)  ? state.media.byId[audioId].track : null,
