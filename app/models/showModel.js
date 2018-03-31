@@ -37,6 +37,22 @@ function showModel (state, bus) {
     // bus.emit('render')
   })
 
+  bus.on('show:trackRemoved', (trackId) => {
+    console.log("previous state", state.show.displays)
+    state.show.displays = state.show.displays.map((display) => {
+      let obj = Object.assign({}, display)
+      obj.tracks = obj.tracks.map((media) => {
+        console.log("checking " + media + trackId)
+        if(media && media.trackId) return media.trackId == trackId ? null : media
+        return media
+      }
+      )
+      console.log("new tracks: ", obj.tracks)
+      return obj
+    })
+    console.log('new show state', state.show.displays)
+  })
+
   bus.on('show:clearVideoTrack', ({displayIndex, trackIndex}) => {
     state.show.displays[displayIndex].tracks[trackIndex] = null
     bus.emit('render')

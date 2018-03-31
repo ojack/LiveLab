@@ -7,7 +7,7 @@ const component = require('fun-component')
 const spawn = require('fun-component/spawn')
 
 const VideoContainer = component(function element (ctx, props) {
-  console.log('rendering', ctx, props)
+  // console.log('rendering', ctx, props)
   var defaultHtmlProps = {
     autoplay: 'autoplay',
     muted: 'muted'
@@ -32,7 +32,7 @@ VideoContainer.on('update', function (ctx, props) {
       }
     }
   } else {
-    console.log('removing null', props[0].id, ctx.prev.id)
+    // console.log('removing null', props[0].id, ctx.prev.id)
     ctx.el.srcObject = null
   }
   ctx.prev = Object.assign({}, props[0])
@@ -43,7 +43,7 @@ VideoContainer.on('update', function (ctx, props) {
 VideoContainer.use(spawn((props) => props.index))
 
 function addTrackToElement (track, element) {
-  console.log('adding ', track, element)
+  // console.log('adding ', track, element)
   var tracks = []
   tracks.push(track)
   var stream = new MediaStream(tracks) // stream must be initialized with array of tracks, even though documentation says otherwise

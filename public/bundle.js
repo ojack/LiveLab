@@ -904,7 +904,7 @@ function mediaModel (state, bus) {
   }, state.media)
 
   //  var ip = window.location.host
- 
+
   bus.on('media:addTracksFromStream', function (options) {
     var tracks = options.stream.getTracks()
     tracks.forEach(function (track) {
@@ -949,6 +949,7 @@ function mediaModel (state, bus) {
   })
 
   bus.on('media:removeTrack', function (trackId) {
+    bus.emit('show:trackRemoved', trackId)
     delete state.media.byId[trackId]
     var index = state.media.all.indexOf(trackId)
     if(trackId === state.ui.inspector.trackId){
@@ -1311,6 +1312,22 @@ function showModel (state, bus) {
     bus.emit('ui:dragClear')
   //  state.show.displays[displayIndex].tracks[trackIndex] = trackId
     // bus.emit('render')
+  })
+
+  bus.on('show:trackRemoved', (trackId) => {
+    console.log("previous state", state.show.displays)
+    state.show.displays = state.show.displays.map((display) => {
+      let obj = Object.assign({}, display)
+      obj.tracks = obj.tracks.map((media) => {
+        console.log("checking " + media + trackId)
+        if(media && media.trackId) return media.trackId == trackId ? null : media
+        return media
+      }
+      )
+      console.log("new tracks: ", obj.tracks)
+      return obj
+    })
+    console.log('new show state', state.show.displays)
   })
 
   bus.on('show:clearVideoTrack', ({displayIndex, trackIndex}) => {
@@ -2358,7 +2375,7 @@ const component = require('fun-component')
 const spawn = require('fun-component/spawn')
 
 const VideoContainer = component(function element (ctx, props) {
-  console.log('rendering', ctx, props)
+  // console.log('rendering', ctx, props)
   var defaultHtmlProps = {
     autoplay: 'autoplay',
     muted: 'muted'
@@ -2383,7 +2400,7 @@ VideoContainer.on('update', function (ctx, props) {
       }
     }
   } else {
-    console.log('removing null', props[0].id, ctx.prev.id)
+    // console.log('removing null', props[0].id, ctx.prev.id)
     ctx.el.srcObject = null
   }
   ctx.prev = Object.assign({}, props[0])
@@ -2394,7 +2411,7 @@ VideoContainer.on('update', function (ctx, props) {
 VideoContainer.use(spawn((props) => props.index))
 
 function addTrackToElement (track, element) {
-  console.log('adding ', track, element)
+  // console.log('adding ', track, element)
   var tracks = []
   tracks.push(track)
   var stream = new MediaStream(tracks) // stream must be initialized with array of tracks, even though documentation says otherwise
