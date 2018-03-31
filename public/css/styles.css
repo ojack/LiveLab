@@ -58,7 +58,7 @@ html, body, div {
 
 .col-scrollable {
   flex: 8;
-  overflow: scroll;
+/*  overflow: scroll;*/
   flex-direction: column;
   margin-left: 4px;
 }
