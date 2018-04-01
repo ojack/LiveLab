@@ -2,8 +2,17 @@
 const html = require('choo/html')
 const displayPreview = require('./components/displayPreview.js')
 const trackSelector = require('./components/trackSelector.js')
+const Window = require('./components/showwindow.js')
 
 module.exports = showControlView
+
+var NUM_WINDOWS = 3
+
+var show = []
+
+for(var i = 0; i < NUM_WINDOWS; i++){
+  show[i] = new Window()
+}
 
 function showControlView (state, emit) {
   return html`

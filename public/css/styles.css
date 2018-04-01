@@ -1,6 +1,10 @@
 html, body, div {
   /* background-color: #222; */
 }
+
+.active {
+  color: #0f4;
+}
 .workspace {
   background-color: #222;
 }
