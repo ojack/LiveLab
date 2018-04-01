@@ -71,6 +71,15 @@ function showModel (state, bus) {
     bus.emit('render')
   })
 
+  bus.on('show:removeDisplay', displayIndex => {
+    console.log('removing', displayIndex)
+    state.show.displays[displayIndex].window.remove()
+    state.show.displays.splice(displayIndex, 1)
+    //state.show.
+    console.log('displays', state.show.displays)
+    bus.emit('render')
+  })
+
   bus.on('show:setVideoTrack', ({displayIndex, trackIndex}) => {
     console.log(state.ui.dragging)
     if (state.ui.dragging !== null && state.ui.dragging.track.kind === 'video') {

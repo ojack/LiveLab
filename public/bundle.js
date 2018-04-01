@@ -596,6 +596,10 @@ class Window {
     this.win.document.title = 'heyy youu'
   }
 
+  remove() {
+    this.close()
+  }
+
   close() {
     if(this.win) if(!this.win.closed) this.win.close()
   }
@@ -1485,6 +1489,15 @@ function showModel (state, bus) {
       display.isOpen = true
     }
     updateWindows()
+    bus.emit('render')
+  })
+
+  bus.on('show:removeDisplay', displayIndex => {
+    console.log('removing', displayIndex)
+    state.show.displays[displayIndex].window.remove()
+    state.show.displays.splice(displayIndex, 1)
+    //state.show.
+    console.log('displays', state.show.displays)
     bus.emit('render')
   })
 
@@ -2476,7 +2489,13 @@ function displayPreview (display, index, emit) {
           </span>
           <i
             onclick=${()=>(emit('show:toggleWindow', index))}
-            style="margin-left:6px" class="far fa-clone dim pointer ${display.isOpen?" active": ""}" title="${display.isOpen? 'close ': 'open '} window"></i>
+            style="margin-left:6px" class="far fa-clone dim pointer ${display.isOpen?" active": ""}" title="${display.isOpen? 'close ': 'open '} window">
+          </i>
+          <i
+            onclick=${()=>(emit('show:removeDisplay', index))}
+            style="margin-left:2px"
+            class="far fa-times-circle dim pointer" title="remove display">
+          </i>
         </div>
       </div>
       ${slider({

@@ -35,7 +35,13 @@ function displayPreview (display, index, emit) {
           </span>
           <i
             onclick=${()=>(emit('show:toggleWindow', index))}
-            style="margin-left:6px" class="far fa-clone dim pointer ${display.isOpen?" active": ""}" title="${display.isOpen? 'close ': 'open '} window"></i>
+            style="margin-left:6px" class="far fa-clone dim pointer ${display.isOpen?" active": ""}" title="${display.isOpen? 'close ': 'open '} window">
+          </i>
+          <i
+            onclick=${()=>(emit('show:removeDisplay', index))}
+            style="margin-left:2px"
+            class="far fa-times-circle dim pointer" title="remove display">
+          </i>
         </div>
       </div>
       ${slider({

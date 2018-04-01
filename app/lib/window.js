@@ -129,6 +129,10 @@ class Window {
     this.win.document.title = 'heyy youu'
   }
 
+  remove() {
+    this.close()
+  }
+
   close() {
     if(this.win) if(!this.win.closed) this.win.close()
   }
