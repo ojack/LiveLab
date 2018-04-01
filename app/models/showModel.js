@@ -8,7 +8,7 @@ function showModel (state, bus) {
     displays: []
   }, state.show)
 
-  addDisplay({title: 'test title'})
+  addDisplay()
 //  addDisplay({title: 'test22 title'})
 
   updateWindows()

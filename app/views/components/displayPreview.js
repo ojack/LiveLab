@@ -21,7 +21,18 @@ function displayPreview (display, index, emit) {
         })}
         </div>
         <div class="video-title display-title">
-          <span contenteditable="true">${display.title}</span>
+          <span
+            contenteditable="true"
+            onblur=${(e)=> {
+              console.log(e, e.target.value)
+              emit('show:updateDisplayProperty', {
+              displayIndex: index,
+              property: 'title',
+              value: e.target.innerHTML
+            })
+            }}>
+            ${display.title}
+          </span>
           <i
             onclick=${()=>(emit('show:toggleWindow', index))}
             style="margin-left:6px" class="far fa-clone dim pointer ${display.isOpen?" active": ""}" title="${display.isOpen? 'close ': 'open '} window"></i>
