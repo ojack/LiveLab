@@ -2462,7 +2462,7 @@ function displayPreview (display, index, emit) {
         })}
         </div>
         <div class="video-title display-title">
-          <span>${display.title}</span>
+          <span contenteditable="true">${display.title}</span>
           <i
             onclick=${()=>(emit('show:toggleWindow', index))}
             style="margin-left:6px" class="far fa-clone dim pointer ${display.isOpen?" active": ""}" title="${display.isOpen? 'close ': 'open '} window"></i>
