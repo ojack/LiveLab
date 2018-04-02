@@ -7,12 +7,15 @@ module.exports = uiModel
 
 function uiModel (state, bus) {
   state.ui = xtend({
+    tabs: ['Communication', 'Show Control'],
+    selectedTab: 0,
     communication: {},
     inspector: {
       trackId: null,
       pc: null, // peer connection to be inspected
       selectedTab: 'track' // which inspector tab is currently open
     },
+    dragging: null,
     windows:
     [
       {
@@ -35,6 +38,22 @@ function uiModel (state, bus) {
       current: ''
     }
   }, state.ui)
+
+  bus.on('ui:dragStart', (mediaId) => {
+    var media = state.media.byId[mediaId]
+    state.ui.dragging = media
+    bus.emit('render')
+  })
+
+  bus.on('ui:dragClear', () => {
+    state.dragging = null
+    bus.emit('render')
+  })
+
+  bus.on('ui:setTab', (index) => {
+    state.ui.selectedTab = index
+    bus.emit('render')
+  })
 
   bus.on('ui:addPeer', function (peerId) {
     var vol = 1.0
@@ -68,7 +87,6 @@ function uiModel (state, bus) {
     state.ui.windows[index].open = false
     bus.emit('render')
   })
-
 
   // bus.on('ui:toggleWindow', function(bool) {
   //   //if passed a variable, use variable. Otherwise, toggle current value
@@ -123,27 +141,22 @@ function uiModel (state, bus) {
     bus.emit('render')
   })
 
-   bus.on('ui:receivedNewChat', function (chatObj) {
-     appendNewChat(chatObj)
-     bus.emit('render')
-   })
+  bus.on('ui:receivedNewChat', function (chatObj) {
+    appendNewChat(chatObj)
+    bus.emit('render')
+  })
 
-   bus.on('ui:updateChat', function (text) {
-     state.ui.chat.current = text
-   })
+  bus.on('ui:updateChat', function (text) {
+    state.ui.chat.current = text
+  })
 
-   function appendNewChat(chatObj) {
-      console.log("appending chat", chatObj)		     //  console.log(chatObj)
-      // state.ui.chat.messages.push(chatObj)
-      if(state.peers.byId[chatObj.peerId]) {
-        console.log(state.ui.chat)
-        chatObj.nickname = state.peers.byId[chatObj.peerId].nickname
-        state.ui.chat.messages.push(chatObj)
-      } else {
-        console.log("USER NOT FOUND", chatObj)
-      }
-
+  function appendNewChat (chatObj) {
+    if (state.peers.byId[chatObj.peerId]) {
+      console.log(state.ui.chat)
+      chatObj.nickname = state.peers.byId[chatObj.peerId].nickname
+      state.ui.chat.messages.push(chatObj)
+    } else {
+      console.log('USER NOT FOUND', chatObj)
     }
-
-
- }
+  }
+}

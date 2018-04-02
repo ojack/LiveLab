@@ -3,20 +3,14 @@
 const html = require('choo/html')
 const input = require('./components/input.js')
 const Dropdown = require('./components/dropdown.js')
-const VideoEl = require('./components/videocontainer.js')
-// const Popup = require('./components/popup.js')
+const Video = require('./components/funvideocontainer.js')
 
 module.exports = loginView
 
 const audioDropdown = Dropdown()
 const videoDropdown = Dropdown()
-const defaultVid = VideoEl()
-// const testPopup = Popup()
-// const demoVideo = Video()
 
 function loginView (state, emit) {
-//   console.log("media ", state.media)
-
   var audioinput = state.devices.audioinput
   var videoinput = state.devices.videoinput
   var defaultAudio = state.devices.default.inputDevices.audio
@@ -24,15 +18,15 @@ function loginView (state, emit) {
 
   return html`
   <div>
-  
     <div>
-     ${defaultVid.render({
+     ${Video({
        htmlProps: {
          class: 'w-100 h-100'
        },
+       index: "login",
        track: state.devices.default.previewTracks.video,
        id: state.devices.default.previewTracks.video === null ? null : state.devices.default.previewTracks.video.id
-       })}
+     })}
     </div>
     <div class="vh-100 dt w-100 fixed top-0 left-0">
       <div class="dtc v-mid">

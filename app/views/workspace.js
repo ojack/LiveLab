@@ -2,6 +2,7 @@
 
 const html = require('choo/html')
 const communication = require('./communication.js')
+const showControl = require('./showControl.js')
 // const allVideos = require('./allVideos.js')
 const mediaList = require('./mediaList.js')
 const panel = require('./components/panel.js')
@@ -36,9 +37,19 @@ function workspaceView (state, emit) {
 
     return html`
     <div class="f6 dt fw2 w-100 h-100 mw-100">
-      <div class="fl w-70-ns w-100 pa2">
-        ${communication(state, emit)}
-      </div>
+        <div class="fl w-70-ns h-100 workspace">
+          <div class = "tab-header">
+            ${state.ui.tabs.map((el, index) =>
+              html`<div
+                    class="tab-element ${state.ui.selectedTab === index ? 'selected' : ''}"
+                    onclick=${() => (emit('ui:setTab', index))}
+                    >${el}</div>`
+            )}
+          </div>
+          <div class="w-100 pa2">
+            ${state.ui.selectedTab === 0 ? communication(state, emit) : showControl(state, emit)}
+          </div>
+        </div>
       <div class="fl w-30-ns w-100 mw6 h-100">
         ${panel(
           {
@@ -61,17 +72,6 @@ function workspaceView (state, emit) {
              }
            )}
          ${oscEl}
-         ${panel(
-            {
-              htmlProps: {
-                class: "w-100"
-              },
-              contents: windowManager(state, emit),
-              closable: false,
-              header:   "Output"
-            }
-          )}
-
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
       ${ConfigureOsc(state.osc.configureForwarding, emit, state.osc.configureForwarding.visible)}

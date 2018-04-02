@@ -1,24 +1,21 @@
 'use strict'
 const html = require('choo/html')
-const VideoEl = require('./components/videocontainer.js')
 const AudioEl = require('./components/audiocontainer.js')
+const Video = require('./components/funvideocontainer.js')
 
 const MAX_NUM_PEERS = 8 // can be changed (stub for initializing video containers)
 
 module.exports = communicationView
 
-// initialize peer video holders
-var peerVids = []
 var peerAudio = []
 
 for (var i = 0; i < MAX_NUM_PEERS; i++) {
-  peerVids[i] = new VideoEl()
   peerAudio[i] = new AudioEl()
 }
 
 function communicationView (state, emit) {
   // create containers for each
-  var communicationContainers = peerVids.map(function (vidEl, index) {
+  var communicationContainers = peerAudio.map(function (vidEl, index) {
     var peerIndex = state.peers.all[index]
 
     if (peerIndex) {
@@ -26,17 +23,17 @@ function communicationView (state, emit) {
       var audioId = state.peers.byId[peerIndex].defaultTracks.audio
       return html`
       <div class="fl w-50 pa1">
-        ${vidEl.render({
+        ${Video({
           htmlProps: {
             class: 'h-50 w-100'
           },
+          index: 'communication-' + index,
           track: (trackId in state.media.byId)  ? state.media.byId[trackId].track : null,
           id: (trackId in state.media.byId) ?  state.media.byId[trackId].track.id : null
         })}
-        ${peerAudio[index].render({
-          htmlProps: {
 
-          },
+        ${peerAudio[index].render({
+          htmlProps: {},
           track: (trackId in state.media.byId)  ? state.media.byId[audioId].track : null,
           id: (trackId in state.media.byId) ?  state.media.byId[audioId].track.id : null,
           volume: state.ui.communication[peerIndex].volume

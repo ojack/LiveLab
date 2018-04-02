@@ -26,7 +26,7 @@ function mediaModel (state, bus) {
   }, state.media)
 
   //  var ip = window.location.host
- 
+
   bus.on('media:addTracksFromStream', function (options) {
     var tracks = options.stream.getTracks()
     tracks.forEach(function (track) {
@@ -71,6 +71,7 @@ function mediaModel (state, bus) {
   })
 
   bus.on('media:removeTrack', function (trackId) {
+    bus.emit('show:trackRemoved', trackId)
     delete state.media.byId[trackId]
     var index = state.media.all.indexOf(trackId)
     if(trackId === state.ui.inspector.trackId){
