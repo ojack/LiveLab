@@ -126,7 +126,7 @@ class Window {
   // to do
   setTitle(title) {
     console.log('set title')
-    this.win.document.title = 'heyy youu'
+    this.win.document.title = title
   }
 
   remove() {

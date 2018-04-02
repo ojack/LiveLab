@@ -30,9 +30,7 @@ function displayPreview (display, index, emit) {
               property: 'title',
               value: e.target.innerHTML
             })
-            }}>
-            ${display.title}
-          </span>
+            }}>${display.title}</span>
           <i
             onclick=${()=>(emit('show:toggleWindow', index))}
             style="margin-left:6px" class="far fa-clone dim pointer ${display.isOpen?" active": ""}" title="${display.isOpen? 'close ': 'open '} window">

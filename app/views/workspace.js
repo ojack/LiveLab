@@ -72,17 +72,6 @@ function workspaceView (state, emit) {
              }
            )}
          ${oscEl}
-         ${panel(
-            {
-              htmlProps: {
-                class: "w-100"
-              },
-              contents: windowManager(state, emit),
-              closable: false,
-              header:   "Output"
-            }
-          )}
-
       </div>
       ${AddBroadcast(state.devices, emit, state.devices.addBroadcast.active)}
       ${ConfigureOsc(state.osc.configureForwarding, emit, state.osc.configureForwarding.visible)}

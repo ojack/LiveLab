@@ -2,31 +2,16 @@
 const html = require('choo/html')
 const displayPreview = require('./components/displayPreview.js')
 const trackSelector = require('./components/trackSelector.js')
-const Window = require('./components/showwindow.js')
-
-module.exports = showControlView
-
-var NUM_WINDOWS = 3
-
-var show = []
-
-for(var i = 0; i < NUM_WINDOWS; i++){
-  show[i] = new Window()
-}
+const showControlHeader = require('./components/showControlHeader.js')
 
 function showControlView (state, emit) {
   return html`
   <div class="flex-container">
-    <div class="header">
-      <div class="col-sticky">
-        <div class="header-text"> Displays </div>
-      </div>
-      <div class="col-scrollable">
-        <div class="header-text">
-          Video streams (Drag from shared media to add to workspace)
-        </div>
-      </div>
-    </div>
+    ${showControlHeader({
+      title: 'Displays',
+      subtitle: 'Video streams (Drag from shared media to add to workspace)',
+      showAddButton: true
+    }, emit)}
     <div class="content-scrollable">
       <div class="col-sticky">
         ${state.show.displays.map((el, index) => displayPreview(el, index, emit))}
@@ -38,3 +23,5 @@ function showControlView (state, emit) {
   </div>
   `
 }
+
+module.exports = showControlView

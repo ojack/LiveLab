@@ -145,7 +145,7 @@ function devicesModel (state, bus) {
         state.devices.addBroadcast.previewTrack = null
       }
     }
-  
+
     bus.emit('render')
   })
 
@@ -314,6 +314,7 @@ function devicesModel (state, bus) {
       if (state.devices.audioinput.all.length > 0) setDefaultMedia(state.devices.audioinput.all[0], "audio")
       if (state.devices.videoinput.all.length > 0) setDefaultMedia(state.devices.videoinput.all[0], "video")
 
+      bus.emit('show:setAudioOutput', state.devices.audiooutput)
       bus.emit('render')
     }).catch(console.log.bind(console)) // TO DO:: display error to user
   }
