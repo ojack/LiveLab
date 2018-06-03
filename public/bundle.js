@@ -65,7 +65,7 @@ app.route('', require('./views/main.js'))
 
 app.mount('body div')
 
-},{"./models/devicesModel.js":7,"./models/mediaModel.js":8,"./models/oscModel.js":9,"./models/peersModel.js":10,"./models/showModel.js":12,"./models/uiModel.js":13,"./models/userModel.js":14,"./views/main.js":38,"choo":56,"choo-expose":53,"choo-log":54}],2:[function(require,module,exports){
+},{"./models/devicesModel.js":7,"./models/mediaModel.js":8,"./models/oscModel.js":9,"./models/peersModel.js":10,"./models/showModel.js":12,"./models/uiModel.js":13,"./models/userModel.js":14,"./views/main.js":38,"choo":57,"choo-expose":54,"choo-log":55}],2:[function(require,module,exports){
 /* global nw */
 // Server side module for managing osc connections. Only works with nw.js
 
@@ -143,7 +143,7 @@ LiveLabOSC.prototype.listenOnPort = function (port) {
 
 module.exports = LiveLabOSC
 
-},{"events":79,"inherits":94}],3:[function(require,module,exports){
+},{"events":80,"inherits":101}],3:[function(require,module,exports){
 // Module for handling connections to multiple peers
 
 var io = require('socket.io-client')
@@ -277,7 +277,7 @@ MultiPeer.prototype._attachPeerEvents = function (p, _id) {
 
 module.exports = MultiPeer
 
-},{"events":79,"inherits":94,"simple-peer":149,"socket.io-client":150}],4:[function(require,module,exports){
+},{"events":80,"inherits":101,"simple-peer":156,"socket.io-client":157}],4:[function(require,module,exports){
 var adapter = require('webrtc-adapter');
 
 // cache for constraints and callback
@@ -464,7 +464,7 @@ typeof window !== 'undefined' && window.addEventListener('message', function (ev
     }
 });
 
-},{"webrtc-adapter":168}],5:[function(require,module,exports){
+},{"webrtc-adapter":175}],5:[function(require,module,exports){
 class Window {
   constructor({ isOpen = false, track, onClose, title, fullscreen = false, opacity}) {
     this.isOpen = open
@@ -1020,7 +1020,7 @@ function getConstraintsFromSettings(settings, callback) {
   }
 }
 
-},{"./availableConstraints.json":6,"./screenmedia.js":11,"enumerate-devices":78,"getusermedia":84}],8:[function(require,module,exports){
+},{"./availableConstraints.json":6,"./screenmedia.js":11,"enumerate-devices":79,"getusermedia":91}],8:[function(require,module,exports){
 // MEDIA::
 // For now: each peer only broadcasts one stream, each stream has an unlimited number of tracks corresponding to each audio and video device + specific constraint settings.
 // (i.e. the same device could broadcast multiple tracks at different framerates/bandwidths/ etc.)
@@ -2029,7 +2029,7 @@ function updateLocalInfo(id){
   }
 }
 
-},{"./../lib/MultiPeer.js":3,"shortid":139}],15:[function(require,module,exports){
+},{"./../lib/MultiPeer.js":3,"shortid":146}],15:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2168,7 +2168,7 @@ function addBroadcast (devices, emit, showElement) {
 
 }
 
-},{"./components/dropdown.js":22,"./components/funvideocontainer.js":23,"./components/input.js":24,"./components/modal.js":25,"./components/radioSelect.js":28,"./components/settingsUI.js":29,"choo/html":55}],16:[function(require,module,exports){
+},{"./components/dropdown.js":22,"./components/funvideocontainer.js":23,"./components/input.js":24,"./components/modal.js":25,"./components/radioSelect.js":28,"./components/settingsUI.js":29,"choo/html":56}],16:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2202,7 +2202,7 @@ function addOscBroadcast (oscInfo, emit, showElement) {
     `
 }
 
-},{"./components/input.js":24,"./components/modal.js":25,"choo/html":55}],17:[function(require,module,exports){
+},{"./components/input.js":24,"./components/modal.js":25,"choo/html":56}],17:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const AudioEl = require('./components/audiocontainer.js')
@@ -2261,7 +2261,7 @@ function communicationView (state, emit) {
     `
 }
 
-},{"./components/audiocontainer.js":19,"./components/funvideocontainer.js":23,"choo/html":55}],18:[function(require,module,exports){
+},{"./components/audiocontainer.js":19,"./components/funvideocontainer.js":23,"choo/html":56}],18:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2362,7 +2362,7 @@ RTCInspector.prototype.stopMonitoring = function() {
   clearInterval(this.interval)
 }
 
-},{"choo/html":55,"nanocomponent":101,"xtend":177}],19:[function(require,module,exports){
+},{"choo/html":56,"nanocomponent":109,"xtend":184}],19:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2427,7 +2427,7 @@ AudioContainer.prototype.update = function (props) {
   return false
 }
 
-},{"choo/html":55,"nanocomponent":101,"xtend":177}],20:[function(require,module,exports){
+},{"choo/html":56,"nanocomponent":109,"xtend":184}],20:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const input = require('./input.js')
@@ -2472,7 +2472,7 @@ var overall =  html`  <div  class="pa3 dib w-100">
     return overall
 }
 
-},{"./input.js":24,"choo/html":55}],21:[function(require,module,exports){
+},{"./input.js":24,"choo/html":56}],21:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const Video = require('./funvideocontainer.js')
@@ -2530,7 +2530,7 @@ function displayPreview (display, index, emit) {
   `
 }
 
-},{"./funvideocontainer.js":23,"./verticalSlider.js":34,"choo/html":55}],22:[function(require,module,exports){
+},{"./funvideocontainer.js":23,"./verticalSlider.js":34,"choo/html":56}],22:[function(require,module,exports){
 const Nano = require('nanocomponent')
 const css = 0
 const html = require('choo/html')
@@ -2608,7 +2608,7 @@ Dropdown.prototype.update = function (props) {
 
 }
 
-},{"choo/html":55,"juliangruber-shallow-equal/objects":97,"nanocomponent":101,"sheetify/insert":138,"xtend":177}],23:[function(require,module,exports){
+},{"choo/html":56,"juliangruber-shallow-equal/objects":104,"nanocomponent":109,"sheetify/insert":145,"xtend":184}],23:[function(require,module,exports){
 /* global MediaStream */
 'use strict'
 
@@ -2663,7 +2663,7 @@ function addTrackToElement (track, element) {
 
 module.exports = VideoContainer
 
-},{"choo/html":55,"fun-component":81,"fun-component/spawn":82,"xtend":177}],24:[function(require,module,exports){
+},{"choo/html":56,"fun-component":82,"fun-component/spawn":89,"xtend":184}],24:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2691,7 +2691,7 @@ function inputElement (name, defaultText, opts) {
   </div>`
 }
 
-},{"choo/html":55,"xtend":177}],25:[function(require,module,exports){
+},{"choo/html":56,"xtend":184}],25:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2727,7 +2727,7 @@ function Modal (opts) {
   }
 }
 
-},{"./panel.js":27,"assert":45,"choo/html":55,"xtend":177}],26:[function(require,module,exports){
+},{"./panel.js":27,"assert":45,"choo/html":56,"xtend":184}],26:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 
@@ -2808,7 +2808,7 @@ function oscView (state, emit) {
   </div>`
 }
 
-},{"choo/html":55}],27:[function(require,module,exports){
+},{"choo/html":56}],27:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2849,7 +2849,7 @@ function Panel (opts) {
 
 }
 
-},{"assert":45,"choo/html":55,"xtend":177}],28:[function(require,module,exports){
+},{"assert":45,"choo/html":56,"xtend":184}],28:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2866,7 +2866,7 @@ function radioSelect(opts){
   </div>`
 }
 
-},{"choo/html":55}],29:[function(require,module,exports){
+},{"choo/html":56}],29:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -2935,8 +2935,7 @@ function createBooleanElement(label, obj, callback){
   })
 }
 
-},{"./radioSelect.js":28,"./slider.js":32,"choo/html":55,"xtend":177}],30:[function(require,module,exports){
-'use strict'
+},{"./radioSelect.js":28,"./slider.js":32,"choo/html":56,"xtend":184}],30:[function(require,module,exports){
 const html = require('choo/html')
 
 function showControlHeader ({
@@ -2948,7 +2947,7 @@ function showControlHeader ({
       <i
         style="margin-left:3px"
         class="fas fa-plus-circle dim pointer"
-        onclick=${()=> emit('show:addDisplay')}
+        onclick=${() => emit('show:addDisplay')}
         title="add new display"
       >
       </i>
@@ -2973,7 +2972,7 @@ function showControlHeader ({
 
 module.exports = showControlHeader
 
-},{"choo/html":55}],31:[function(require,module,exports){
+},{"choo/html":56}],31:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -3125,7 +3124,7 @@ ShowWindow.prototype.update = function (props) {
   return false
 }
 
-},{"choo/html":55,"nanocomponent":101,"xtend":177}],32:[function(require,module,exports){
+},{"choo/html":56,"nanocomponent":109,"xtend":184}],32:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -3141,7 +3140,7 @@ function slider(opts){
   </div>`
 }
 
-},{"choo/html":55}],33:[function(require,module,exports){
+},{"choo/html":56}],33:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const Video = require('./funvideocontainer.js')
@@ -3188,7 +3187,7 @@ function trackSelector (selectorInfo, selectorIndex, state, emit) {
   `
 }
 
-},{"./funvideocontainer.js":23,"choo/html":55}],34:[function(require,module,exports){
+},{"./funvideocontainer.js":23,"choo/html":56}],34:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 
@@ -3209,7 +3208,7 @@ function verticalSlider ({min = 1, max = 100, value, onChange}) {
   `
 }
 
-},{"choo/html":55}],35:[function(require,module,exports){
+},{"choo/html":56}],35:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -3243,7 +3242,7 @@ function configureOscForwarding (oscInfo, emit, showElement) {
     `
 }
 
-},{"./components/input.js":24,"./components/modal.js":25,"choo/html":55}],36:[function(require,module,exports){
+},{"./components/input.js":24,"./components/modal.js":25,"choo/html":56}],36:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const RTCInspector = require('./components/RTCInspector.js')
@@ -3262,9 +3261,9 @@ module.exports = inspectorComponent
 //const previewVid = VideoEl()
 
 function inspectorComponent (state, emit) {
-
+  var media = state.media.byId[state.ui.inspector.trackId]
   return  html`<div class="overflow-scroll pa0">
-    ${state.media.byId[state.ui.inspector.trackId].track.kind==='video' ? Video({
+    ${media.track.kind==='video' ? Video({
       htmlProps: {
         class: 'h4 w4'
       },
@@ -3272,11 +3271,12 @@ function inspectorComponent (state, emit) {
       track: (state.ui.inspector.trackId in state.media.byId)  ? state.media.byId[state.ui.inspector.trackId].track : null,
       id: (state.ui.inspector.trackId in state.media.byId) ?  state.media.byId[state.ui.inspector.trackId].track.id : null
     }) : null }
+  ${ media.peerId ===  state.user.uuid ? html`<div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>Hangup</div>` : null }
 
   </div>`
 }
 
-},{"./components/RTCInspector.js":18,"./components/funvideocontainer.js":23,"choo/html":55}],37:[function(require,module,exports){
+},{"./components/RTCInspector.js":18,"./components/funvideocontainer.js":23,"choo/html":56}],37:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -3369,7 +3369,7 @@ function loginView (state, emit) {
   }
 }
 
-},{"./components/dropdown.js":22,"./components/funvideocontainer.js":23,"./components/input.js":24,"choo/html":55}],38:[function(require,module,exports){
+},{"./components/dropdown.js":22,"./components/funvideocontainer.js":23,"./components/input.js":24,"choo/html":56}],38:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -3396,7 +3396,7 @@ function mainView (state, emit) {
   }
 }
 
-},{"./login.js":37,"./workspace.js":42,"choo/html":55}],39:[function(require,module,exports){
+},{"./login.js":37,"./workspace.js":42,"choo/html":56}],39:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const inspector = require('./inspector.js')
@@ -3448,7 +3448,7 @@ function mediaListView (state, emit) {
     `
 }
 
-},{"./components/panel.js":27,"./inspector.js":36,"choo/html":55}],40:[function(require,module,exports){
+},{"./components/panel.js":27,"./inspector.js":36,"choo/html":56}],40:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const displayPreview = require('./components/displayPreview.js')
@@ -3477,7 +3477,7 @@ function showControlView (state, emit) {
 
 module.exports = showControlView
 
-},{"./components/displayPreview.js":21,"./components/showControlHeader.js":30,"./components/trackSelector.js":33,"choo/html":55}],41:[function(require,module,exports){
+},{"./components/displayPreview.js":21,"./components/showControlHeader.js":30,"./components/trackSelector.js":33,"choo/html":56}],41:[function(require,module,exports){
 'use strict'
 const html = require('choo/html')
 const Window = require('./components/showwindow.js')
@@ -3556,7 +3556,7 @@ function windowManagerView (state, emit) {
     `
 }
 
-},{"./components/dropdown.js":22,"./components/showwindow.js":31,"choo/html":55}],42:[function(require,module,exports){
+},{"./components/dropdown.js":22,"./components/showwindow.js":31,"choo/html":56}],42:[function(require,module,exports){
 'use strict'
 
 const html = require('choo/html')
@@ -3639,7 +3639,7 @@ function workspaceView (state, emit) {
     `
 }
 
-},{"./addBroadcast.js":15,"./addOscBroadcast":16,"./communication.js":17,"./components/chat.js":20,"./components/osc.js":26,"./components/panel.js":27,"./configureOscForwarding":35,"./mediaList.js":39,"./showControl.js":40,"./windowmanager.js":41,"choo/html":55}],43:[function(require,module,exports){
+},{"./addBroadcast.js":15,"./addOscBroadcast":16,"./communication.js":17,"./components/chat.js":20,"./components/osc.js":26,"./components/panel.js":27,"./configureOscForwarding":35,"./mediaList.js":39,"./showControl.js":40,"./windowmanager.js":41,"choo/html":56}],43:[function(require,module,exports){
 module.exports = after
 
 function after(count, callback, err_cb) {
@@ -4194,7 +4194,7 @@ var objectKeys = Object.keys || function (obj) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"util/":164}],46:[function(require,module,exports){
+},{"util/":172}],46:[function(require,module,exports){
 
 /**
  * Expose `Backoff`.
@@ -4621,7 +4621,7 @@ module.exports = hyperx(belCreateElement, {comments: true})
 module.exports.default = module.exports
 module.exports.createElement = belCreateElement
 
-},{"global/document":85,"hyperx":91,"on-load":118}],50:[function(require,module,exports){
+},{"global/document":92,"hyperx":98,"on-load":125}],50:[function(require,module,exports){
 (function (global){
 /**
  * Create a blob builder even when vendor prefixes exist
@@ -4724,10 +4724,196 @@ module.exports = (function() {
 },{}],51:[function(require,module,exports){
 
 },{}],52:[function(require,module,exports){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],53:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
- * @author   Feross Aboukhadijeh <https://feross.org>
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
  * @license  MIT
  */
 /* eslint-disable no-proto */
@@ -6439,7 +6625,7 @@ function numberIsNaN (obj) {
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-},{"base64-js":48,"ieee754":92}],53:[function(require,module,exports){
+},{"base64-js":48,"ieee754":99}],54:[function(require,module,exports){
 var removeItems = require('remove-array-items')
 var onIdle = require('on-idle')
 var stateCopy = require('state-copy')
@@ -6505,7 +6691,7 @@ function Event (name, data) {
   this.data = data
 }
 
-},{"on-idle":117,"plucker":121,"remove-array-items":135,"state-copy":159}],54:[function(require,module,exports){
+},{"on-idle":124,"plucker":129,"remove-array-items":142,"state-copy":166}],55:[function(require,module,exports){
 var nanologger = require('nanologger')
 
 module.exports = logger
@@ -6578,10 +6764,10 @@ function logger (opts) {
   }
 }
 
-},{"nanologger":109}],55:[function(require,module,exports){
+},{"nanologger":115}],56:[function(require,module,exports){
 module.exports = require('bel')
 
-},{"bel":49}],56:[function(require,module,exports){
+},{"bel":49}],57:[function(require,module,exports){
 var documentReady = require('document-ready')
 var nanohistory = require('nanohistory')
 var nanorouter = require('nanorouter')
@@ -6721,7 +6907,7 @@ function createLocation () {
   return pathname + hash
 }
 
-},{"assert":45,"document-ready":65,"nanobus":100,"nanohistory":107,"nanohref":108,"nanomorph":110,"nanomount":113,"nanoraf":114,"nanorouter":115}],57:[function(require,module,exports){
+},{"assert":45,"document-ready":65,"nanobus":108,"nanohistory":113,"nanohref":114,"nanomorph":116,"nanomount":119,"nanoraf":120,"nanorouter":121}],58:[function(require,module,exports){
 /**
  * Slice reference.
  */
@@ -6746,7 +6932,7 @@ module.exports = function(obj, fn){
   }
 };
 
-},{}],58:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -6911,7 +7097,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],59:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 
 module.exports = function(a, b){
   var fn = function(){};
@@ -6919,7 +7105,7 @@ module.exports = function(a, b){
   a.prototype = new fn;
   a.prototype.constructor = a;
 };
-},{}],60:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 'use strict';
 module.exports = input => {
 	const el = document.createElement('textarea');
@@ -6934,7 +7120,7 @@ module.exports = input => {
 	el.style.left = '-9999px';
 	el.style.fontSize = '12pt'; // Prevent zooming on iOS
 
-	const selection = document.getSelection();
+	const selection = getSelection();
 	let originalRange = false;
 	if (selection.rangeCount > 0) {
 		originalRange = selection.getRangeAt(0);
@@ -6942,10 +7128,6 @@ module.exports = input => {
 
 	document.body.appendChild(el);
 	el.select();
-
-	// Explicit selection workaround for iOS
-	el.selectionStart = 0;
-	el.selectionEnd = input.length;
 
 	let success = false;
 	try {
@@ -6962,7 +7144,7 @@ module.exports = input => {
 	return success;
 };
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -7073,161 +7255,7 @@ function objectToString(o) {
 }
 
 }).call(this,{"isBuffer":require("../../is-buffer/index.js")})
-},{"../../is-buffer/index.js":96}],62:[function(require,module,exports){
-/**
- * Helpers.
- */
-
-var s = 1000;
-var m = s * 60;
-var h = m * 60;
-var d = h * 24;
-var y = d * 365.25;
-
-/**
- * Parse or format the given `val`.
- *
- * Options:
- *
- *  - `long` verbose formatting [false]
- *
- * @param {String|Number} val
- * @param {Object} [options]
- * @throws {Error} throw an error if val is not a non-empty string or a number
- * @return {String|Number}
- * @api public
- */
-
-module.exports = function(val, options) {
-  options = options || {};
-  var type = typeof val;
-  if (type === 'string' && val.length > 0) {
-    return parse(val);
-  } else if (type === 'number' && isNaN(val) === false) {
-    return options.long ? fmtLong(val) : fmtShort(val);
-  }
-  throw new Error(
-    'val is not a non-empty string or a valid number. val=' +
-      JSON.stringify(val)
-  );
-};
-
-/**
- * Parse the given `str` and return milliseconds.
- *
- * @param {String} str
- * @return {Number}
- * @api private
- */
-
-function parse(str) {
-  str = String(str);
-  if (str.length > 100) {
-    return;
-  }
-  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
-    str
-  );
-  if (!match) {
-    return;
-  }
-  var n = parseFloat(match[1]);
-  var type = (match[2] || 'ms').toLowerCase();
-  switch (type) {
-    case 'years':
-    case 'year':
-    case 'yrs':
-    case 'yr':
-    case 'y':
-      return n * y;
-    case 'days':
-    case 'day':
-    case 'd':
-      return n * d;
-    case 'hours':
-    case 'hour':
-    case 'hrs':
-    case 'hr':
-    case 'h':
-      return n * h;
-    case 'minutes':
-    case 'minute':
-    case 'mins':
-    case 'min':
-    case 'm':
-      return n * m;
-    case 'seconds':
-    case 'second':
-    case 'secs':
-    case 'sec':
-    case 's':
-      return n * s;
-    case 'milliseconds':
-    case 'millisecond':
-    case 'msecs':
-    case 'msec':
-    case 'ms':
-      return n;
-    default:
-      return undefined;
-  }
-}
-
-/**
- * Short format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
-
-function fmtShort(ms) {
-  if (ms >= d) {
-    return Math.round(ms / d) + 'd';
-  }
-  if (ms >= h) {
-    return Math.round(ms / h) + 'h';
-  }
-  if (ms >= m) {
-    return Math.round(ms / m) + 'm';
-  }
-  if (ms >= s) {
-    return Math.round(ms / s) + 's';
-  }
-  return ms + 'ms';
-}
-
-/**
- * Long format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
-
-function fmtLong(ms) {
-  return plural(ms, d, 'day') ||
-    plural(ms, h, 'hour') ||
-    plural(ms, m, 'minute') ||
-    plural(ms, s, 'second') ||
-    ms + ' ms';
-}
-
-/**
- * Pluralization helper.
- */
-
-function plural(ms, n, name) {
-  if (ms < n) {
-    return;
-  }
-  if (ms < n * 1.5) {
-    return Math.floor(ms / n) + ' ' + name;
-  }
-  return Math.ceil(ms / n) + ' ' + name + 's';
-}
-
-},{}],63:[function(require,module,exports){
+},{"../../is-buffer/index.js":103}],63:[function(require,module,exports){
 (function (process){
 /**
  * This is the web browser implementation of `debug()`.
@@ -7416,7 +7444,7 @@ function localstorage() {
 }
 
 }).call(this,require('_process'))
-},{"./debug":64,"_process":165}],64:[function(require,module,exports){
+},{"./debug":64,"_process":52}],64:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -7620,7 +7648,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":62}],65:[function(require,module,exports){
+},{"ms":106}],65:[function(require,module,exports){
 'use strict'
 
 var assert = require('assert')
@@ -7641,6 +7669,10 @@ function ready (callback) {
 
 },{"assert":45}],66:[function(require,module,exports){
 
+module.exports = require('./lib/index');
+
+},{"./lib/index":67}],67:[function(require,module,exports){
+
 module.exports = require('./socket');
 
 /**
@@ -7651,7 +7683,7 @@ module.exports = require('./socket');
  */
 module.exports.parser = require('engine.io-parser');
 
-},{"./socket":67,"engine.io-parser":75}],67:[function(require,module,exports){
+},{"./socket":68,"engine.io-parser":76}],68:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -7663,6 +7695,7 @@ var debug = require('debug')('engine.io-client:socket');
 var index = require('indexof');
 var parser = require('engine.io-parser');
 var parseuri = require('parseuri');
+var parsejson = require('parsejson');
 var parseqs = require('parseqs');
 
 /**
@@ -8093,7 +8126,7 @@ Socket.prototype.onPacket = function (packet) {
 
     switch (packet.type) {
       case 'open':
-        this.onHandshake(JSON.parse(packet.data));
+        this.onHandshake(parsejson(packet.data));
         break;
 
       case 'pong':
@@ -8398,7 +8431,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./transport":68,"./transports/index":69,"component-emitter":58,"debug":63,"engine.io-parser":75,"indexof":93,"parseqs":119,"parseuri":120}],68:[function(require,module,exports){
+},{"./transport":69,"./transports/index":70,"component-emitter":59,"debug":63,"engine.io-parser":76,"indexof":100,"parsejson":126,"parseqs":127,"parseuri":128}],69:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -8557,7 +8590,7 @@ Transport.prototype.onClose = function () {
   this.emit('close');
 };
 
-},{"component-emitter":58,"engine.io-parser":75}],69:[function(require,module,exports){
+},{"component-emitter":59,"engine.io-parser":76}],70:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies
@@ -8614,7 +8647,7 @@ function polling (opts) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling-jsonp":70,"./polling-xhr":71,"./websocket":73,"xmlhttprequest-ssl":74}],70:[function(require,module,exports){
+},{"./polling-jsonp":71,"./polling-xhr":72,"./websocket":74,"xmlhttprequest-ssl":75}],71:[function(require,module,exports){
 (function (global){
 
 /**
@@ -8849,7 +8882,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":72,"component-inherit":59}],71:[function(require,module,exports){
+},{"./polling":73,"component-inherit":60}],72:[function(require,module,exports){
 (function (global){
 /**
  * Module requirements.
@@ -9266,7 +9299,7 @@ function unloadHandler () {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":72,"component-emitter":58,"component-inherit":59,"debug":63,"xmlhttprequest-ssl":74}],72:[function(require,module,exports){
+},{"./polling":73,"component-emitter":59,"component-inherit":60,"debug":63,"xmlhttprequest-ssl":75}],73:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -9513,7 +9546,7 @@ Polling.prototype.uri = function () {
   return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
 };
 
-},{"../transport":68,"component-inherit":59,"debug":63,"engine.io-parser":75,"parseqs":119,"xmlhttprequest-ssl":74,"yeast":179}],73:[function(require,module,exports){
+},{"../transport":69,"component-inherit":60,"debug":63,"engine.io-parser":76,"parseqs":127,"xmlhttprequest-ssl":75,"yeast":186}],74:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -9803,7 +9836,7 @@ WS.prototype.check = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../transport":68,"component-inherit":59,"debug":63,"engine.io-parser":75,"parseqs":119,"ws":51,"yeast":179}],74:[function(require,module,exports){
+},{"../transport":69,"component-inherit":60,"debug":63,"engine.io-parser":76,"parseqs":127,"ws":51,"yeast":186}],75:[function(require,module,exports){
 (function (global){
 // browser shim for xmlhttprequest module
 
@@ -9844,7 +9877,7 @@ module.exports = function (opts) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"has-cors":89}],75:[function(require,module,exports){
+},{"has-cors":96}],76:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -10454,7 +10487,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./keys":76,"./utf8":77,"after":43,"arraybuffer.slice":44,"base64-arraybuffer":47,"blob":50,"has-binary2":87}],76:[function(require,module,exports){
+},{"./keys":77,"./utf8":78,"after":43,"arraybuffer.slice":44,"base64-arraybuffer":47,"blob":50,"has-binary2":94}],77:[function(require,module,exports){
 
 /**
  * Gets the keys for an object.
@@ -10475,7 +10508,7 @@ module.exports = Object.keys || function keys (obj){
   return arr;
 };
 
-},{}],77:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/utf8js v2.1.2 by @mathias */
 ;(function(root) {
@@ -10734,7 +10767,7 @@ module.exports = Object.keys || function keys (obj){
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],78:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 module.exports = function (cb) {
     if (typeof Promise !== 'function') {
       var err = new Error('Device enumeration not supported.');
@@ -10789,7 +10822,7 @@ module.exports = function (cb) {
     });
 };
 
-},{}],79:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -11093,11 +11126,13 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],80:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 module.exports = stringify
 stringify.default = stringify
 function stringify (obj) {
-  decirc(obj, '', [], null)
+  if (obj !== null && typeof obj === 'object' && typeof obj.toJSON !== 'function') {
+    decirc(obj, '', [], null)
+  }
   return JSON.stringify(obj)
 }
 function Circle (val, k, parent) {
@@ -11113,33 +11148,33 @@ Circle.prototype.toJSON = function toJSON () {
   return '[Circular]'
 }
 function decirc (val, k, stack, parent) {
-  if (typeof val === 'object' && val !== null) {
-    if (typeof val.toJSON === 'function') {
-      if (val instanceof Circle) {
-        val.count++
-        return
-      }
-      if (val.toJSON.forceDecirc === undefined) {
-        return
-      }
+  var keys, len, i
+  if (typeof val !== 'object' || val === null) {
+    // not an object, nothing to do
+    return
+  } else if (val instanceof Circle) {
+    val.count++
+    return
+  } else if (typeof val.toJSON === 'function' && !val.toJSON.forceDecirc) {
+    return
+  } else if (parent) {
+    if (~stack.indexOf(val)) {
+      parent[k] = new Circle(val, k, parent)
+      return
     }
-    for (var i = 0; i < stack.length; i++) {
-      if (stack[i] === val) {
-        parent[k] = new Circle(val, k, parent)
-        return
-      }
-    }
-    stack.push(val)
-    for (var key in val) {
-      if (Object.prototype.hasOwnProperty.call(val, key)) {
-        decirc(val[key], key, stack, val)
-      }
-    }
-    stack.pop()
   }
+  stack.push(val)
+  keys = Object.keys(val)
+  len = keys.length
+  i = 0
+  for (; i < len; i++) {
+    k = keys[i]
+    decirc(val[k], k, stack, val)
+  }
+  stack.pop()
 }
 
-},{}],81:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 var assert = require('nanoassert')
 var Nanocomponent = require('nanocomponent')
 
@@ -11317,7 +11352,678 @@ function update () {
   return result
 }
 
-},{"nanoassert":99,"nanocomponent":101}],82:[function(require,module,exports){
+},{"nanoassert":107,"nanocomponent":83}],83:[function(require,module,exports){
+var document = require('global/document')
+var nanotiming = require('nanotiming')
+var morph = require('nanomorph')
+var onload = require('on-load')
+var OL_KEY_ID = onload.KEY_ID
+var OL_ATTR_ID = onload.KEY_ATTR
+var assert = require('assert')
+
+module.exports = Nanocomponent
+
+function makeID () {
+  return 'ncid-' + Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
+}
+
+function Nanocomponent (name) {
+  this._hasWindow = typeof window !== 'undefined'
+  this._id = null // represents the id of the root node
+  this._ncID = null // internal nanocomponent id
+  this._olID = null
+  this._proxy = null
+  this._loaded = false // Used to debounce on-load when child-reordering
+  this._rootNodeName = null
+  this._name = name || 'nanocomponent'
+  this._rerender = false
+
+  this._handleLoad = this._handleLoad.bind(this)
+  this._handleUnload = this._handleUnload.bind(this)
+
+  this._arguments = []
+
+  var self = this
+
+  Object.defineProperty(this, 'element', {
+    get: function () {
+      var el = document.getElementById(self._id)
+      if (el) return el.dataset.nanocomponent === self._ncID ? el : undefined
+    }
+  })
+}
+
+Nanocomponent.prototype.render = function () {
+  var renderTiming = nanotiming(this._name + '.render')
+  var self = this
+  var args = new Array(arguments.length)
+  var el
+  for (var i = 0; i < arguments.length; i++) args[i] = arguments[i]
+  if (!this._hasWindow) {
+    var createTiming = nanotiming(this._name + '.create')
+    el = this.createElement.apply(this, args)
+    createTiming()
+    renderTiming()
+    return el
+  } else if (this.element) {
+    el = this.element  // retain reference, as the ID might change on render
+    var updateTiming = nanotiming(this._name + '.update')
+    var shouldUpdate = this._rerender || this.update.apply(this, args)
+    updateTiming()
+    if (this._rerender) this._rerender = false
+    if (shouldUpdate) {
+      var desiredHtml = this._handleRender(args)
+      var morphTiming = nanotiming(this._name + '.morph')
+      morph(el, desiredHtml)
+      morphTiming()
+      if (this.afterupdate) this.afterupdate(el)
+    }
+    if (!this._proxy) { this._proxy = this._createProxy() }
+    renderTiming()
+    return this._proxy
+  } else {
+    this._reset()
+    el = this._handleRender(args)
+    if (this.beforerender) this.beforerender(el)
+    if (this.load || this.unload || this.afterreorder) {
+      onload(el, self._handleLoad, self._handleUnload, self._ncID)
+      this._olID = el.dataset[OL_KEY_ID]
+    }
+    renderTiming()
+    return el
+  }
+}
+
+Nanocomponent.prototype.rerender = function () {
+  assert(this.element, 'nanocomponent: cant rerender on an unmounted dom node')
+  this._rerender = true
+  this.render.apply(this, this._arguments)
+}
+
+Nanocomponent.prototype._handleRender = function (args) {
+  var createElementTiming = nanotiming(this._name + '.createElement')
+  var el = this.createElement.apply(this, args)
+  createElementTiming()
+  if (!this._rootNodeName) this._rootNodeName = el.nodeName
+  assert(el instanceof window.HTMLElement, 'nanocomponent: createElement should return a DOM node')
+  assert.equal(this._rootNodeName, el.nodeName, 'nanocomponent: root node types cannot differ between re-renders')
+  this._arguments = args
+  return this._brandNode(this._ensureID(el))
+}
+
+Nanocomponent.prototype._createProxy = function () {
+  var proxy = document.createElement(this._rootNodeName)
+  var self = this
+  this._brandNode(proxy)
+  proxy.id = this._id
+  proxy.setAttribute('data-proxy', '')
+  proxy.isSameNode = function (el) {
+    return (el && el.dataset.nanocomponent === self._ncID)
+  }
+  return proxy
+}
+
+Nanocomponent.prototype._reset = function () {
+  this._ncID = makeID()
+  this._olID = null
+  this._id = null
+  this._proxy = null
+  this._rootNodeName = null
+}
+
+Nanocomponent.prototype._brandNode = function (node) {
+  node.setAttribute('data-nanocomponent', this._ncID)
+  if (this._olID) node.setAttribute(OL_ATTR_ID, this._olID)
+  return node
+}
+
+Nanocomponent.prototype._ensureID = function (node) {
+  if (node.id) this._id = node.id
+  else node.id = this._id = this._ncID
+  // Update proxy node ID if it changed
+  if (this._proxy && this._proxy.id !== this._id) this._proxy.id = this._id
+  return node
+}
+
+Nanocomponent.prototype._handleLoad = function (el) {
+  if (this._loaded) {
+    if (this.afterreorder) this.afterreorder(el)
+    return // Debounce child-reorders
+  }
+  this._loaded = true
+  if (this.load) this.load(el)
+}
+
+Nanocomponent.prototype._handleUnload = function (el) {
+  if (this.element) return // Debounce child-reorders
+  this._loaded = false
+  if (this.unload) this.unload(el)
+}
+
+Nanocomponent.prototype.createElement = function () {
+  throw new Error('nanocomponent: createElement should be implemented!')
+}
+
+Nanocomponent.prototype.update = function () {
+  throw new Error('nanocomponent: update should be implemented!')
+}
+
+},{"assert":107,"global/document":92,"nanomorph":84,"nanotiming":87,"on-load":88}],84:[function(require,module,exports){
+var assert = require('assert')
+var morph = require('./lib/morph')
+
+var TEXT_NODE = 3
+// var DEBUG = false
+
+module.exports = nanomorph
+
+// Morph one tree into another tree
+//
+// no parent
+//   -> same: diff and walk children
+//   -> not same: replace and return
+// old node doesn't exist
+//   -> insert new node
+// new node doesn't exist
+//   -> delete old node
+// nodes are not the same
+//   -> diff nodes and apply patch to old node
+// nodes are the same
+//   -> walk all child nodes and append to old node
+function nanomorph (oldTree, newTree) {
+  // if (DEBUG) {
+  //   console.log(
+  //   'nanomorph\nold\n  %s\nnew\n  %s',
+  //   oldTree && oldTree.outerHTML,
+  //   newTree && newTree.outerHTML
+  // )
+  // }
+  assert.equal(typeof oldTree, 'object', 'nanomorph: oldTree should be an object')
+  assert.equal(typeof newTree, 'object', 'nanomorph: newTree should be an object')
+  var tree = walk(newTree, oldTree)
+  // if (DEBUG) console.log('=> morphed\n  %s', tree.outerHTML)
+  return tree
+}
+
+// Walk and morph a dom tree
+function walk (newNode, oldNode) {
+  // if (DEBUG) {
+  //   console.log(
+  //   'walk\nold\n  %s\nnew\n  %s',
+  //   oldNode && oldNode.outerHTML,
+  //   newNode && newNode.outerHTML
+  // )
+  // }
+  if (!oldNode) {
+    return newNode
+  } else if (!newNode) {
+    return null
+  } else if (newNode.isSameNode && newNode.isSameNode(oldNode)) {
+    return oldNode
+  } else if (newNode.tagName !== oldNode.tagName) {
+    return newNode
+  } else {
+    morph(newNode, oldNode)
+    updateChildren(newNode, oldNode)
+    return oldNode
+  }
+}
+
+// Update the children of elements
+// (obj, obj) -> null
+function updateChildren (newNode, oldNode) {
+  // if (DEBUG) {
+  //   console.log(
+  //   'updateChildren\nold\n  %s\nnew\n  %s',
+  //   oldNode && oldNode.outerHTML,
+  //   newNode && newNode.outerHTML
+  // )
+  // }
+  var oldChild, newChild, morphed, oldMatch
+
+  // The offset is only ever increased, and used for [i - offset] in the loop
+  var offset = 0
+
+  for (var i = 0; ; i++) {
+    oldChild = oldNode.childNodes[i]
+    newChild = newNode.childNodes[i - offset]
+    // if (DEBUG) {
+    //   console.log(
+    //   '===\n- old\n  %s\n- new\n  %s',
+    //   oldChild && oldChild.outerHTML,
+    //   newChild && newChild.outerHTML
+    // )
+    // }
+    // Both nodes are empty, do nothing
+    if (!oldChild && !newChild) {
+      break
+
+    // There is no new child, remove old
+    } else if (!newChild) {
+      oldNode.removeChild(oldChild)
+      i--
+
+    // There is no old child, add new
+    } else if (!oldChild) {
+      oldNode.appendChild(newChild)
+      offset++
+
+    // Both nodes are the same, morph
+    } else if (same(newChild, oldChild)) {
+      morphed = walk(newChild, oldChild)
+      if (morphed !== oldChild) {
+        oldNode.replaceChild(morphed, oldChild)
+        offset++
+      }
+
+    // Both nodes do not share an ID or a placeholder, try reorder
+    } else {
+      oldMatch = null
+
+      // Try and find a similar node somewhere in the tree
+      for (var j = i; j < oldNode.childNodes.length; j++) {
+        if (same(oldNode.childNodes[j], newChild)) {
+          oldMatch = oldNode.childNodes[j]
+          break
+        }
+      }
+
+      // If there was a node with the same ID or placeholder in the old list
+      if (oldMatch) {
+        morphed = walk(newChild, oldMatch)
+        if (morphed !== oldMatch) offset++
+        oldNode.insertBefore(morphed, oldChild)
+
+      // It's safe to morph two nodes in-place if neither has an ID
+      } else if (!newChild.id && !oldChild.id) {
+        morphed = walk(newChild, oldChild)
+        if (morphed !== oldChild) {
+          oldNode.replaceChild(morphed, oldChild)
+          offset++
+        }
+
+      // Insert the node at the index if we couldn't morph or find a matching node
+      } else {
+        oldNode.insertBefore(newChild, oldChild)
+        offset++
+      }
+    }
+  }
+}
+
+function same (a, b) {
+  if (a.id) return a.id === b.id
+  if (a.isSameNode) return a.isSameNode(b)
+  if (a.tagName !== b.tagName) return false
+  if (a.type === TEXT_NODE) return a.nodeValue === b.nodeValue
+  return false
+}
+
+},{"./lib/morph":86,"assert":107}],85:[function(require,module,exports){
+module.exports = [
+  // attribute events (can be set with attributes)
+  'onclick',
+  'ondblclick',
+  'onmousedown',
+  'onmouseup',
+  'onmouseover',
+  'onmousemove',
+  'onmouseout',
+  'onmouseenter',
+  'onmouseleave',
+  'ontouchcancel',
+  'ontouchend',
+  'ontouchmove',
+  'ontouchstart',
+  'ondragstart',
+  'ondrag',
+  'ondragenter',
+  'ondragleave',
+  'ondragover',
+  'ondrop',
+  'ondragend',
+  'onkeydown',
+  'onkeypress',
+  'onkeyup',
+  'onunload',
+  'onabort',
+  'onerror',
+  'onresize',
+  'onscroll',
+  'onselect',
+  'onchange',
+  'onsubmit',
+  'onreset',
+  'onfocus',
+  'onblur',
+  'oninput',
+  // other common events
+  'oncontextmenu',
+  'onfocusin',
+  'onfocusout'
+]
+
+},{}],86:[function(require,module,exports){
+var events = require('./events')
+var eventsLength = events.length
+
+var ELEMENT_NODE = 1
+var TEXT_NODE = 3
+var COMMENT_NODE = 8
+
+module.exports = morph
+
+// diff elements and apply the resulting patch to the old node
+// (obj, obj) -> null
+function morph (newNode, oldNode) {
+  var nodeType = newNode.nodeType
+  var nodeName = newNode.nodeName
+
+  if (nodeType === ELEMENT_NODE) {
+    copyAttrs(newNode, oldNode)
+  }
+
+  if (nodeType === TEXT_NODE || nodeType === COMMENT_NODE) {
+    if (oldNode.nodeValue !== newNode.nodeValue) {
+      oldNode.nodeValue = newNode.nodeValue
+    }
+  }
+
+  // Some DOM nodes are weird
+  // https://github.com/patrick-steele-idem/morphdom/blob/master/src/specialElHandlers.js
+  if (nodeName === 'INPUT') updateInput(newNode, oldNode)
+  else if (nodeName === 'OPTION') updateOption(newNode, oldNode)
+  else if (nodeName === 'TEXTAREA') updateTextarea(newNode, oldNode)
+
+  copyEvents(newNode, oldNode)
+}
+
+function copyAttrs (newNode, oldNode) {
+  var oldAttrs = oldNode.attributes
+  var newAttrs = newNode.attributes
+  var attrNamespaceURI = null
+  var attrValue = null
+  var fromValue = null
+  var attrName = null
+  var attr = null
+
+  for (var i = newAttrs.length - 1; i >= 0; --i) {
+    attr = newAttrs[i]
+    attrName = attr.name
+    attrNamespaceURI = attr.namespaceURI
+    attrValue = attr.value
+    if (attrNamespaceURI) {
+      attrName = attr.localName || attrName
+      fromValue = oldNode.getAttributeNS(attrNamespaceURI, attrName)
+      if (fromValue !== attrValue) {
+        oldNode.setAttributeNS(attrNamespaceURI, attrName, attrValue)
+      }
+    } else {
+      if (!oldNode.hasAttribute(attrName)) {
+        oldNode.setAttribute(attrName, attrValue)
+      } else {
+        fromValue = oldNode.getAttribute(attrName)
+        if (fromValue !== attrValue) {
+          // apparently values are always cast to strings, ah well
+          if (attrValue === 'null' || attrValue === 'undefined') {
+            oldNode.removeAttribute(attrName)
+          } else {
+            oldNode.setAttribute(attrName, attrValue)
+          }
+        }
+      }
+    }
+  }
+
+  // Remove any extra attributes found on the original DOM element that
+  // weren't found on the target element.
+  for (var j = oldAttrs.length - 1; j >= 0; --j) {
+    attr = oldAttrs[j]
+    if (attr.specified !== false) {
+      attrName = attr.name
+      attrNamespaceURI = attr.namespaceURI
+
+      if (attrNamespaceURI) {
+        attrName = attr.localName || attrName
+        if (!newNode.hasAttributeNS(attrNamespaceURI, attrName)) {
+          oldNode.removeAttributeNS(attrNamespaceURI, attrName)
+        }
+      } else {
+        if (!newNode.hasAttributeNS(null, attrName)) {
+          oldNode.removeAttribute(attrName)
+        }
+      }
+    }
+  }
+}
+
+function copyEvents (newNode, oldNode) {
+  for (var i = 0; i < eventsLength; i++) {
+    var ev = events[i]
+    if (newNode[ev]) {           // if new element has a whitelisted attribute
+      oldNode[ev] = newNode[ev]  // update existing element
+    } else if (oldNode[ev]) {    // if existing element has it and new one doesnt
+      oldNode[ev] = undefined    // remove it from existing element
+    }
+  }
+}
+
+function updateOption (newNode, oldNode) {
+  updateAttribute(newNode, oldNode, 'selected')
+}
+
+// The "value" attribute is special for the <input> element since it sets the
+// initial value. Changing the "value" attribute without changing the "value"
+// property will have no effect since it is only used to the set the initial
+// value. Similar for the "checked" attribute, and "disabled".
+function updateInput (newNode, oldNode) {
+  var newValue = newNode.value
+  var oldValue = oldNode.value
+
+  updateAttribute(newNode, oldNode, 'checked')
+  updateAttribute(newNode, oldNode, 'disabled')
+
+  if (newValue !== oldValue) {
+    oldNode.setAttribute('value', newValue)
+    oldNode.value = newValue
+  }
+
+  if (newValue === 'null') {
+    oldNode.value = ''
+    oldNode.removeAttribute('value')
+  }
+
+  if (!newNode.hasAttributeNS(null, 'value')) {
+    oldNode.removeAttribute('value')
+  } else if (oldNode.type === 'range') {
+    // this is so elements like slider move their UI thingy
+    oldNode.value = newValue
+  }
+}
+
+function updateTextarea (newNode, oldNode) {
+  var newValue = newNode.value
+  if (newValue !== oldNode.value) {
+    oldNode.value = newValue
+  }
+
+  if (oldNode.firstChild && oldNode.firstChild.nodeValue !== newValue) {
+    // Needed for IE. Apparently IE sets the placeholder as the
+    // node value and vise versa. This ignores an empty update.
+    if (newValue === '' && oldNode.firstChild.nodeValue === oldNode.placeholder) {
+      return
+    }
+
+    oldNode.firstChild.nodeValue = newValue
+  }
+}
+
+function updateAttribute (newNode, oldNode, name) {
+  if (newNode[name] !== oldNode[name]) {
+    oldNode[name] = newNode[name]
+    if (newNode[name]) {
+      oldNode.setAttribute(name, '')
+    } else {
+      oldNode.removeAttribute(name)
+    }
+  }
+}
+
+},{"./events":85}],87:[function(require,module,exports){
+var scheduler = require('nanoscheduler')()
+var assert = require('assert')
+
+var perf
+nanotiming.disabled = true
+try {
+  perf = window.performance
+  nanotiming.disabled = window.localStorage.DISABLE_NANOTIMING === 'true' || !perf.mark
+} catch (e) { }
+
+module.exports = nanotiming
+
+function nanotiming (name) {
+  assert.equal(typeof name, 'string', 'nanotiming: name should be type string')
+
+  if (nanotiming.disabled) return noop
+
+  var uuid = (perf.now() * 10000).toFixed() % Number.MAX_SAFE_INTEGER
+  var startName = 'start-' + uuid + '-' + name
+  perf.mark(startName)
+
+  function end (cb) {
+    var endName = 'end-' + uuid + '-' + name
+    perf.mark(endName)
+
+    scheduler.push(function () {
+      var err = null
+      try {
+        var measureName = name + ' [' + uuid + ']'
+        perf.measure(measureName, startName, endName)
+        perf.clearMarks(startName)
+        perf.clearMarks(endName)
+      } catch (e) { err = e }
+      if (cb) cb(err, name)
+    })
+  }
+
+  end.uuid = uuid
+  return end
+}
+
+function noop (cb) {
+  if (cb) {
+    scheduler.push(function () {
+      cb(new Error('nanotiming: performance API unavailable'))
+    })
+  }
+}
+
+},{"assert":45,"nanoscheduler":122}],88:[function(require,module,exports){
+/* global MutationObserver */
+var document = require('global/document')
+var window = require('global/window')
+var assert = require('assert')
+var watch = Object.create(null)
+var KEY_ID = 'onloadid' + (new Date() % 9e6).toString(36)
+var KEY_ATTR = 'data-' + KEY_ID
+var INDEX = 0
+
+if (window && window.MutationObserver) {
+  var observer = new MutationObserver(function (mutations) {
+    if (Object.keys(watch).length < 1) return
+    for (var i = 0; i < mutations.length; i++) {
+      if (mutations[i].attributeName === KEY_ATTR) {
+        eachAttr(mutations[i], turnon, turnoff)
+        continue
+      }
+      eachMutation(mutations[i].removedNodes, turnoff)
+      eachMutation(mutations[i].addedNodes, turnon)
+    }
+  })
+  if (document.body) {
+    beginObserve(observer)
+  } else {
+    document.addEventListener('DOMContentLoaded', function (event) {
+      beginObserve(observer)
+    })
+  }
+}
+
+function beginObserve (observer) {
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeOldValue: true,
+    attributeFilter: [KEY_ATTR]
+  })
+}
+
+module.exports = function onload (el, on, off, caller) {
+  assert(document.body, 'on-load: will not work prior to DOMContentLoaded')
+  on = on || function () {}
+  off = off || function () {}
+  el.setAttribute(KEY_ATTR, 'o' + INDEX)
+  watch['o' + INDEX] = [on, off, 0, caller || onload.caller]
+  INDEX += 1
+  return el
+}
+
+module.exports.KEY_ATTR = KEY_ATTR
+module.exports.KEY_ID = KEY_ID
+
+function turnon (index, el) {
+  if (watch[index][0] && watch[index][2] === 0) {
+    watch[index][0](el)
+    watch[index][2] = 1
+  }
+}
+
+function turnoff (index, el) {
+  if (watch[index][1] && watch[index][2] === 1) {
+    watch[index][1](el)
+    watch[index][2] = 0
+  }
+}
+
+function eachAttr (mutation, on, off) {
+  var newValue = mutation.target.getAttribute(KEY_ATTR)
+  if (sameOrigin(mutation.oldValue, newValue)) {
+    watch[newValue] = watch[mutation.oldValue]
+    return
+  }
+  if (watch[mutation.oldValue]) {
+    off(mutation.oldValue, mutation.target)
+  }
+  if (watch[newValue]) {
+    on(newValue, mutation.target)
+  }
+}
+
+function sameOrigin (oldValue, newValue) {
+  if (!oldValue || !newValue) return false
+  return watch[oldValue][3] === watch[newValue][3]
+}
+
+function eachMutation (nodes, fn) {
+  var keys = Object.keys(watch)
+  for (var i = 0; i < nodes.length; i++) {
+    if (nodes[i] && nodes[i].getAttribute && nodes[i].getAttribute(KEY_ATTR)) {
+      var onloadid = nodes[i].getAttribute(KEY_ATTR)
+      keys.forEach(function (k) {
+        if (onloadid === k) {
+          fn(k, nodes[i])
+        }
+      })
+    }
+    if (nodes[i].childNodes.length > 0) {
+      eachMutation(nodes[i].childNodes, fn)
+    }
+  }
+}
+
+},{"assert":107,"global/document":92,"global/window":93}],89:[function(require,module,exports){
 var assert = require('nanoassert')
 var Context = require('../').Context
 
@@ -11371,7 +12077,7 @@ function addEventListeners (ctx, event, listeners) {
   }
 }
 
-},{"../":81,"nanoassert":99}],83:[function(require,module,exports){
+},{"../":82,"nanoassert":107}],90:[function(require,module,exports){
 // originally pulled out of simple-peer
 
 module.exports = function getBrowserRTC () {
@@ -11388,7 +12094,7 @@ module.exports = function getBrowserRTC () {
   return wrtc
 }
 
-},{}],84:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg used for navigator.getUserMedia shim
 var adapter = require('webrtc-adapter');
 
@@ -11465,7 +12171,7 @@ module.exports = function (constraints, cb) {
     });
 };
 
-},{"webrtc-adapter":168}],85:[function(require,module,exports){
+},{"webrtc-adapter":175}],92:[function(require,module,exports){
 (function (global){
 var topLevel = typeof global !== 'undefined' ? global :
     typeof window !== 'undefined' ? window : {}
@@ -11486,7 +12192,7 @@ if (typeof document !== 'undefined') {
 module.exports = doccy;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"min-document":51}],86:[function(require,module,exports){
+},{"min-document":51}],93:[function(require,module,exports){
 (function (global){
 var win;
 
@@ -11503,7 +12209,7 @@ if (typeof window !== "undefined") {
 module.exports = win;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],87:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 (function (global){
 /* global Blob File */
 
@@ -11569,14 +12275,14 @@ function hasBinary (obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"isarray":88}],88:[function(require,module,exports){
+},{"isarray":95}],95:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],89:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -11595,7 +12301,7 @@ try {
   module.exports = false;
 }
 
-},{}],90:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 module.exports = attributeToProperty
 
 var transform = {
@@ -11616,7 +12322,7 @@ function attributeToProperty (h) {
   }
 }
 
-},{}],91:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 var attrToProp = require('hyperscript-attribute-to-property')
 
 var VAR = 0, TEXT = 1, OPEN = 2, CLOSE = 3, ATTR = 4
@@ -11694,20 +12400,17 @@ module.exports = function (h, opts) {
         for (; i < parts.length; i++) {
           if (parts[i][0] === ATTR_VALUE || parts[i][0] === ATTR_KEY) {
             if (!cur[1][key]) cur[1][key] = strfn(parts[i][1])
-            else parts[i][1]==="" || (cur[1][key] = concat(cur[1][key], parts[i][1]));
+            else cur[1][key] = concat(cur[1][key], parts[i][1])
           } else if (parts[i][0] === VAR
           && (parts[i][1] === ATTR_VALUE || parts[i][1] === ATTR_KEY)) {
             if (!cur[1][key]) cur[1][key] = strfn(parts[i][2])
-            else parts[i][2]==="" || (cur[1][key] = concat(cur[1][key], parts[i][2]));
+            else cur[1][key] = concat(cur[1][key], parts[i][2])
           } else {
             if (key.length && !cur[1][key] && i === j
             && (parts[i][0] === CLOSE || parts[i][0] === ATTR_BREAK)) {
               // https://html.spec.whatwg.org/multipage/infrastructure.html#boolean-attributes
               // empty string is falsy, not well behaved value in browser
               cur[1][key] = key.toLowerCase()
-            }
-            if (parts[i][0] === CLOSE) {
-              i--
             }
             break
           }
@@ -11899,7 +12602,7 @@ var closeRE = RegExp('^(' + [
 ].join('|') + ')(?:[\.#][a-zA-Z0-9\u007F-\uFFFF_:-]+)*$')
 function selfClosing (tag) { return closeRE.test(tag) }
 
-},{"hyperscript-attribute-to-property":90}],92:[function(require,module,exports){
+},{"hyperscript-attribute-to-property":97}],99:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -11985,7 +12688,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],93:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -11996,7 +12699,7 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
-},{}],94:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -12021,7 +12724,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],95:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 var containers = []; // will store container HTMLElement references
 var styleElements = []; // will store {prepend: HTMLElement, append: HTMLElement}
 
@@ -12081,11 +12784,11 @@ function createStyleElement() {
 module.exports = insertCss;
 module.exports.insertCss = insertCss;
 
-},{}],96:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
- * @author   Feross Aboukhadijeh <https://feross.org>
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
  * @license  MIT
  */
 
@@ -12104,7 +12807,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],97:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 var is = require('./is')
 
 module.exports = function shallowEqualObjects(objA, objB) {
@@ -12131,7 +12834,7 @@ module.exports = function shallowEqualObjects(objA, objB) {
   return true;
 };
 
-},{"./is":98}],98:[function(require,module,exports){
+},{"./is":105}],105:[function(require,module,exports){
 const hasElement = typeof Element !== 'undefined'
 
 module.exports = function is(a, b) {
@@ -12143,7 +12846,161 @@ module.exports = function is(a, b) {
   return a === b;
 }
 
-},{}],99:[function(require,module,exports){
+},{}],106:[function(require,module,exports){
+/**
+ * Helpers.
+ */
+
+var s = 1000;
+var m = s * 60;
+var h = m * 60;
+var d = h * 24;
+var y = d * 365.25;
+
+/**
+ * Parse or format the given `val`.
+ *
+ * Options:
+ *
+ *  - `long` verbose formatting [false]
+ *
+ * @param {String|Number} val
+ * @param {Object} [options]
+ * @throws {Error} throw an error if val is not a non-empty string or a number
+ * @return {String|Number}
+ * @api public
+ */
+
+module.exports = function(val, options) {
+  options = options || {};
+  var type = typeof val;
+  if (type === 'string' && val.length > 0) {
+    return parse(val);
+  } else if (type === 'number' && isNaN(val) === false) {
+    return options.long ? fmtLong(val) : fmtShort(val);
+  }
+  throw new Error(
+    'val is not a non-empty string or a valid number. val=' +
+      JSON.stringify(val)
+  );
+};
+
+/**
+ * Parse the given `str` and return milliseconds.
+ *
+ * @param {String} str
+ * @return {Number}
+ * @api private
+ */
+
+function parse(str) {
+  str = String(str);
+  if (str.length > 100) {
+    return;
+  }
+  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
+    str
+  );
+  if (!match) {
+    return;
+  }
+  var n = parseFloat(match[1]);
+  var type = (match[2] || 'ms').toLowerCase();
+  switch (type) {
+    case 'years':
+    case 'year':
+    case 'yrs':
+    case 'yr':
+    case 'y':
+      return n * y;
+    case 'days':
+    case 'day':
+    case 'd':
+      return n * d;
+    case 'hours':
+    case 'hour':
+    case 'hrs':
+    case 'hr':
+    case 'h':
+      return n * h;
+    case 'minutes':
+    case 'minute':
+    case 'mins':
+    case 'min':
+    case 'm':
+      return n * m;
+    case 'seconds':
+    case 'second':
+    case 'secs':
+    case 'sec':
+    case 's':
+      return n * s;
+    case 'milliseconds':
+    case 'millisecond':
+    case 'msecs':
+    case 'msec':
+    case 'ms':
+      return n;
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Short format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtShort(ms) {
+  if (ms >= d) {
+    return Math.round(ms / d) + 'd';
+  }
+  if (ms >= h) {
+    return Math.round(ms / h) + 'h';
+  }
+  if (ms >= m) {
+    return Math.round(ms / m) + 'm';
+  }
+  if (ms >= s) {
+    return Math.round(ms / s) + 's';
+  }
+  return ms + 'ms';
+}
+
+/**
+ * Long format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtLong(ms) {
+  return plural(ms, d, 'day') ||
+    plural(ms, h, 'hour') ||
+    plural(ms, m, 'minute') ||
+    plural(ms, s, 'second') ||
+    ms + ' ms';
+}
+
+/**
+ * Pluralization helper.
+ */
+
+function plural(ms, n, name) {
+  if (ms < n) {
+    return;
+  }
+  if (ms < n * 1.5) {
+    return Math.floor(ms / n) + ' ' + name;
+  }
+  return Math.ceil(ms / n) + ' ' + name + 's';
+}
+
+},{}],107:[function(require,module,exports){
 assert.notEqual = notEqual
 assert.notOk = notOk
 assert.equal = equal
@@ -12167,7 +13024,7 @@ function assert (t, m) {
   if (!t) throw new Error(m || 'AssertionError')
 }
 
-},{}],100:[function(require,module,exports){
+},{}],108:[function(require,module,exports){
 var nanotiming = require('nanotiming')
 var assert = require('assert')
 
@@ -12315,13 +13172,10 @@ Nanobus.prototype._emit = function (arr, eventName, data) {
   }
 }
 
-},{"assert":45,"nanotiming":116}],101:[function(require,module,exports){
+},{"assert":45,"nanotiming":123}],109:[function(require,module,exports){
 var document = require('global/document')
-var nanotiming = require('nanotiming')
 var morph = require('nanomorph')
 var onload = require('on-load')
-var OL_KEY_ID = onload.KEY_ID
-var OL_ATTR_ID = onload.KEY_ATTR
 var assert = require('assert')
 
 module.exports = Nanocomponent
@@ -12330,21 +13184,16 @@ function makeID () {
   return 'ncid-' + Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
 }
 
-function Nanocomponent (name) {
+function Nanocomponent () {
   this._hasWindow = typeof window !== 'undefined'
   this._id = null // represents the id of the root node
   this._ncID = null // internal nanocomponent id
-  this._olID = null
   this._proxy = null
   this._loaded = false // Used to debounce on-load when child-reordering
   this._rootNodeName = null
-  this._name = name || 'nanocomponent'
-  this._rerender = false
 
   this._handleLoad = this._handleLoad.bind(this)
   this._handleUnload = this._handleUnload.bind(this)
-
-  this._arguments = []
 
   var self = this
 
@@ -12357,65 +13206,40 @@ function Nanocomponent (name) {
 }
 
 Nanocomponent.prototype.render = function () {
-  var renderTiming = nanotiming(this._name + '.render')
   var self = this
   var args = new Array(arguments.length)
-  var el
   for (var i = 0; i < arguments.length; i++) args[i] = arguments[i]
   if (!this._hasWindow) {
-    var createTiming = nanotiming(this._name + '.create')
-    el = this.createElement.apply(this, args)
-    createTiming()
-    renderTiming()
-    return el
+    return this.createElement.apply(this, args)
   } else if (this.element) {
-    el = this.element  // retain reference, as the ID might change on render
-    var updateTiming = nanotiming(this._name + '.update')
-    var shouldUpdate = this._rerender || this.update.apply(this, args)
-    updateTiming()
-    if (this._rerender) this._rerender = false
+    var shouldUpdate = this.update.apply(this, args)
     if (shouldUpdate) {
-      var desiredHtml = this._handleRender(args)
-      var morphTiming = nanotiming(this._name + '.morph')
-      morph(el, desiredHtml)
-      morphTiming()
-      if (this.afterupdate) this.afterupdate(el)
+      morph(this.element, this._handleRender(args))
+      if (this.afterupdate) this.afterupdate(this.element)
     }
     if (!this._proxy) { this._proxy = this._createProxy() }
-    renderTiming()
     return this._proxy
   } else {
     this._reset()
-    el = this._handleRender(args)
+    var el = this._handleRender(args)
     if (this.beforerender) this.beforerender(el)
-    if (this.load || this.unload || this.afterreorder) {
-      onload(el, self._handleLoad, self._handleUnload, self._ncID)
-      this._olID = el.dataset[OL_KEY_ID]
+    if (this.load || this.unload) {
+      onload(el, self._handleLoad, self._handleUnload, self)
     }
-    renderTiming()
     return el
   }
 }
 
-Nanocomponent.prototype.rerender = function () {
-  assert(this.element, 'nanocomponent: cant rerender on an unmounted dom node')
-  this._rerender = true
-  this.render.apply(this, this._arguments)
-}
-
 Nanocomponent.prototype._handleRender = function (args) {
-  var createElementTiming = nanotiming(this._name + '.createElement')
   var el = this.createElement.apply(this, args)
-  createElementTiming()
   if (!this._rootNodeName) this._rootNodeName = el.nodeName
   assert(el instanceof window.HTMLElement, 'nanocomponent: createElement should return a DOM node')
   assert.equal(this._rootNodeName, el.nodeName, 'nanocomponent: root node types cannot differ between re-renders')
-  this._arguments = args
   return this._brandNode(this._ensureID(el))
 }
 
 Nanocomponent.prototype._createProxy = function () {
-  var proxy = document.createElement(this._rootNodeName)
+  var proxy = document.createElement('div')
   var self = this
   this._brandNode(proxy)
   proxy.id = this._id
@@ -12428,7 +13252,6 @@ Nanocomponent.prototype._createProxy = function () {
 
 Nanocomponent.prototype._reset = function () {
   this._ncID = makeID()
-  this._olID = null
   this._id = null
   this._proxy = null
   this._rootNodeName = null
@@ -12436,31 +13259,27 @@ Nanocomponent.prototype._reset = function () {
 
 Nanocomponent.prototype._brandNode = function (node) {
   node.setAttribute('data-nanocomponent', this._ncID)
-  if (this._olID) node.setAttribute(OL_ATTR_ID, this._olID)
   return node
 }
 
 Nanocomponent.prototype._ensureID = function (node) {
   if (node.id) this._id = node.id
   else node.id = this._id = this._ncID
-  // Update proxy node ID if it changed
-  if (this._proxy && this._proxy.id !== this._id) this._proxy.id = this._id
   return node
 }
 
-Nanocomponent.prototype._handleLoad = function (el) {
-  if (this._loaded) {
-    if (this.afterreorder) this.afterreorder(el)
-    return // Debounce child-reorders
-  }
+Nanocomponent.prototype._handleLoad = function () {
+  var self = this
+  if (this._loaded) return // Debounce child-reorders
   this._loaded = true
-  if (this.load) this.load(el)
+  if (this.load) window.requestAnimationFrame(function () { self.load() })
 }
 
-Nanocomponent.prototype._handleUnload = function (el) {
+Nanocomponent.prototype._handleUnload = function () {
+  var self = this
   if (this.element) return // Debounce child-reorders
   this._loaded = false
-  if (this.unload) this.unload(el)
+  if (this.unload) window.requestAnimationFrame(function () { self.unload() })
 }
 
 Nanocomponent.prototype.createElement = function () {
@@ -12471,158 +13290,9 @@ Nanocomponent.prototype.update = function () {
   throw new Error('nanocomponent: update should be implemented!')
 }
 
-},{"assert":99,"global/document":85,"nanomorph":102,"nanotiming":105,"on-load":118}],102:[function(require,module,exports){
-var assert = require('assert')
-var morph = require('./lib/morph')
-
-var TEXT_NODE = 3
-// var DEBUG = false
-
-module.exports = nanomorph
-
-// Morph one tree into another tree
-//
-// no parent
-//   -> same: diff and walk children
-//   -> not same: replace and return
-// old node doesn't exist
-//   -> insert new node
-// new node doesn't exist
-//   -> delete old node
-// nodes are not the same
-//   -> diff nodes and apply patch to old node
-// nodes are the same
-//   -> walk all child nodes and append to old node
-function nanomorph (oldTree, newTree) {
-  // if (DEBUG) {
-  //   console.log(
-  //   'nanomorph\nold\n  %s\nnew\n  %s',
-  //   oldTree && oldTree.outerHTML,
-  //   newTree && newTree.outerHTML
-  // )
-  // }
-  assert.equal(typeof oldTree, 'object', 'nanomorph: oldTree should be an object')
-  assert.equal(typeof newTree, 'object', 'nanomorph: newTree should be an object')
-  var tree = walk(newTree, oldTree)
-  // if (DEBUG) console.log('=> morphed\n  %s', tree.outerHTML)
-  return tree
-}
-
-// Walk and morph a dom tree
-function walk (newNode, oldNode) {
-  // if (DEBUG) {
-  //   console.log(
-  //   'walk\nold\n  %s\nnew\n  %s',
-  //   oldNode && oldNode.outerHTML,
-  //   newNode && newNode.outerHTML
-  // )
-  // }
-  if (!oldNode) {
-    return newNode
-  } else if (!newNode) {
-    return null
-  } else if (newNode.isSameNode && newNode.isSameNode(oldNode)) {
-    return oldNode
-  } else if (newNode.tagName !== oldNode.tagName) {
-    return newNode
-  } else {
-    morph(newNode, oldNode)
-    updateChildren(newNode, oldNode)
-    return oldNode
-  }
-}
-
-// Update the children of elements
-// (obj, obj) -> null
-function updateChildren (newNode, oldNode) {
-  // if (DEBUG) {
-  //   console.log(
-  //   'updateChildren\nold\n  %s\nnew\n  %s',
-  //   oldNode && oldNode.outerHTML,
-  //   newNode && newNode.outerHTML
-  // )
-  // }
-  var oldChild, newChild, morphed, oldMatch
-
-  // The offset is only ever increased, and used for [i - offset] in the loop
-  var offset = 0
-
-  for (var i = 0; ; i++) {
-    oldChild = oldNode.childNodes[i]
-    newChild = newNode.childNodes[i - offset]
-    // if (DEBUG) {
-    //   console.log(
-    //   '===\n- old\n  %s\n- new\n  %s',
-    //   oldChild && oldChild.outerHTML,
-    //   newChild && newChild.outerHTML
-    // )
-    // }
-    // Both nodes are empty, do nothing
-    if (!oldChild && !newChild) {
-      break
-
-    // There is no new child, remove old
-    } else if (!newChild) {
-      oldNode.removeChild(oldChild)
-      i--
-
-    // There is no old child, add new
-    } else if (!oldChild) {
-      oldNode.appendChild(newChild)
-      offset++
-
-    // Both nodes are the same, morph
-    } else if (same(newChild, oldChild)) {
-      morphed = walk(newChild, oldChild)
-      if (morphed !== oldChild) {
-        oldNode.replaceChild(morphed, oldChild)
-        offset++
-      }
-
-    // Both nodes do not share an ID or a placeholder, try reorder
-    } else {
-      oldMatch = null
-
-      // Try and find a similar node somewhere in the tree
-      for (var j = i; j < oldNode.childNodes.length; j++) {
-        if (same(oldNode.childNodes[j], newChild)) {
-          oldMatch = oldNode.childNodes[j]
-          break
-        }
-      }
-
-      // If there was a node with the same ID or placeholder in the old list
-      if (oldMatch) {
-        morphed = walk(newChild, oldMatch)
-        if (morphed !== oldMatch) offset++
-        oldNode.insertBefore(morphed, oldChild)
-
-      // It's safe to morph two nodes in-place if neither has an ID
-      } else if (!newChild.id && !oldChild.id) {
-        morphed = walk(newChild, oldChild)
-        if (morphed !== oldChild) {
-          oldNode.replaceChild(morphed, oldChild)
-          offset++
-        }
-
-      // Insert the node at the index if we couldn't morph or find a matching node
-      } else {
-        oldNode.insertBefore(newChild, oldChild)
-        offset++
-      }
-    }
-  }
-}
-
-function same (a, b) {
-  if (a.id) return a.id === b.id
-  if (a.isSameNode) return a.isSameNode(b)
-  if (a.tagName !== b.tagName) return false
-  if (a.type === TEXT_NODE) return a.nodeValue === b.nodeValue
-  return false
-}
-
-},{"./lib/morph":104,"assert":99}],103:[function(require,module,exports){
+},{"assert":45,"global/document":92,"nanomorph":110,"on-load":125}],110:[function(require,module,exports){
+arguments[4][84][0].apply(exports,arguments)
+},{"./lib/morph":112,"assert":45,"dup":84}],111:[function(require,module,exports){
 module.exports = [
   // attribute events (can be set with attributes)
   'onclick',
@@ -12634,10 +13304,6 @@ module.exports = [
   'onmouseout',
   'onmouseenter',
   'onmouseleave',
-  'ontouchcancel',
-  'ontouchend',
-  'ontouchmove',
-  'ontouchstart',
   'ondragstart',
   'ondrag',
   'ondragenter',
@@ -12666,7 +13332,7 @@ module.exports = [
   'onfocusout'
 ]
 
-},{}],104:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 var events = require('./events')
 var eventsLength = events.length
 
@@ -12687,9 +13353,7 @@ function morph (newNode, oldNode) {
   }
 
   if (nodeType === TEXT_NODE || nodeType === COMMENT_NODE) {
-    if (oldNode.nodeValue !== newNode.nodeValue) {
-      oldNode.nodeValue = newNode.nodeValue
-    }
+    oldNode.nodeValue = newNode.nodeValue
   }
 
   // Some DOM nodes are weird
@@ -12832,84 +13496,7 @@ function updateAttribute (newNode, oldNode, name) {
   }
 }
 
-},{"./events":103}],105:[function(require,module,exports){
-var assert = require('assert')
-
-var onIdle = require('./lib/on-idle')
-
-var perf
-var disabled = true
-try {
-  perf = window.performance
-  disabled = window.localStorage.DISABLE_NANOTIMING === 'true' || !perf.mark
-} catch (e) { }
-
-module.exports = nanotiming
-
-function nanotiming (name) {
-  assert.equal(typeof name, 'string', 'nanotiming: name should be type string')
-
-  if (disabled) return noop
-
-  var uuid = (perf.now() * 10000).toFixed() % Number.MAX_SAFE_INTEGER
-  var startName = 'start-' + uuid + '-' + name
-  perf.mark(startName)
-
-  function end (cb) {
-    var endName = 'end-' + uuid + '-' + name
-    perf.mark(endName)
-
-    onIdle(function () {
-      var measureName = name + ' [' + uuid + ']'
-      perf.measure(measureName, startName, endName)
-      perf.clearMarks(startName)
-      perf.clearMarks(endName)
-      if (cb) cb(name)
-    })
-  }
-
-  end.uuid = uuid
-  return end
-}
-
-function noop (cb) {
-  if (cb) onIdle(cb)
-}
-
-},{"./lib/on-idle":106,"assert":45}],106:[function(require,module,exports){
-var assert = require('assert')
-
-var dftOpts = {}
-var hasWindow = typeof window !== 'undefined'
-var hasIdle = hasWindow && window.requestIdleCallback
-
-module.exports = onIdle
-
-function onIdle (cb, opts) {
-  opts = opts || dftOpts
-  var timerId
-
-  assert.equal(typeof cb, 'function', 'on-idle: cb should be type function')
-  assert.equal(typeof opts, 'object', 'on-idle: opts should be type object')
-
-  if (hasIdle) {
-    timerId = window.requestIdleCallback(function (idleDeadline) {
-      // reschedule if there's less than 10ms remaining on the tick
-      // and a timer did not expire
-      if (idleDeadline.timeRemaining() <= 10 && !idleDeadline.didTimeout) {
-        return onIdle(cb, opts)
-      } else {
-        cb(idleDeadline)
-      }
-    }, opts)
-    return window.cancelIdleCallback.bind(window, timerId)
-  } else if (hasWindow) {
-    timerId = setTimeout(cb, 0)
-    return clearTimeout.bind(window, timerId)
-  }
-}
-
-},{"assert":45}],107:[function(require,module,exports){
+},{"./events":111}],113:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = history
@@ -12923,7 +13510,7 @@ function history (cb) {
   }
 }
 
-},{"assert":45}],108:[function(require,module,exports){
+},{"assert":45}],114:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = href
@@ -12959,7 +13546,7 @@ function href (cb, root) {
   }
 }
 
-},{"assert":45}],109:[function(require,module,exports){
+},{"assert":45}],115:[function(require,module,exports){
 var assert = require('assert')
 var xtend = require('xtend')
 
@@ -13104,9 +13691,7 @@ Nanologger.prototype._print = function (level) {
     args.push(obj)
   })
 
-  // In IE/Edge console functions don't inherit from Function.prototype
-  // so this is necessary to get all the args applied.
-  Function.prototype.apply.apply(console.log, [console, args])
+  console.log.apply(console, args)
 }
 
 function color (color) {
@@ -13125,7 +13710,7 @@ function pad (str) {
   return str.length !== 2 ? 0 + str : str
 }
 
-},{"assert":45,"xtend":177}],110:[function(require,module,exports){
+},{"assert":45,"xtend":184}],116:[function(require,module,exports){
 var assert = require('assert')
 var morph = require('./lib/morph')
 var rootLabelRegex = /^data-onloadid/
@@ -13220,47 +13805,9 @@ function persistStatefulRoot (newNode, oldNode) {
   }
 }
 
-},{"./lib/morph":112,"assert":45}],111:[function(require,module,exports){
-module.exports = [
-  // attribute events (can be set with attributes)
-  'onclick',
-  'ondblclick',
-  'onmousedown',
-  'onmouseup',
-  'onmouseover',
-  'onmousemove',
-  'onmouseout',
-  'onmouseenter',
-  'onmouseleave',
-  'ondragstart',
-  'ondrag',
-  'ondragenter',
-  'ondragleave',
-  'ondragover',
-  'ondrop',
-  'ondragend',
-  'onkeydown',
-  'onkeypress',
-  'onkeyup',
-  'onunload',
-  'onabort',
-  'onerror',
-  'onresize',
-  'onscroll',
-  'onselect',
-  'onchange',
-  'onsubmit',
-  'onreset',
-  'onfocus',
-  'onblur',
-  'oninput',
-  // other common events
-  'oncontextmenu',
-  'onfocusin',
-  'onfocusout'
-]
-
-},{}],112:[function(require,module,exports){
+},{"./lib/morph":118,"assert":45}],117:[function(require,module,exports){
+arguments[4][111][0].apply(exports,arguments)
+},{"dup":111}],118:[function(require,module,exports){
 var events = require('./events')
 var eventsLength = events.length
 
@@ -13435,7 +13982,7 @@ function updateAttribute (newNode, oldNode, name) {
   }
 }
 
-},{"./events":111}],113:[function(require,module,exports){
+},{"./events":117}],119:[function(require,module,exports){
 var nanomorph = require('nanomorph')
 var assert = require('assert')
 
@@ -13457,7 +14004,7 @@ function nanomount (target, newTree) {
     target.outerHTML.nodeName + '.')
 }
 
-},{"assert":45,"nanomorph":110}],114:[function(require,module,exports){
+},{"assert":45,"nanomorph":116}],120:[function(require,module,exports){
 'use strict'
 
 var assert = require('assert')
@@ -13494,7 +14041,7 @@ function nanoraf (render, raf) {
   }
 }
 
-},{"assert":45}],115:[function(require,module,exports){
+},{"assert":45}],121:[function(require,module,exports){
 var wayfarer = require('wayfarer')
 
 var isLocalFile = (/file:\/\//.test(typeof window === 'object' &&
@@ -13524,7 +14071,6 @@ function Nanorouter (opts) {
 
   emit.router = router
   emit.on = on
-  emit.match = match
   return emit
 
   function on (routename, listener) {
@@ -13546,11 +14092,6 @@ function Nanorouter (opts) {
       }
     }
   }
-
-  function match (route) {
-    route = pathname(route, isLocalFile)
-    return router.match(route)
-  }
 }
 
 // replace everything in a route but the pathname and hash
@@ -13560,7 +14101,64 @@ function pathname (route, isElectron) {
   return route.replace(suffix, '').replace(normalize, '/')
 }
 
-},{"wayfarer":166}],116:[function(require,module,exports){
+},{"wayfarer":173}],122:[function(require,module,exports){
+var assert = require('assert')
+
+var hasWindow = typeof window !== 'undefined'
+
+function createScheduler () {
+  var scheduler
+  if (hasWindow) {
+    if (!window._nanoScheduler) window._nanoScheduler = new NanoScheduler(true)
+    scheduler = window._nanoScheduler
+  } else {
+    scheduler = new NanoScheduler()
+  }
+  return scheduler
+}
+
+function NanoScheduler (hasWindow) {
+  this.hasWindow = hasWindow
+  this.hasIdle = this.hasWindow && window.requestIdleCallback
+  this.method = this.hasIdle ? window.requestIdleCallback.bind(window) : this.setTimeout
+  this.scheduled = false
+  this.queue = []
+}
+
+NanoScheduler.prototype.push = function (cb) {
+  assert.equal(typeof cb, 'function', 'nanoscheduler.push: cb should be type function')
+
+  this.queue.push(cb)
+  this.schedule()
+}
+
+NanoScheduler.prototype.schedule = function () {
+  if (this.scheduled) return
+
+  this.scheduled = true
+  var self = this
+  this.method(function (idleDeadline) {
+    var cb
+    while (self.queue.length && idleDeadline.timeRemaining() > 0) {
+      cb = self.queue.shift()
+      cb(idleDeadline)
+    }
+    self.scheduled = false
+    if (self.queue.length) self.schedule()
+  })
+}
+
+NanoScheduler.prototype.setTimeout = function (cb) {
+  setTimeout(cb, 0, {
+    timeRemaining: function () {
+      return 1
+    }
+  })
+}
+
+module.exports = createScheduler
+
+},{"assert":107}],123:[function(require,module,exports){
 var assert = require('assert')
 
 module.exports = Nanotiming
@@ -13586,7 +14184,7 @@ Nanotiming.prototype.end = function (partial) {
   window.performance.measure(name, name + '-start', name + '-end')
 }
 
-},{"assert":45}],117:[function(require,module,exports){
+},{"assert":45}],124:[function(require,module,exports){
 var assert = require('assert')
 
 var dftOpts = {}
@@ -13603,15 +14201,7 @@ function onIdle (cb, opts) {
   assert.equal(typeof opts, 'object', 'on-idle: opts should be type object')
 
   if (hasIdle) {
-    timerId = window.requestIdleCallback(function (idleDeadline) {
-      // reschedule if there's less than 1ms remaining on the tick
-      // and a timer did not expire
-      if (idleDeadline.timeRemaining() <= 1 && !idleDeadline.didTimeout) {
-        return onIdle(cb, opts)
-      } else {
-        cb(idleDeadline)
-      }
-    }, opts)
+    timerId = window.requestIdleCallback(cb, opts)
     return window.cancelIdleCallback.bind(window, timerId)
   } else if (hasWindow) {
     timerId = setTimeout(cb, 0)
@@ -13619,11 +14209,10 @@ function onIdle (cb, opts) {
   }
 }
 
-},{"assert":99}],118:[function(require,module,exports){
+},{"assert":45}],125:[function(require,module,exports){
 /* global MutationObserver */
 var document = require('global/document')
 var window = require('global/window')
-var assert = require('assert')
 var watch = Object.create(null)
 var KEY_ID = 'onloadid' + (new Date() % 9e6).toString(36)
 var KEY_ATTR = 'data-' + KEY_ID
@@ -13641,16 +14230,6 @@ if (window && window.MutationObserver) {
       eachMutation(mutations[i].addedNodes, turnon)
     }
   })
-  if (document.body) {
-    beginObserve(observer)
-  } else {
-    document.addEventListener('DOMContentLoaded', function (event) {
-      beginObserve(observer)
-    })
-  }
-}
-
-function beginObserve (observer) {
   observer.observe(document.body, {
     childList: true,
     subtree: true,
@@ -13661,7 +14240,6 @@ function beginObserve (observer) {
 }
 
 module.exports = function onload (el, on, off, caller) {
-  assert(document.body, 'on-load: will not work prior to DOMContentLoaded')
   on = on || function () {}
   off = off || function () {}
   el.setAttribute(KEY_ATTR, 'o' + INDEX)
@@ -13669,9 +14247,6 @@ module.exports = function onload (el, on, off, caller) {
   INDEX += 1
   return el
 }
-
-module.exports.KEY_ATTR = KEY_ATTR
-module.exports.KEY_ID = KEY_ID
 
 function turnon (index, el) {
   if (watch[index][0] && watch[index][2] === 0) {
@@ -13723,7 +14298,42 @@ function eachMutation (nodes, fn) {
   }
 }
 
-},{"assert":99,"global/document":85,"global/window":86}],119:[function(require,module,exports){
+},{"global/document":92,"global/window":93}],126:[function(require,module,exports){
+(function (global){
+/**
+ * JSON parse.
+ *
+ * @see Based on jQuery#parseJSON (MIT) and JSON2
+ * @api private
+ */
+
+var rvalidchars = /^[\],:{}\s]*$/;
+var rvalidescape = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g;
+var rvalidtokens = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
+var rvalidbraces = /(?:^|:|,)(?:\s*\[)+/g;
+var rtrimLeft = /^\s+/;
+var rtrimRight = /\s+$/;
+
+module.exports = function parsejson(data) {
+  if ('string' != typeof data || !data) {
+    return null;
+  }
+
+  data = data.replace(rtrimLeft, '').replace(rtrimRight, '');
+
+  // Attempt to parse using the native JSON parser first
+  if (global.JSON && JSON.parse) {
+    return JSON.parse(data);
+  }
+
+  if (rvalidchars.test(data.replace(rvalidescape, '@')
+      .replace(rvalidtokens, ']')
+      .replace(rvalidbraces, ''))) {
+    return (new Function('return ' + data))();
+  }
+};
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],127:[function(require,module,exports){
 /**
  * Compiles a querystring
  * Returns string representation of the object
@@ -13762,7 +14372,7 @@ exports.decode = function(qs){
   return qry;
 };
 
-},{}],120:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 /**
  * Parses an URI
  *
@@ -13803,7 +14413,7 @@ module.exports = function parseuri(str) {
     return uri;
 };
 
-},{}],121:[function(require,module,exports){
+},{}],129:[function(require,module,exports){
 module.exports = plucker
 
 function plucker(path, object) {
@@ -13840,7 +14450,7 @@ function pluck(path) {
   }
 }
 
-},{}],122:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -13887,12 +14497,12 @@ function nextTick(fn, arg1, arg2, arg3) {
 }
 
 }).call(this,require('_process'))
-},{"_process":165}],123:[function(require,module,exports){
+},{"_process":52}],131:[function(require,module,exports){
 (function (process,global){
 'use strict'
 
 function oldBrowser () {
-  throw new Error('Secure random number generation is not supported by this browser.\nUse Chrome, Firefox or Internet Explorer 11')
+  throw new Error('secure random number generation not supported by this browser\nuse chrome, FireFox or Internet Explorer 11')
 }
 
 var Buffer = require('safe-buffer').Buffer
@@ -13929,7 +14539,7 @@ function randomBytes (size, cb) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":165,"safe-buffer":136}],124:[function(require,module,exports){
+},{"_process":52,"safe-buffer":143}],132:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -14054,7 +14664,7 @@ function forEach(xs, f) {
     f(xs[i], i);
   }
 }
-},{"./_stream_readable":126,"./_stream_writable":128,"core-util-is":61,"inherits":132,"process-nextick-args":122}],125:[function(require,module,exports){
+},{"./_stream_readable":134,"./_stream_writable":136,"core-util-is":62,"inherits":101,"process-nextick-args":130}],133:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -14102,7 +14712,7 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":127,"core-util-is":61,"inherits":132}],126:[function(require,module,exports){
+},{"./_stream_transform":135,"core-util-is":62,"inherits":101}],134:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -15112,7 +15722,7 @@ function indexOf(xs, x) {
   return -1;
 }
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_stream_duplex":124,"./internal/streams/BufferList":129,"./internal/streams/destroy":130,"./internal/streams/stream":131,"_process":165,"core-util-is":61,"events":79,"inherits":132,"isarray":133,"process-nextick-args":122,"safe-buffer":136,"string_decoder/":160,"util":51}],127:[function(require,module,exports){
+},{"./_stream_duplex":132,"./internal/streams/BufferList":137,"./internal/streams/destroy":138,"./internal/streams/stream":139,"_process":52,"core-util-is":62,"events":80,"inherits":101,"isarray":140,"process-nextick-args":130,"safe-buffer":143,"string_decoder/":167,"util":51}],135:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -15327,7 +15937,7 @@ function done(stream, er, data) {
 
   return stream.push(null);
 }
-},{"./_stream_duplex":124,"core-util-is":61,"inherits":132}],128:[function(require,module,exports){
+},{"./_stream_duplex":132,"core-util-is":62,"inherits":101}],136:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -15994,7 +16604,7 @@ Writable.prototype._destroy = function (err, cb) {
   cb(err);
 };
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_stream_duplex":124,"./internal/streams/destroy":130,"./internal/streams/stream":131,"_process":165,"core-util-is":61,"inherits":132,"process-nextick-args":122,"safe-buffer":136,"util-deprecate":162}],129:[function(require,module,exports){
+},{"./_stream_duplex":132,"./internal/streams/destroy":138,"./internal/streams/stream":139,"_process":52,"core-util-is":62,"inherits":101,"process-nextick-args":130,"safe-buffer":143,"util-deprecate":169}],137:[function(require,module,exports){
 'use strict';
 
 /*<replacement>*/
@@ -16069,7 +16679,7 @@ module.exports = function () {
 
   return BufferList;
 }();
-},{"safe-buffer":136}],130:[function(require,module,exports){
+},{"safe-buffer":143}],138:[function(require,module,exports){
 'use strict';
 
 /*<replacement>*/
@@ -16142,14 +16752,12 @@ module.exports = {
   destroy: destroy,
   undestroy: undestroy
 };
-},{"process-nextick-args":122}],131:[function(require,module,exports){
+},{"process-nextick-args":130}],139:[function(require,module,exports){
 module.exports = require('events').EventEmitter;
 
-},{"events":79}],132:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],133:[function(require,module,exports){
-arguments[4][88][0].apply(exports,arguments)
-},{"dup":88}],134:[function(require,module,exports){
+},{"events":80}],140:[function(require,module,exports){
+arguments[4][95][0].apply(exports,arguments)
+},{"dup":95}],141:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = exports;
 exports.Readable = exports;
@@ -16158,7 +16766,7 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":124,"./lib/_stream_passthrough.js":125,"./lib/_stream_readable.js":126,"./lib/_stream_transform.js":127,"./lib/_stream_writable.js":128}],135:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":132,"./lib/_stream_passthrough.js":133,"./lib/_stream_readable.js":134,"./lib/_stream_transform.js":135,"./lib/_stream_writable.js":136}],142:[function(require,module,exports){
 'use strict'
 
 /**
@@ -16188,7 +16796,7 @@ module.exports = function removeItems(arr, startIdx, removeCount)
   arr.length = len
 }
 
-},{}],136:[function(require,module,exports){
+},{}],143:[function(require,module,exports){
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
 var Buffer = buffer.Buffer
@@ -16252,7 +16860,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":52}],137:[function(require,module,exports){
+},{"buffer":53}],144:[function(require,module,exports){
  /* eslint-env node */
 'use strict';
 
@@ -16860,14 +17468,14 @@ SDPUtils.isRejected = function(mediaSection) {
 // Expose public methods.
 module.exports = SDPUtils;
 
-},{}],138:[function(require,module,exports){
+},{}],145:[function(require,module,exports){
 module.exports = require('insert-css')
 
-},{"insert-css":95}],139:[function(require,module,exports){
+},{"insert-css":102}],146:[function(require,module,exports){
 'use strict';
 module.exports = require('./lib/index');
 
-},{"./lib/index":144}],140:[function(require,module,exports){
+},{"./lib/index":151}],147:[function(require,module,exports){
 'use strict';
 
 var randomFromSeed = require('./random/random-from-seed');
@@ -16967,7 +17575,7 @@ module.exports = {
     shuffled: getShuffled
 };
 
-},{"./random/random-from-seed":147}],141:[function(require,module,exports){
+},{"./random/random-from-seed":154}],148:[function(require,module,exports){
 'use strict';
 
 var encode = require('./encode');
@@ -17017,7 +17625,7 @@ function build(clusterWorkerId) {
 
 module.exports = build;
 
-},{"./alphabet":140,"./encode":143}],142:[function(require,module,exports){
+},{"./alphabet":147,"./encode":150}],149:[function(require,module,exports){
 'use strict';
 var alphabet = require('./alphabet');
 
@@ -17036,7 +17644,7 @@ function decode(id) {
 
 module.exports = decode;
 
-},{"./alphabet":140}],143:[function(require,module,exports){
+},{"./alphabet":147}],150:[function(require,module,exports){
 'use strict';
 
 var randomByte = require('./random/random-byte');
@@ -17057,7 +17665,7 @@ function encode(lookup, number) {
 
 module.exports = encode;
 
-},{"./random/random-byte":146}],144:[function(require,module,exports){
+},{"./random/random-byte":153}],151:[function(require,module,exports){
 'use strict';
 
 var alphabet = require('./alphabet');
@@ -17124,7 +17732,7 @@ module.exports.characters = characters;
 module.exports.decode = decode;
 module.exports.isValid = isValid;
 
-},{"./alphabet":140,"./build":141,"./decode":142,"./encode":143,"./is-valid":145,"./util/cluster-worker-id":148}],145:[function(require,module,exports){
+},{"./alphabet":147,"./build":148,"./decode":149,"./encode":150,"./is-valid":152,"./util/cluster-worker-id":155}],152:[function(require,module,exports){
 'use strict';
 var alphabet = require('./alphabet');
 
@@ -17145,7 +17753,7 @@ function isShortId(id) {
 
 module.exports = isShortId;
 
-},{"./alphabet":140}],146:[function(require,module,exports){
+},{"./alphabet":147}],153:[function(require,module,exports){
 'use strict';
 
 var crypto = typeof window === 'object' && (window.crypto || window.msCrypto); // IE 11 uses window.msCrypto
@@ -17161,7 +17769,7 @@ function randomByte() {
 
 module.exports = randomByte;
 
-},{}],147:[function(require,module,exports){
+},{}],154:[function(require,module,exports){
 'use strict';
 
 // Found this seed-based random generator somewhere
@@ -17188,12 +17796,12 @@ module.exports = {
     seed: setSeed
 };
 
-},{}],148:[function(require,module,exports){
+},{}],155:[function(require,module,exports){
 'use strict';
 
 module.exports = 0;
 
-},{}],149:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 (function (Buffer){
 module.exports = Peer
 
@@ -17719,9 +18327,6 @@ Peer.prototype.getStats = function (cb) {
   // Single-parameter callback-based getStats() (non-standard)
   } else if (self._pc.getStats.length > 0) {
     self._pc.getStats(function (res) {
-      // If we destroy connection in `connect` callback this code might happen to run when actual connection is already closed
-      if (self.destroyed) return
-
       var reports = []
       res.result().forEach(function (result) {
         var report = {}
@@ -17747,135 +18352,120 @@ Peer.prototype._maybeReady = function () {
   var self = this
   self._debug('maybeReady pc %s channel %s', self._pcReady, self._channelReady)
   if (self.connected || self._connecting || !self._pcReady || !self._channelReady) return
-
   self._connecting = true
 
-  // HACK: We can't rely on order here, for details see https://github.com/js-platform/node-webrtc/issues/339
-  function findCandidatePair () {
+  self.getStats(function (err, items) {
     if (self.destroyed) return
 
-    self.getStats(function (err, items) {
-      if (self.destroyed) return
+    // Treat getStats error as non-fatal. It's not essential.
+    if (err) items = []
 
-      // Treat getStats error as non-fatal. It's not essential.
-      if (err) items = []
+    self._connecting = false
+    self.connected = true
 
-      var remoteCandidates = {}
-      var localCandidates = {}
-      var candidatePairs = {}
-      var foundSelectedCandidatePair = false
+    var remoteCandidates = {}
+    var localCandidates = {}
+    var candidatePairs = {}
 
-      items.forEach(function (item) {
-        // TODO: Once all browsers support the hyphenated stats report types, remove
-        // the non-hypenated ones
-        if (item.type === 'remotecandidate' || item.type === 'remote-candidate') {
-          remoteCandidates[item.id] = item
-        }
-        if (item.type === 'localcandidate' || item.type === 'local-candidate') {
-          localCandidates[item.id] = item
-        }
-        if (item.type === 'candidatepair' || item.type === 'candidate-pair') {
-          candidatePairs[item.id] = item
-        }
-      })
-
-      items.forEach(function (item) {
-        // Spec-compliant
-        if (item.type === 'transport') {
-          setSelectedCandidatePair(candidatePairs[item.selectedCandidatePairId])
-        }
-
-        // Old implementations
-        if (
-          (item.type === 'googCandidatePair' && item.googActiveConnection === 'true') ||
-          ((item.type === 'candidatepair' || item.type === 'candidate-pair') && item.selected)
-        ) {
-          setSelectedCandidatePair(item)
-        }
-      })
-
-      function setSelectedCandidatePair (selectedCandidatePair) {
-        foundSelectedCandidatePair = true
-
-        var local = localCandidates[selectedCandidatePair.localCandidateId]
-
-        if (local && local.ip) {
-          // Spec
-          self.localAddress = local.ip
-          self.localPort = Number(local.port)
-        } else if (local && local.ipAddress) {
-          // Firefox
-          self.localAddress = local.ipAddress
-          self.localPort = Number(local.portNumber)
-        } else if (typeof selectedCandidatePair.googLocalAddress === 'string') {
-          // TODO: remove this once Chrome 58 is released
-          local = selectedCandidatePair.googLocalAddress.split(':')
-          self.localAddress = local[0]
-          self.localPort = Number(local[1])
-        }
-
-        var remote = remoteCandidates[selectedCandidatePair.remoteCandidateId]
-
-        if (remote && remote.ip) {
-          // Spec
-          self.remoteAddress = remote.ip
-          self.remotePort = Number(remote.port)
-        } else if (remote && remote.ipAddress) {
-          // Firefox
-          self.remoteAddress = remote.ipAddress
-          self.remotePort = Number(remote.portNumber)
-        } else if (typeof selectedCandidatePair.googRemoteAddress === 'string') {
-          // TODO: remove this once Chrome 58 is released
-          remote = selectedCandidatePair.googRemoteAddress.split(':')
-          self.remoteAddress = remote[0]
-          self.remotePort = Number(remote[1])
-        }
-        self.remoteFamily = 'IPv4'
-
-        self._debug(
-          'connect local: %s:%s remote: %s:%s',
-          self.localAddress, self.localPort, self.remoteAddress, self.remotePort
-        )
+    items.forEach(function (item) {
+      // TODO: Once all browsers support the hyphenated stats report types, remove
+      // the non-hypenated ones
+      if (item.type === 'remotecandidate' || item.type === 'remote-candidate') {
+        remoteCandidates[item.id] = item
       }
-
-      if (!foundSelectedCandidatePair && items.length) {
-        setTimeout(findCandidatePair, 100)
-        return
-      } else {
-        self._connecting = false
-        self.connected = true
+      if (item.type === 'localcandidate' || item.type === 'local-candidate') {
+        localCandidates[item.id] = item
       }
-
-      if (self._chunk) {
-        try {
-          self.send(self._chunk)
-        } catch (err) {
-          return self._destroy(err)
-        }
-        self._chunk = null
-        self._debug('sent chunk from "write before connect"')
-
-        var cb = self._cb
-        self._cb = null
-        cb(null)
-      }
-
-      // If `bufferedAmountLowThreshold` and 'onbufferedamountlow' are unsupported,
-      // fallback to using setInterval to implement backpressure.
-      if (typeof self._channel.bufferedAmountLowThreshold !== 'number') {
-        self._interval = setInterval(function () { self._onInterval() }, 150)
-        if (self._interval.unref) self._interval.unref()
-      }
-
-      self._debug('connect')
-      self.emit('connect')
-      if (self._earlyMessage) { // HACK: Workaround for Chrome not firing "open" between tabs
-        self._onChannelMessage(self._earlyMessage)
-        self._earlyMessage = null
+      if (item.type === 'candidatepair' || item.type === 'candidate-pair') {
+        candidatePairs[item.id] = item
       }
     })
-  }
-  findCandidatePair()
+
+    items.forEach(function (item) {
+      // Spec-compliant
+      if (item.type === 'transport') {
+        setSelectedCandidatePair(candidatePairs[item.selectedCandidatePairId])
+      }
+
+      // Old implementations
+      if (
+        (item.type === 'googCandidatePair' && item.googActiveConnection === 'true') ||
+        ((item.type === 'candidatepair' || item.type === 'candidate-pair') && item.selected)
+      ) {
+        setSelectedCandidatePair(item)
+      }
+    })
+
+    function setSelectedCandidatePair (selectedCandidatePair) {
+      var local = localCandidates[selectedCandidatePair.localCandidateId]
+
+      if (local && local.ip) {
+        // Spec
+        self.localAddress = local.ip
+        self.localPort = Number(local.port)
+      } else if (local && local.ipAddress) {
+        // Firefox
+        self.localAddress = local.ipAddress
+        self.localPort = Number(local.portNumber)
+      } else if (typeof selectedCandidatePair.googLocalAddress === 'string') {
+        // TODO: remove this once Chrome 58 is released
+        local = selectedCandidatePair.googLocalAddress.split(':')
+        self.localAddress = local[0]
+        self.localPort = Number(local[1])
+      }
+
+      var remote = remoteCandidates[selectedCandidatePair.remoteCandidateId]
+
+      if (remote && remote.ip) {
+        // Spec
+        self.remoteAddress = remote.ip
+        self.remotePort = Number(remote.port)
+      } else if (remote && remote.ipAddress) {
+        // Firefox
+        self.remoteAddress = remote.ipAddress
+        self.remotePort = Number(remote.portNumber)
+      } else if (typeof selectedCandidatePair.googRemoteAddress === 'string') {
+        // TODO: remove this once Chrome 58 is released
+        remote = selectedCandidatePair.googRemoteAddress.split(':')
+        self.remoteAddress = remote[0]
+        self.remotePort = Number(remote[1])
+      }
+      self.remoteFamily = 'IPv4'
+
+      self._debug(
+        'connect local: %s:%s remote: %s:%s',
+        self.localAddress, self.localPort, self.remoteAddress, self.remotePort
+      )
+    }
+
+    if (self._chunk) {
+      try {
+        self.send(self._chunk)
+      } catch (err) {
+        return self._destroy(err)
+      }
+      self._chunk = null
+      self._debug('sent chunk from "write before connect"')
+
+      var cb = self._cb
+      self._cb = null
+      cb(null)
+    }
+
+    // If `bufferedAmountLowThreshold` and 'onbufferedamountlow' are unsupported,
+    // fallback to using setInterval to implement backpressure.
+    if (typeof self._channel.bufferedAmountLowThreshold !== 'number') {
+      self._interval = setInterval(function () { self._onInterval() }, 150)
+      if (self._interval.unref) self._interval.unref()
+    }
+
+    self._debug('connect')
+    self.emit('connect')
+    if (self._earlyMessage) { // HACK: Workaround for Chrome not firing "open" between tabs
+      self._onChannelMessage(self._earlyMessage)
+      self._earlyMessage = null
+    }
+  })
 }
 
 Peer.prototype._onInterval = function () {
@@ -18017,7 +18607,7 @@ Peer.prototype._transformConstraints = function (constraints) {
 function noop () {}
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"debug":63,"get-browser-rtc":83,"inherits":94,"randombytes":123,"readable-stream":134}],150:[function(require,module,exports){
+},{"buffer":53,"debug":63,"get-browser-rtc":90,"inherits":101,"randombytes":131,"readable-stream":141}],157:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -18113,7 +18703,7 @@ exports.connect = lookup;
 exports.Manager = require('./manager');
 exports.Socket = require('./socket');
 
-},{"./manager":151,"./socket":153,"./url":154,"debug":63,"socket.io-parser":156}],151:[function(require,module,exports){
+},{"./manager":158,"./socket":160,"./url":161,"debug":63,"socket.io-parser":163}],158:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -18688,7 +19278,7 @@ Manager.prototype.onreconnect = function () {
   this.emitAll('reconnect', attempt);
 };
 
-},{"./on":152,"./socket":153,"backo2":46,"component-bind":57,"component-emitter":58,"debug":63,"engine.io-client":66,"indexof":93,"socket.io-parser":156}],152:[function(require,module,exports){
+},{"./on":159,"./socket":160,"backo2":46,"component-bind":58,"component-emitter":59,"debug":63,"engine.io-client":66,"indexof":100,"socket.io-parser":163}],159:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -18714,7 +19304,7 @@ function on (obj, ev, fn) {
   };
 }
 
-},{}],153:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -19134,7 +19724,7 @@ Socket.prototype.compress = function (compress) {
   return this;
 };
 
-},{"./on":152,"component-bind":57,"component-emitter":58,"debug":63,"parseqs":119,"socket.io-parser":156,"to-array":161}],154:[function(require,module,exports){
+},{"./on":159,"component-bind":58,"component-emitter":59,"debug":63,"parseqs":127,"socket.io-parser":163,"to-array":168}],161:[function(require,module,exports){
 (function (global){
 
 /**
@@ -19213,7 +19803,7 @@ function url (uri, loc) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"debug":63,"parseuri":120}],155:[function(require,module,exports){
+},{"debug":63,"parseuri":128}],162:[function(require,module,exports){
 (function (global){
 /*global Blob,File*/
 
@@ -19358,7 +19948,7 @@ exports.removeBlobs = function(data, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./is-buffer":157,"isarray":158}],156:[function(require,module,exports){
+},{"./is-buffer":164,"isarray":165}],163:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -19760,7 +20350,7 @@ function error() {
   };
 }
 
-},{"./binary":155,"./is-buffer":157,"component-emitter":58,"debug":63,"has-binary2":87}],157:[function(require,module,exports){
+},{"./binary":162,"./is-buffer":164,"component-emitter":59,"debug":63,"has-binary2":94}],164:[function(require,module,exports){
 (function (global){
 
 module.exports = isBuf;
@@ -19777,9 +20367,9 @@ function isBuf(obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],158:[function(require,module,exports){
-arguments[4][88][0].apply(exports,arguments)
-},{"dup":88}],159:[function(require,module,exports){
+},{}],165:[function(require,module,exports){
+arguments[4][95][0].apply(exports,arguments)
+},{"dup":95}],166:[function(require,module,exports){
 var fastSafeStringify = require('fast-safe-stringify')
 var copy = require('copy-text-to-clipboard')
 
@@ -19797,7 +20387,7 @@ function stateCopy (obj) {
 module.exports = stateCopy
 
 
-},{"copy-text-to-clipboard":60,"fast-safe-stringify":80}],160:[function(require,module,exports){
+},{"copy-text-to-clipboard":61,"fast-safe-stringify":81}],167:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('safe-buffer').Buffer;
@@ -20070,7 +20660,7 @@ function simpleWrite(buf) {
 function simpleEnd(buf) {
   return buf && buf.length ? this.write(buf) : '';
 }
-},{"safe-buffer":136}],161:[function(require,module,exports){
+},{"safe-buffer":143}],168:[function(require,module,exports){
 module.exports = toArray
 
 function toArray(list, index) {
@@ -20085,7 +20675,7 @@ function toArray(list, index) {
     return array
 }
 
-},{}],162:[function(require,module,exports){
+},{}],169:[function(require,module,exports){
 (function (global){
 
 /**
@@ -20156,14 +20746,16 @@ function config (name) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],163:[function(require,module,exports){
+},{}],170:[function(require,module,exports){
+arguments[4][101][0].apply(exports,arguments)
+},{"dup":101}],171:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],164:[function(require,module,exports){
+},{}],172:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -20753,193 +21345,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":163,"_process":165,"inherits":94}],165:[function(require,module,exports){
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],166:[function(require,module,exports){
+},{"./support/isBuffer":171,"_process":52,"inherits":170}],173:[function(require,module,exports){
 var assert = require('assert')
 var trie = require('./trie')
 
@@ -20954,9 +21360,8 @@ function Wayfarer (dft) {
   var _trie = trie()
 
   emit._trie = _trie
-  emit.on = on
   emit.emit = emit
-  emit.match = match
+  emit.on = on
   emit._wayfarer = true
 
   return emit
@@ -20983,37 +21388,31 @@ function Wayfarer (dft) {
   // match and call a route
   // (str, obj?) -> null
   function emit (route) {
-    var matched = match(route)
-
+    assert.notEqual(route, undefined, "'route' must be defined")
     var args = new Array(arguments.length)
-    args[0] = matched.params
     for (var i = 1; i < args.length; i++) {
       args[i] = arguments[i]
     }
 
-    return matched.cb.apply(matched.cb, args)
-  }
-
-  function match (route) {
-    assert.notEqual(route, undefined, "'route' must be defined")
-
-    var matched = _trie.match(route)
-    if (matched && matched.cb) return new Route(matched)
+    var node = _trie.match(route)
+    if (node && node.cb) {
+      args[0] = node.params
+      var cb = node.cb
+      return cb.apply(cb, args)
+    }
 
     var dft = _trie.match(_default)
-    if (dft && dft.cb) return new Route(dft)
+    if (dft && dft.cb) {
+      args[0] = dft.params
+      var dftcb = dft.cb
+      return dftcb.apply(dftcb, args)
+    }
 
     throw new Error("route '" + route + "' did not match")
   }
-
-  function Route (matched) {
-    this.cb = matched.cb
-    this.route = matched.cb.route
-    this.params = matched.params
-  }
 }
 
-},{"./trie":167,"assert":45}],167:[function(require,module,exports){
+},{"./trie":174,"assert":45}],174:[function(require,module,exports){
 var mutate = require('xtend/mutable')
 var assert = require('assert')
 var xtend = require('xtend')
@@ -21131,7 +21530,8 @@ Trie.prototype.mount = function (route, trie) {
     key = split[0]
     node = this.create(key)
   } else {
-    var head = split.join('/')
+    var headArr = split.splice(0, split.length - 1)
+    var head = headArr.join('/')
     key = split[0]
     node = this.create(head)
   }
@@ -21151,7 +21551,7 @@ Trie.prototype.mount = function (route, trie) {
   }
 }
 
-},{"assert":45,"xtend":177,"xtend/mutable":178}],168:[function(require,module,exports){
+},{"assert":45,"xtend":184,"xtend/mutable":185}],175:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -21245,7 +21645,7 @@ Trie.prototype.mount = function (route, trie) {
   }
 })();
 
-},{"./chrome/chrome_shim":169,"./edge/edge_shim":171,"./firefox/firefox_shim":173,"./safari/safari_shim":175,"./utils":176}],169:[function(require,module,exports){
+},{"./chrome/chrome_shim":176,"./edge/edge_shim":178,"./firefox/firefox_shim":180,"./safari/safari_shim":182,"./utils":183}],176:[function(require,module,exports){
 
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
@@ -21512,7 +21912,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils.js":176,"./getusermedia":170}],170:[function(require,module,exports){
+},{"../utils.js":183,"./getusermedia":177}],177:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -21712,7 +22112,7 @@ module.exports = function() {
   }
 };
 
-},{"../utils.js":176}],171:[function(require,module,exports){
+},{"../utils.js":183}],178:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -22841,7 +23241,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils":176,"./getusermedia":172,"sdp":137}],172:[function(require,module,exports){
+},{"../utils":183,"./getusermedia":179,"sdp":144}],179:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -22875,7 +23275,7 @@ module.exports = function() {
   };
 };
 
-},{}],173:[function(require,module,exports){
+},{}],180:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -23039,7 +23439,7 @@ module.exports = {
   shimGetUserMedia: require('./getusermedia')
 };
 
-},{"../utils":176,"./getusermedia":174}],174:[function(require,module,exports){
+},{"../utils":183,"./getusermedia":181}],181:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -23202,7 +23602,7 @@ module.exports = function() {
   };
 };
 
-},{"../utils":176}],175:[function(require,module,exports){
+},{"../utils":183}],182:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -23232,7 +23632,7 @@ module.exports = {
   // shimPeerConnection: safariShim.shimPeerConnection
 };
 
-},{}],176:[function(require,module,exports){
+},{}],183:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -23365,7 +23765,7 @@ module.exports = {
   extractVersion: utils.extractVersion
 };
 
-},{}],177:[function(require,module,exports){
+},{}],184:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -23386,7 +23786,7 @@ function extend() {
     return target
 }
 
-},{}],178:[function(require,module,exports){
+},{}],185:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -23405,7 +23805,7 @@ function extend(target) {
     return target
 }
 
-},{}],179:[function(require,module,exports){
+},{}],186:[function(require,module,exports){
 'use strict';
 
 var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')
