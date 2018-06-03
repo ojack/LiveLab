@@ -25,6 +25,7 @@ function mediaModel (state, bus) {
     all: []
   }, state.media)
 
+
   //  var ip = window.location.host
 
   bus.on('media:addTracksFromStream', function (options) {
@@ -53,6 +54,14 @@ function mediaModel (state, bus) {
     // if default communication stream, set name to default
     if (opts.isDefault) {
       state.media.byId[opts.track.id].name = 'default'
+      if (opts.track.kind === 'audio') {
+        bus.emit('ui:addAudio',
+          {
+            track: state.media.byId[opts.track.id].track,
+            peerId: opts.peerId
+          }
+        )
+      }
     }
     if (state.media.all.indexOf(opts.track.id) < 0) {
       state.media.all.push(opts.track.id)

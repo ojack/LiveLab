@@ -40,7 +40,10 @@ function peersModel (state, bus) {
     }, state.peers.byId[peer.peerId], peer)
 
     console.log('NEW  PEER INFO', state.peers.byId)
-    bus.emit('ui:addPeer', peer.peerId)
+    bus.emit('ui:addPeer', {
+      peerId: peer.peerId
+    })
+
     if (state.peers.all.indexOf(peer.peerId) < 0) {
       state.peers.all.push(peer.peerId)
     }

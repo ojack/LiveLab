@@ -7,15 +7,23 @@ const MAX_NUM_PEERS = 8 // can be changed (stub for initializing video container
 
 module.exports = communicationView
 
-var peerAudio = []
+/*var peerAudio = []
 
 for (var i = 0; i < MAX_NUM_PEERS; i++) {
   peerAudio[i] = new AudioEl()
 }
 
+${peerAudio[index].render({
+  htmlProps: {},
+  track: (trackId in state.media.byId)  ? state.media.byId[audioId].track : null,
+  id: (trackId in state.media.byId) ?  state.media.byId[audioId].track.id : null,
+  volume: state.ui.communication[peerIndex].volume
+})}
+*/
+
 function communicationView (state, emit) {
   // create containers for each
-  var communicationContainers = peerAudio.map(function (vidEl, index) {
+  var communicationContainers = state.peers.all.map(function (vidEl, index) {
     var peerIndex = state.peers.all[index]
 
     if (peerIndex) {
@@ -32,12 +40,7 @@ function communicationView (state, emit) {
           id: (trackId in state.media.byId) ?  state.media.byId[trackId].track.id : null
         })}
 
-        ${peerAudio[index].render({
-          htmlProps: {},
-          track: (trackId in state.media.byId)  ? state.media.byId[audioId].track : null,
-          id: (trackId in state.media.byId) ?  state.media.byId[audioId].track.id : null,
-          volume: state.ui.communication[peerIndex].volume
-        })}
+
         <div> <i
                 class=${state.ui.communication[peerIndex].volume==0?"fa fa-volume-off ma2 dim pointer":"fa fa-volume-up ma2 dim pointer"}
                 aria-hidden="true"
