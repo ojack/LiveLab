@@ -1093,6 +1093,8 @@ function mediaModel (state, bus) {
     bus.emit('render')
   })
 
+  
+
   bus.on('media:removeTrack', function (trackId) {
     bus.emit('show:trackRemoved', trackId)
     delete state.media.byId[trackId]
@@ -1364,6 +1366,14 @@ function peersModel (state, bus) {
       state.peers.byId[opts.peerId].defaultTracks[opts.kind] = opts.trackId
     }
     // console.log("peersTracks", state.peers.byId[opts.peerId].tracks)
+    bus.emit('render')
+  })
+
+  bus.on('peers:hangupTrack', function (trackId) {
+    var index = state.peers.byId[state.user.uuid].tracks.indexOf(trackId)
+    if (index > -1) state.peers.byId[state.user.uuid].tracks.splice(index, 1)
+    bus.emit('media:removeTrack', trackId)
+    bus.emit('user:updateBroadcastStream')
     bus.emit('render')
   })
 
@@ -2007,8 +2017,8 @@ function updateLocalInfo(id){
       osc: state.osc.local
     }
   //  console.log("SHARING USER INFO", updateObj)
-    if(id){
-      multiPeer.sendToPeer(id, JSON.stringify({ type: 'updatePeerInfo', message: updateObj}))
+    if (id) {
+      multiPeer.sendToPeer(id, JSON.stringify({ type: 'updatePeerInfo', message: updateObj }))
     } else {
       // send to all
     }
@@ -2019,6 +2029,7 @@ function updateLocalInfo(id){
 // of bug (when all are added at once in an array, tracks with duplicate labels but not duplicate ids are eliminated)
   function getCombinedLocalStream () {
     var tracks = []
+    console.log('tracks are', state.peers.byId[state.user.uuid].tracks)
     var startTrack = state.peers.byId[state.user.uuid].tracks[0]
     tracks.push(state.media.byId[startTrack].track)
     var stream = new MediaStream(tracks)
@@ -3271,7 +3282,7 @@ function inspectorComponent (state, emit) {
       track: (state.ui.inspector.trackId in state.media.byId)  ? state.media.byId[state.ui.inspector.trackId].track : null,
       id: (state.ui.inspector.trackId in state.media.byId) ?  state.media.byId[state.ui.inspector.trackId].track.id : null
     }) : null }
-  ${ media.peerId ===  state.user.uuid ? html`<div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('devices:toggleAddBroadcast', true))}>Hangup</div>` : null }
+  ${ media.peerId ===  state.user.uuid ? html`<div class="f6 fr ma2 link ph3 pv2 mb2 white bg-dark-pink pointer dib dim" onclick=${() => (emit('peers:hangupTrack', state.ui.inspector.trackId))}>Hangup</div>` : null }
 
   </div>`
 }

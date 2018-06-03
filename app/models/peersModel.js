@@ -59,6 +59,14 @@ function peersModel (state, bus) {
     bus.emit('render')
   })
 
+  bus.on('peers:hangupTrack', function (trackId) {
+    var index = state.peers.byId[state.user.uuid].tracks.indexOf(trackId)
+    if (index > -1) state.peers.byId[state.user.uuid].tracks.splice(index, 1)
+    bus.emit('media:removeTrack', trackId)
+    bus.emit('user:updateBroadcastStream')
+    bus.emit('render')
+  })
+
   bus.on('peers:removePeer', function (peerId) {
     // remove all tracks associated with this peer
     state.peers.byId[peerId].tracks.forEach(function (trackId) {

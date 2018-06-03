@@ -70,6 +70,8 @@ function mediaModel (state, bus) {
     bus.emit('render')
   })
 
+  
+
   bus.on('media:removeTrack', function (trackId) {
     bus.emit('show:trackRemoved', trackId)
     delete state.media.byId[trackId]

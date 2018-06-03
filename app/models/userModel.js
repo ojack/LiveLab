@@ -269,8 +269,8 @@ function updateLocalInfo(id){
       osc: state.osc.local
     }
   //  console.log("SHARING USER INFO", updateObj)
-    if(id){
-      multiPeer.sendToPeer(id, JSON.stringify({ type: 'updatePeerInfo', message: updateObj}))
+    if (id) {
+      multiPeer.sendToPeer(id, JSON.stringify({ type: 'updatePeerInfo', message: updateObj }))
     } else {
       // send to all
     }
@@ -281,6 +281,7 @@ function updateLocalInfo(id){
 // of bug (when all are added at once in an array, tracks with duplicate labels but not duplicate ids are eliminated)
   function getCombinedLocalStream () {
     var tracks = []
+    console.log('tracks are', state.peers.byId[state.user.uuid].tracks)
     var startTrack = state.peers.byId[state.user.uuid].tracks[0]
     tracks.push(state.media.byId[startTrack].track)
     var stream = new MediaStream(tracks)
