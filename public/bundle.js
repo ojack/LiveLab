@@ -1061,13 +1061,11 @@ function mediaModel (state, bus) {
         isDefault: options.isDefault,
         kind: track.kind
       })
-
-
     })
     bus.emit('render')
   })
 
-  bus.on('media:updateTrackInfo', function(trackUpdateObject){
+  bus.on('media:updateTrackInfo', function (trackUpdateObject) {
     Object.keys(trackUpdateObject).forEach((key) => {
       state.media.byId[key] = xtend(state.media.byId[key], trackUpdateObject[key])
     })
@@ -1076,8 +1074,8 @@ function mediaModel (state, bus) {
   bus.on('media:addTrack', function (opts) {
     state.media.byId[opts.track.id] = xtend({}, opts)
     // if default communication stream, set name to default
-    if(opts.isDefault) {
-      state.media.byId[opts.track.id].name = "default"
+    if (opts.isDefault) {
+      state.media.byId[opts.track.id].name = 'default'
     }
     if (state.media.all.indexOf(opts.track.id) < 0) {
       state.media.all.push(opts.track.id)
@@ -1093,17 +1091,14 @@ function mediaModel (state, bus) {
     bus.emit('render')
   })
 
-  
-
   bus.on('media:removeTrack', function (trackId) {
     bus.emit('show:trackRemoved', trackId)
     delete state.media.byId[trackId]
     var index = state.media.all.indexOf(trackId)
-    if(trackId === state.ui.inspector.trackId){
+    if (trackId === state.ui.inspector.trackId) {
       bus.emit('ui:updateInspectorTrack', {trackId: null, pc: null})
     }
     if (index > -1) state.media.all.splice(index, 1)
-
     bus.emit('render')
   })
   // Hacky way to avoid duplicating getusermedia calls:
