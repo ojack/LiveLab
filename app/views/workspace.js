@@ -47,6 +47,9 @@ function workspaceView (state, emit) {
             )}
           </div>
           <div class="w-100 pa2">
+            <h2 class="pa2">
+              In room: <i>${state.user.room}</i> (tell others to join this room!)
+            </h1>
             ${state.ui.selectedTab === 0 ? communication(state, emit) : showControl(state, emit)}
           </div>
         </div>
