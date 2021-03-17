@@ -9,13 +9,13 @@ module.exports = class Browserglue extends Component {
     const bg = new browserglue.Client()
     this.isConnected = false
     console.log('created browserglue', bg)
-    bg.on('connect', event => {
-      console.log("[connect]", event)
+    bg.on('connect', () => {
+      console.log("[connect]")
       this.isConnected = true
       this.rerender()
     });
-    bg.on('disconnect', event => {
-      console.log("[disconnect]", event)
+    bg.on('disconnect', () => {
+      console.log("[disconnect]")
       this.isConnected = false
       this.rerender()
     });
