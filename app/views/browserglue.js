@@ -4,7 +4,7 @@ const browserglue = require('browserglue')
 const { button } = require('./formElements.js')
 
 module.exports = class Browserglue extends Component {
-  constructor (id, state, emit) {
+  constructor(id, state, emit) {
     super(id)
 
     // Multipeer channel for keeping browserglue channels in sync between peers
@@ -28,6 +28,20 @@ module.exports = class Browserglue extends Component {
     bg.on('change', channels => console.log("[change]", channels));
     bg.on('add-channel', ({ path }) => {
       console.log("[add-channel]", path);
+      const channel = bg.channels[path];
+      if (channel) {
+        channel.on('message', async blob => {
+          // Forward messages to all peers through the sync channel
+          this.syncChannel.send('message', { event: 'message', path, data: blob });
+
+          const text = await blob.text();
+          console.log(path, text);
+        });
+      } else {
+        console.warn("Channel is not defined?");
+      }
+
+      // Notify all peers that a new channel was added
       this.syncChannel.send('message', { event: 'add-channel', path });
     });
     bg.on('remove-channel', ({ path }) => {
@@ -39,37 +53,30 @@ module.exports = class Browserglue extends Component {
     bg.on('unsubscribe-port', ({ path, port }) => console.log("[unsubscribe-port]", path, port));
     this.bg = bg
 
+    window.browserglue = this;
+
     this._handleSyncMessages();
   }
 
-  update () {
+  update() {
     return false
   }
 
   async addChannel(path = '/d', port = '54321') {
     if (this.bg.channels[path]) return;
-
-    const thisChannel = await this.bg.addChannel(path, port)
-
-    thisChannel.on('message', async blob => {
-      // Forward messages to all peers through the sync channel
-      this.syncChannel.send('message', { event: 'message', path, data: blob });
-
-      const text = await blob.text();
-      console.log(path, text);
-    });
+    return await this.bg.addChannel(path, port)
   }
 
-  createElement (state) {
+  createElement(state) {
     return html`<div>
       ${this.isConnected ? html`<div>connected to browserglue at ${this.bg.url}
       ${button({
-        text: 'add channel',
-        onClick: () => this.addChannel(),
-        classes: 'bg-dark-pink b fr mv2'
-      })}
+      text: 'add channel',
+      onClick: () => this.addChannel(),
+      classes: 'bg-dark-pink b fr mv2'
+    })}
         </div>`
-      : `browserglue not connected`}
+        : `browserglue not connected`}
     </div>`
   }
 
