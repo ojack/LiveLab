@@ -35,8 +35,8 @@ module.exports = class Browserglue extends Component {
       this.syncChannel.send('message', { event: 'remove-channel', path });
     });
     bg.on('bind-port', ({ path, port }) => console.log("[bind-port]", path, port));
-    bg.on('subscribe-port', ({ path, port }) => console.log("[subscribe-port]", msg));
-    bg.on('unsubscribe-port', ({ path, port }) => console.log("[unsubscribe-port]", msg));
+    bg.on('subscribe-port', ({ path, port }) => console.log("[subscribe-port]", path, port));
+    bg.on('unsubscribe-port', ({ path, port }) => console.log("[unsubscribe-port]", path, port));
     this.bg = bg
 
     this._handleSyncMessages();
@@ -46,7 +46,9 @@ module.exports = class Browserglue extends Component {
     return false
   }
 
-  async addChannel({ path = '/default', port = '54321' }) {
+  async addChannel(path = '/d', port = '54321') {
+    if (this.bg.channels[path]) return;
+
     const thisChannel = await this.bg.addChannel(path, port)
 
     thisChannel.on('message', async blob => {
@@ -63,7 +65,7 @@ module.exports = class Browserglue extends Component {
       ${this.isConnected ? html`<div>connected to browserglue at ${this.bg.url}
       ${button({
         text: 'add channel',
-        onClick: this.addChannel.bind(this),
+        onClick: () => this.addChannel(),
         classes: 'bg-dark-pink b fr mv2'
       })}
         </div>`
@@ -74,7 +76,10 @@ module.exports = class Browserglue extends Component {
   _handleSyncMessages() {
     this.syncChannel.on('message', (message, peer) => {
       // Ignore messages sent by the same peer
-      if (peer === this.user) return;
+      if (peer.id === this.user.uuid) {
+        console.log("ignore my message...")
+        return;
+      }
 
       // Handle sync messages
       switch (message.event) {
@@ -86,8 +91,12 @@ module.exports = class Browserglue extends Component {
         }
         case 'add-channel': {
           const { path } = message;
-          this.bg.addChannel(path);
-          this.channels[path] = { owner: peer };
+          if (!this.bg.channels[path]) {
+            this.bg.addChannel(path);
+          }
+          if (!this.channels[path]) {
+            this.channels[path] = { owner: peer };
+          }
           break;
         }
         case 'remove-channel': {
