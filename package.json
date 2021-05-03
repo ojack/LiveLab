@@ -37,7 +37,7 @@
     "anchorme": "^2.1.2",
     "assert": "^2.0.0",
     "base-elements": "^2.2.1",
-    "browserglue": "^0.1.3",
+    "browserglue": "^0.2.0",
     "browserify-middleware": "^8.1.1",
     "choo": "^7.0.0",
     "choo-devtools": "^3.0.3",
