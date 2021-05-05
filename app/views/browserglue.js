@@ -13,16 +13,14 @@ module.exports = class Browserglue extends Component {
     this.channels = {};
 
     const bg = new browserglue.Client()
-    this.isConnected = false
+
     console.log('created browserglue', bg)
     bg.on('connect', () => {
       console.log("[connect]")
-      this.isConnected = true
       this.rerender()
     });
     bg.on('disconnect', () => {
       console.log("[disconnect]")
-      this.isConnected = false
       this.rerender()
     });
     bg.on('change', channels => console.log("[change]", channels));
@@ -56,6 +54,10 @@ module.exports = class Browserglue extends Component {
     window.browserglue = this;
 
     this._handleSyncMessages();
+  }
+
+  get isConnected() {
+    return this.browserglue && this.browserglue.isConnected;
   }
 
   update() {
