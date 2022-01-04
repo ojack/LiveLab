@@ -1,5 +1,10 @@
 const nanoid = require('nanoid').nanoid
 const MultiPeer = require('./../lib/MultiPeer.js')
+var AudioContext = window.AudioContext // Default
+    || window.webkitAudioContext // Safari and old versions of Chrome
+    || false; 
+
+if(!AudioContext) console.warn('this browser does not support WebAudio')
 
 module.exports = (state, emitter) => {
   state.user = {
@@ -136,7 +141,11 @@ module.exports = (state, emitter) => {
   })
 
   emitter.on('user:shareScreen', () => {
-    startCapture({})
+    startCapture({ audio: {
+      noiseSuppression: false,
+      autoGainControl: false,
+      echoCancellation: false
+    }, video: true})
   })
 
   emitter.on('user:addStream', (stream, label = '') => {
@@ -154,6 +163,8 @@ module.exports = (state, emitter) => {
       stream = await navigator.mediaDevices.getDisplayMedia(
         displayMediaOptions
       )
+      console.log(stream, stream)
+      window.track = stream.getAudioTracks()[0]
       state.multiPeer.addStream(stream)
       emitter.emit('render')
     } catch (err) {
