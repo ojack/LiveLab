@@ -24,6 +24,14 @@ module.exports = (state, emitter) => {
     requestMedia: true,
     isAudioMuted: false,
     isVideoMuted: false,
+    defaultConstraints: {
+      audio: {
+        echoCancellation: true,
+        autoGainControl: true,
+        noiseSuppression: true,
+      },
+      video: { width: parseFloat(state.query.w) || 1920, height: parseFloat(state.query.h) || 1080, frameRate: 30 }
+    },
     callEnded: false
   }
 
@@ -42,6 +50,7 @@ module.exports = (state, emitter) => {
     } else {
       state.user.room = nanoid(16)
     }
+    const urlParams = Object.assign({}, state.query, { room: state.user.room})
     state.user.server = server
     state.user.nickname = nickname
 
@@ -49,7 +58,8 @@ module.exports = (state, emitter) => {
     localStorage.setItem('livelab-room', state.user.room)
     window.history.pushState({},
       'room',
-      '?room=' + state.user.room + window.location.hash
+      // `?room=${state.user.room}${window.location.hash}`
+      `?${Object.entries(urlParams).map(([key, value]) => `${key}=${value}`).join('&')}`
     )
 
     state.multiPeer.init({

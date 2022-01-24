@@ -111,6 +111,7 @@ module.exports = class AddMedia extends Component {
   }
 
   load (el) {
+    if('constraints' in this.parentOpts) this.constraints = this.parentOpts.constraints
     this.updateDeviceList(() => {
       this.selectedDevices = Object.assign(
         {},

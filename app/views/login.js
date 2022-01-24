@@ -52,6 +52,9 @@ module.exports = class Login extends Component {
     this.trackInfo = { audio: {}, video: {} }
     this.settingsIsOpen = false
 
+    
+
+
     enumerateDevices()
       .then(devices => {
         this.devices.audio = devices.filter(elem => elem.kind === 'audioinput')
@@ -112,6 +115,9 @@ module.exports = class Login extends Component {
           this.tracks[kind] = stream
             .getTracks()
             .filter(track => track.kind == kind)[0]
+          if(kind === 'video') {
+             this.tracks[kind].applyConstraints(this.defaultConstraints['video'])
+          }
           this.streams[kind] = stream
           window.stream = stream
           console.log(
@@ -151,6 +157,8 @@ module.exports = class Login extends Component {
   }
 
   createElement(state, emit) {
+    this.defaultConstraints = state.user.defaultConstraints
+    console.log('creationg login', state.query)
     const dropdowns = ['audio', 'video'].map(
       kind => html `
     <div class="flex items-center ba">
@@ -229,6 +237,7 @@ module.exports = class Login extends Component {
         isActive: this.isActive,
         tracks: this.tracks,
         saveText: 'save',
+        constraints: state.user.defaultConstraints,
         showLabel: false,
         state: state,
         onCancel: () => {

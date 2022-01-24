@@ -112,6 +112,7 @@ function mainView (state, emit) {
                 saveText: 'add media stream',
                 onCancel: () => { emit('layout:toggleMenuItem', 'addMedia', 'panels') },
                 showLabel: true,
+                constraints: state.user.defaultConstraints,
                 state: state,
                 onSave: ({ stream, mediaObj }) => {
                   emit('layout:toggleMenuItem', 'addMedia', 'panels')
