@@ -23,7 +23,13 @@ module.exports = class VideoObj extends Component {
       }
     }
     window.stream = srcObject
-    css(style, this.element)
+    //css(style, this.element)
+    css(Object.assign({}, { 
+      'width': '100%',
+      'height': '100%', 
+      position: 'relative', left: '0px', top: '0px'
+    }, style), this.element)
+
     return false
   }
 
@@ -38,7 +44,11 @@ module.exports = class VideoObj extends Component {
     //this.srcObject = srcObject
     let el = html`<video autoplay=true loop=true controls=false muted=true class="w-100 h-100"></video>`
     if(srcObject !== "")  el.srcObject = srcObject
-    css(style, el)
+    css(Object.assign({}, { 
+      'width': '100%',
+      'height': '100%', 
+      position: 'relative', left: '0px', top: '0px'
+    }, style), el)
     return el
   }
 }

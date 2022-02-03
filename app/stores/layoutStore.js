@@ -25,6 +25,7 @@ module.exports = (state, emitter) => {
       }, // stream values of each switcher
       numberOfSwitchers: 0, // number of switchers to display in ui
       columnLayout: false,
+      focusLayout: true,
       showCommunicationInfo: true
     },
     collapsed: false, // when a message is received, force chat to open until the user closes it

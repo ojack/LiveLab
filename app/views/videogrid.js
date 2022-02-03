@@ -76,7 +76,7 @@ module.exports = (
     return css(el, style)
   })
 
-  return html`<div class="fixed w-100 h-100">
+  return html`<div id="video-grid" class="relative" style="width:${outerWidth}px;height:${outerHeight}px">
     ${divs}
   </div>`
 }

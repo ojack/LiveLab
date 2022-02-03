@@ -63,5 +63,6 @@ module.exports = (state, emit) => {
       }, 'numberOfSwitchers')}
       ${toggle('Stretch to fit', 'stretchToFit')}
       ${toggle('Column layout', 'columnLayout')}
+      ${toggle('Focus layout', 'focusLayout')}
   </div>`
 }
