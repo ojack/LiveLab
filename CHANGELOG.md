@@ -1,4 +1,7 @@
 # Changelog
+## [1.4.9] - 2022-01-24
+- added URL parameters of 'w' and 'h' to set resolution from URL
+
 ## [1.4.8] - 2021-09-20
 ### Fixed
 - Switcher popping out does not interrupt audio

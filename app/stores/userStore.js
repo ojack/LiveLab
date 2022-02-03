@@ -7,6 +7,10 @@ var AudioContext = window.AudioContext // Default
 if(!AudioContext) console.warn('this browser does not support WebAudio')
 
 module.exports = (state, emitter) => {
+  // load audio mode and convert to boolean
+  const audioMode = !!(state.query['audioMode'] ? parseFloat(state.query['audioMode']) : 0) 
+  console.log('audio mode', audioMode)
+
   state.user = {
     uuid: nanoid(20),
     // for dev purposes, always regenerate id
@@ -26,11 +30,11 @@ module.exports = (state, emitter) => {
     isVideoMuted: false,
     defaultConstraints: {
       audio: {
-        echoCancellation: true,
-        autoGainControl: true,
-        noiseSuppression: true,
+        echoCancellation: !audioMode,
+        autoGainControl: !audioMode,
+        noiseSuppression: !audioMode
       },
-      video: { width: parseFloat(state.query.w) || 1920, height: parseFloat(state.query.h) || 1080, frameRate: 30 }
+      video: { width: parseFloat(state.query.w) || 1920, height: parseFloat(state.query.h) || 1080, frameRate: parseFloat(state.query.fps) || 30 }
     },
     callEnded: false
   }
