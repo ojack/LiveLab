@@ -34,8 +34,10 @@ class LocalChannel extends EventEmitter {
 
   // forward event listeners from individual peers
   on (address, callback) {
+    console.log('adding listener', address)
     Object.entries(this.peers).forEach(([id, peer]) => {
       peer.channels[this.tag].on(address, (...args) => {
+        console.log('on called at address', address)
         callback(...args, peer)
       })
     })
@@ -49,7 +51,8 @@ class LocalChannel extends EventEmitter {
     })
   }
 
-  send (address, message) {
+  send (address, message = '') {
+    console.log('sending', address, this.peers)
     Object.entries(this.peers).forEach(([id, peer]) => {
       peer.channels[this.tag].send(address, message)
     })

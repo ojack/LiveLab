@@ -2,6 +2,7 @@
 const mediaContainer = require('./components_new/mediaContainer.js')
 const html = require('choo/html')
 const grid = require('./videogrid.js')
+const Iframe = require('./syncedViews/iframe.js')
 
 // @todo : use videoWidth rather than settings
 // @todo: close popups on close
@@ -51,14 +52,16 @@ module.exports = (state, emit) => {
     gridOpts.outerWidth = outerWidth
     gridOpts.outerHeight = outerHeight
   }
- 
+ //       <iframe src="https://hydra.ojack.xyz" class="w-100 h-100" title="description"></iframe>
+
   content = html`<div class="w-100 h-100">
     <div class="bg-black relative" id="presentation-content" style="
       width:${outerWidth}px;
       height:${outerHeight-gridOpts.outerHeight}px;
       transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s;
     ">
-      <iframe src="https://hydra.ojack.xyz" class="w-100 h-100" title="description"></iframe>
+    
+      ${state.cache(Iframe, 'iframe-component').render(state, emit, { width: outerWidth, height: outerHeight-gridOpts.outerHeight})}
     </div>
     ${grid(gridOpts, emit)}
   </div>`

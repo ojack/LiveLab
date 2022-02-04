@@ -49,7 +49,7 @@ module.exports = class Switcher extends Component {
     this.name = name
     this.label = `switcher ${name}`.toUpperCase()
     this.state = state
-    console.log('switcher state', state)
+   // console.log('switcher state', state)
     const stream = state.layout.settings.switchers[name]
     if (stream !== this.stream) {
       this.stream = stream
