@@ -7,7 +7,8 @@ module.exports = class Iframe extends Component {
     super(id)
     this.user = state.user
     this.emit = emit
-    this.url = 'https://hydra.ojack.xyz'
+   // this.url = 'https://hydra.ojack.xyz'
+    this.url = `https://www.tldraw.com/r/livelab-${state.user.room}`
     this.channel = state.multiPeer.addChannel('iframe', {})
     this.channel.on('requestURL', (message, peer) => {
       console.log('URLL requested')
