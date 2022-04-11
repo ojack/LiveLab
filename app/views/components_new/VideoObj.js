@@ -40,9 +40,9 @@ module.exports = class VideoObj extends Component {
     }
   }
 
-  createElement(srcObject = "", style = {}) {
+  createElement(srcObject = "", style = {}, className="") {
     //this.srcObject = srcObject
-    let el = html`<video autoplay=true loop=true controls=false muted=true class="w-100 h-100"></video>`
+    let el = html`<video autoplay=true loop=true controls=false muted=true class="w-100 h-100 ${className}"></video>`
     if(srcObject !== "")  el.srcObject = srcObject
     css(Object.assign({}, { 
       'width': '100%',

@@ -116,7 +116,7 @@ module.exports = ({stream, index}, state, emit) => {
        .cache(Video, `video-${index}`)
        .render(stream.stream, {
          objectFit: state.layout.settings.stretchToFit ? 'cover' : 'contain'
-       })}
+       }, "livelab-video")}
        ${info}
        ${endStream}
        ${switcherOverlay}

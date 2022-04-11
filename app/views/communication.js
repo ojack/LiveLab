@@ -2,12 +2,16 @@
 const mediaContainer = require('./components_new/mediaContainer.js')
 const html = require('choo/html')
 const grid = require('./videogrid.js')
-const Iframe = require('./syncedViews/iframe.js')
+//const Iframe = require('./plugins/iframe.js')
+
+const Iframe = require('./plugins/shared-hydra.js')
 
 // @todo : use videoWidth rather than settings
 // @todo: close popups on close
 module.exports = (state, emit) => {
   const elements = state.multiPeer.streams.map((stream, index) => mediaContainer({ stream, index}, state, emit))
+
+ state.multiPeer.videos = elements
 
   // resize video grid based on screen dimensions
   let sideMargin = 0

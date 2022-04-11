@@ -1,3 +1,5 @@
+const videogrid = require('../views/videogrid.js')
+
 const debounce = require('./../lib/utils.js').debounce
 
 module.exports = (state, emitter) => {
@@ -28,6 +30,11 @@ module.exports = (state, emitter) => {
       focusLayout: true,
       showCommunicationInfo: true
     },
+    // object for storing elements that should appear in communication window
+    communication: {
+      focused: null,
+      grid: []
+    },
     collapsed: false, // when a message is received, force chat to open until the user closes it
     forceChatOpen: false
   }
@@ -43,6 +50,14 @@ module.exports = (state, emitter) => {
       background1: '#555'
     }
   }
+
+  function updateGrid() {
+    state.layout.communication.grid =  state.multiPeer.streams.map((stream) => ({ type: 'video', stream: stream}))
+  }
+
+  emitter.on('render', () => {
+    updateGrid()
+  })
 
   emitter.on('layout:collapseMenu', () => {
     state.layout.collapsed = true
