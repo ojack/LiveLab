@@ -32,7 +32,8 @@ module.exports = (state, emitter) => {
     },
     // object for storing elements that should appear in communication window
     communication: {
-      focused: null,
+      focusedIndex: null,
+      focus: [],
       grid: []
     },
     collapsed: false, // when a message is received, force chat to open until the user closes it
@@ -52,11 +53,30 @@ module.exports = (state, emitter) => {
   }
 
   function updateGrid() {
-    state.layout.communication.grid =  state.multiPeer.streams.map((stream) => ({ type: 'video', stream: stream}))
+    let focus = [], grid = []
+    state.multiPeer.streams
+    .map((stream) => ({ type: 'media', stream: stream, id: stream.stream.id}))
+    .forEach((gridElement) => {
+      if (gridElement.id === state.layout.communication.focusedIndex) {
+        focus.push(gridElement)
+      } else {
+        grid.push(gridElement)
+      }
+    })
+    state.layout.communication.grid = grid
+    state.layout.communication.focus = focus
   }
 
+  // @todo only call this as necessary
   emitter.on('render', () => {
     updateGrid()
+  })
+
+  emitter.on('layout:setFocusElement', (gridElementId) => {
+    console.log(gridElementId)
+    state.layout.communication.focusedIndex = state.layout.communication.focusedIndex === gridElementId ? null : gridElementId
+    updateGrid()
+    emitter.emit('render')
   })
 
   emitter.on('layout:collapseMenu', () => {

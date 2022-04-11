@@ -5,8 +5,7 @@ const Video = require('./VideoObj.js')
 const html = require('choo/html')
 const { openWindow } = require('./../../lib/utils.js')
 
-
-module.exports = ({stream, index}, state, emit) => {
+module.exports = ({stream, index, id}, state, emit) => {
      //   let state.layout.settings.stretchToFit = state.layout.menu.state.layout.settings.stretchToFit
      let info = ''
      let endStream = ''
@@ -109,7 +108,7 @@ module.exports = ({stream, index}, state, emit) => {
        </svg>
      </container>`
  
-     return html`<div class='w-100 h-100 video-container relative' style=${state.layout.settings.stretchToFit
+     return html`<div class='w-100 h-100 video-container relative' onclick=${(e) => {if(e.target.nodeName !== 'I') emit('layout:setFocusElement', id)}} style=${state.layout.settings.stretchToFit
        ? ''
        : 'border:1px solid #555;'}>
        ${state

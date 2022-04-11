@@ -9,8 +9,9 @@ const Iframe = require('./plugins/shared-hydra.js')
 // @todo : use videoWidth rather than settings
 // @todo: close popups on close
 module.exports = (state, emit) => {
-  const elements = state.multiPeer.streams.map((stream, index) => mediaContainer({ stream, index}, state, emit))
-
+const elements = state.layout.communication.grid.map(({ stream, id }, index) => mediaContainer({ stream, index, id}, state, emit))
+  // const elements = state.multiPeer.streams.map((stream, index) => mediaContainer({ stream, index}, state, emit))
+console.log('grid', state.layout.communication.grid)
  state.multiPeer.videos = elements
 
   // resize video grid based on screen dimensions
@@ -47,7 +48,7 @@ module.exports = (state, emit) => {
   const focusLayout = state.layout.settings.focusLayout
   const outerHeight = window.innerHeight - bottomMargin
   const outerWidth = window.innerWidth - sideMargin
-  if(focusLayout === true) {
+  if(focusLayout === true && state.layout.communication.focus.length > 0) {
     const vw = 240 // target video dimensions
     const vh = 200*3/4
     gridOpts.outerWidth = Math.min(vw*elements.length, window.innerWidth - sideMargin)
@@ -56,7 +57,9 @@ module.exports = (state, emit) => {
     gridOpts.outerWidth = outerWidth
     gridOpts.outerHeight = outerHeight
   }
- //       <iframe src="https://hydra.ojack.xyz" class="w-100 h-100" title="description"></iframe>
+
+// RENDERING IFRAME
+//  ${state.cache(Iframe, 'iframe-component').render(state, emit, { width: outerWidth, height: outerHeight-gridOpts.outerHeight})}
 
   content = html`<div class="w-100 h-100">
     <div class="bg-black relative" id="presentation-content" style="
@@ -64,8 +67,7 @@ module.exports = (state, emit) => {
       height:${outerHeight-gridOpts.outerHeight}px;
       transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s;
     ">
-    
-      ${state.cache(Iframe, 'iframe-component').render(state, emit, { width: outerWidth, height: outerHeight-gridOpts.outerHeight})}
+   ${state.layout.communication.focus.map(({ stream, id }, index) => mediaContainer({ stream, index, id}, state, emit))}
     </div>
     ${grid(gridOpts, emit)}
   </div>`
