@@ -53,18 +53,25 @@ module.exports = (state, emitter) => {
   }
 
   function updateGrid() {
-    let focus = [], grid = []
-    state.multiPeer.streams
+    const elements = state.multiPeer.streams
     .map((stream) => ({ type: 'media', stream: stream, id: stream.stream.id}))
-    .forEach((gridElement) => {
-      if (gridElement.id === state.layout.communication.focusedIndex) {
-        focus.push(gridElement)
-      } else {
-        grid.push(gridElement)
-      }
-    })
-    state.layout.communication.grid = grid
-    state.layout.communication.focus = focus
+    
+    if(state.layout.settings.focusLayout === true) {
+      let focus = [], grid = []
+      elements.forEach((gridElement) => {
+        if (gridElement.id === state.layout.communication.focusedIndex) {
+          focus.push(gridElement)
+        } else {
+          grid.push(gridElement)
+        }
+      })
+      state.layout.communication.grid = grid
+      state.layout.communication.focus = focus
+    } else {
+      state.layout.communication.grid = elements
+      state.layout.communication.focus = []
+    }
+  
   }
 
   // @todo only call this as necessary
@@ -111,6 +118,7 @@ module.exports = (state, emitter) => {
 
   emitter.on('layout:setSettings', (item, value) => {
     state.layout.settings[item] = value
+    if (item === 'focusLayout') updateGrid()
     emitter.emit('render')
   })
 

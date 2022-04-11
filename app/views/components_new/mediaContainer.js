@@ -112,7 +112,7 @@ module.exports = ({stream, index, id}, state, emit) => {
        ? ''
        : 'border:1px solid #555;'}>
        ${state
-       .cache(Video, `video-${index}`)
+       .cache(Video, `video-${id}`)
        .render(stream.stream, {
          objectFit: state.layout.settings.stretchToFit ? 'cover' : 'contain'
        }, "livelab-video")}
