@@ -16,11 +16,14 @@ module.exports = class SharedHydra extends Component {
         // canvas.width = width
         // canvas.height = height
         this.canvas = canvas
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight 
+
         this.hydra = new Hydra({
             detectAudio: false, canvas: canvas
            })
 
-
+        osc(4).out()
         this.channel = state.multiPeer.addChannel('shared-hydra', {})
         this.channel.on('requestURL', (message, peer) => {
           console.log('URLL requested')
@@ -67,7 +70,8 @@ module.exports = class SharedHydra extends Component {
         })
     }
 
-    load() {
+    load(el) {
+        window.container = el
         console.log('REQUESTINGGGGGGGGG requesting URL!!')
         //setTimeout(() => { this.channel.send('requestURL', '') }, 2000)
 

@@ -12,7 +12,7 @@ module.exports = (state, emit) => {
 const elements = state.layout.communication.grid.map(({ stream, id }, index) => mediaContainer({ stream, index, id}, state, emit))
   // const elements = state.multiPeer.streams.map((stream, index) => mediaContainer({ stream, index}, state, emit))
 console.log('grid', state.layout.communication.grid)
- state.multiPeer.videos = elements
+//  state.multiPeer.videos = elements
 
   // resize video grid based on screen dimensions
   let sideMargin = 0
@@ -48,7 +48,8 @@ console.log('grid', state.layout.communication.grid)
   const focusLayout = state.layout.settings.focusLayout
   const outerHeight = window.innerHeight - bottomMargin
   const outerWidth = window.innerWidth - sideMargin
-  if(focusLayout === true && state.layout.communication.focus.length > 0) {
+  // if(focusLayout === true && state.layout.communication.focus.length > 0) {
+  if(focusLayout === true) {
     const vw = 240 // target video dimensions
     const vh = 200*3/4
     gridOpts.outerWidth = Math.min(vw*elements.length, window.innerWidth - sideMargin)
@@ -60,14 +61,16 @@ console.log('grid', state.layout.communication.grid)
 
 // RENDERING IFRAME
 //  ${state.cache(Iframe, 'iframe-component').render(state, emit, { width: outerWidth, height: outerHeight-gridOpts.outerHeight})}
+//    ${state.layout.communication.focus.map(({ stream, id }, index) => mediaContainer({ stream, index, id}, state, emit))}
 
+  console.log('rendering', outerWidth, outerHeight)
   content = html`<div class="w-100 h-100">
     <div class="bg-black relative" id="presentation-content" style="
       width:${outerWidth}px;
       height:${outerHeight-gridOpts.outerHeight}px;
       transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s;
     ">
-   ${state.layout.communication.focus.map(({ stream, id }, index) => mediaContainer({ stream, index, id}, state, emit))}
+    ${state.cache(Iframe, 'iframe-component').render(state, emit, { width: outerWidth, height: outerHeight-gridOpts.outerHeight})}
     </div>
     ${grid(gridOpts, emit)}
   </div>`

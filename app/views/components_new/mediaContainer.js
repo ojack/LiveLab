@@ -10,6 +10,8 @@ module.exports = ({stream, index, id}, state, emit) => {
      let info = ''
      let endStream = ''
      let activeSwitchers = []
+     let streamId = ''
+
      if (state.layout.settings.showCommunicationInfo === true) {
        let videoSettings = ''
        let audioSettings = ''
@@ -18,6 +20,8 @@ module.exports = ({stream, index, id}, state, emit) => {
        let videoMute = ''
        let switcherControls = ''
        if (stream.settings && stream.settings.video) {
+         streamId =  `${stream.peer.nickname}${stream.name !== ''
+         ? ` - ${stream.name}`:``}`
          videoSettings = `${stream.settings.video.width}x${stream.settings.video.height} ${stream.settings.video.frameRate}fps`
          videoMute = html`<i
             class="mh1 fas ${stream.isVideoMuted
@@ -56,8 +60,7 @@ module.exports = ({stream, index, id}, state, emit) => {
           <span class="mh2"> | </span>
           <i
             onclick=${() => {
-             const title = `${stream.peer.nickname}${stream.name !== ''
-             ? ` - ${stream.name}`:``}`
+             const title = streamId
              if(stream.stream && stream.settings.video) {
                openWindow({ stream: stream.stream, id: stream.stream.id, title: title, width: stream.settings.video.width, height: stream.settings.video.height })
              }
@@ -93,9 +96,7 @@ module.exports = ({stream, index, id}, state, emit) => {
         </i></div>` : ''
  
        info = html`  <div class="f4 absolute pa2 ph2 ma2 bottom-0 video-info" style="text-shadow: 2px 2px 3px rgba(0, 0, 0, 1);/*mix-blend-mode:difference*/">
-           <span class="b mh2">${stream.peer.nickname}${stream.name !== ''
-         ? ` - ${stream.name}`
-         : ''}</span> ${videoMute} ${mute} ${windowOpen}
+           <span class="b mh2">${streamId}</span> ${videoMute} ${mute} ${windowOpen}
           </div>`
      }
  
@@ -108,14 +109,15 @@ module.exports = ({stream, index, id}, state, emit) => {
        </svg>
      </container>`
  
-     return html`<div class='w-100 h-100 video-container relative' onclick=${(e) => {if(e.target.nodeName !== 'I') emit('layout:setFocusElement', id)}} style=${state.layout.settings.stretchToFit
+     console.log('rendering video', streamId)
+     return html`<div class='w-100 h-100 video-container relative' id="media-container-${streamId}" onclick=${(e) => {if(e.target.nodeName !== 'I') emit('layout:setFocusElement', id)}} style=${state.layout.settings.stretchToFit
        ? ''
        : 'border:1px solid #555;'}>
        ${state
        .cache(Video, `video-${id}`)
        .render(stream.stream, {
          objectFit: state.layout.settings.stretchToFit ? 'cover' : 'contain'
-       }, "livelab-video")}
+       }, streamId, state)}
        ${info}
        ${endStream}
        ${switcherOverlay}

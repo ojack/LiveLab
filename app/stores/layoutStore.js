@@ -52,6 +52,10 @@ module.exports = (state, emitter) => {
     }
   }
 
+  state.multiPeer.on('update', () => {
+    updateGrid()
+    emitter.emit('render')
+  })
   function updateGrid() {
     const elements = state.multiPeer.streams
     .map((stream) => ({ type: 'media', stream: stream, id: stream.stream.id}))
@@ -75,9 +79,9 @@ module.exports = (state, emitter) => {
   }
 
   // @todo only call this as necessary
-  emitter.on('render', () => {
-    updateGrid()
-  })
+  // emitter.on('render', () => {
+  //   updateGrid()
+  // })
 
   emitter.on('layout:setFocusElement', (gridElementId) => {
     console.log(gridElementId)
@@ -138,6 +142,7 @@ module.exports = (state, emitter) => {
     'resize',
     debounce(
       () => {
+        updateGrid()
         emitter.emit('render')
       },
       50

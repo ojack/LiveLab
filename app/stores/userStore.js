@@ -1,5 +1,6 @@
 const nanoid = require('nanoid').nanoid
 const MultiPeer = require('./../lib/MultiPeer.js')
+const Api = require('./../lib/api.js')
 var AudioContext = window.AudioContext // Default
     || window.webkitAudioContext // Safari and old versions of Chrome
     || false; 
@@ -40,6 +41,10 @@ module.exports = (state, emitter) => {
   }
 
   state.multiPeer = new MultiPeer({}, emitter)
+
+  window.LiveLab = new Api(state)
+  state.api = window.LiveLab // publically available methods
+
   window.audioCtx = new AudioContext()
 
   emitter.on('user:join', function ({
@@ -150,9 +155,9 @@ module.exports = (state, emitter) => {
     emitter.emit('render')
   })
 
-  state.multiPeer.on('update', () => {
-    emitter.emit('render')
-  })
+  // state.multiPeer.on('update', () => {
+  //   emitter.emit('render')
+  // })
 
   emitter.on('user:shareScreen', () => {
     startCapture({ audio: {

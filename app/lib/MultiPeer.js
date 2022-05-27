@@ -192,6 +192,21 @@ class MultiPeer extends EventEmitter {
         }
       })
     )    
+    // streams.forEach((stream, i) => {
+    //   if (!stream.hasOwnProperty('videoEl') || stream.videoEl === null) {
+    //     const vid = document.createElement('video')
+    //     vid.muted = true
+    //     vid.autoplay=true 
+    //     vid.loop=true
+    //     vid.style.position = 'absolute'
+    //     vid.style.bottom = '0px'
+    //     vid.style.left = `${200*i}px`
+    //     vid.style.width = '200px'
+    //     vid.srcObject = stream.stream
+    //     stream.videoEl = vid
+    //     if(window.container) window.container.appendChild(vid)
+    //   }
+    // })
     this.streams = streams
     this.emit('update')
   }
