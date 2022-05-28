@@ -4,7 +4,7 @@ const html = require('choo/html')
 const grid = require('./videogrid.js')
 //const Iframe = require('./plugins/iframe.js')
 
-const Iframe = require('./plugins/shared-hydra.js')
+const Iframe = require('./plugins/shared-hydra/index.js')
 
 // @todo : use videoWidth rather than settings
 // @todo: close popups on close
