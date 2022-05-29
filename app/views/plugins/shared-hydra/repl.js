@@ -7,7 +7,8 @@ module.exports = {
     // wrap everything in an async function
   var jsString = `(async() => {
     ${arg}
-})().catch(${(err) => console.log(err.message, "log-error")})`
+})().catch(${(err) => console.log(`%c${err.message}`, "background:red")})`
+  console.log('evaluation', jsString)
     var isError = false
     try {
       eval(jsString)

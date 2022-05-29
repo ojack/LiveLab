@@ -11,7 +11,7 @@ const Iframe = require('./plugins/shared-hydra/index.js')
 module.exports = (state, emit) => {
 const elements = state.layout.communication.grid.map(({ stream, id }, index) => mediaContainer({ stream, index, id}, state, emit))
   // const elements = state.multiPeer.streams.map((stream, index) => mediaContainer({ stream, index}, state, emit))
-console.log('grid', state.layout.communication.grid)
+// console.log('grid', state.layout.communication.grid)
 //  state.multiPeer.videos = elements
 
   // resize video grid based on screen dimensions
@@ -63,7 +63,7 @@ console.log('grid', state.layout.communication.grid)
 //  ${state.cache(Iframe, 'iframe-component').render(state, emit, { width: outerWidth, height: outerHeight-gridOpts.outerHeight})}
 //    ${state.layout.communication.focus.map(({ stream, id }, index) => mediaContainer({ stream, index, id}, state, emit))}
 
-  console.log('rendering', outerWidth, outerHeight)
+  // console.log('rendering', outerWidth, outerHeight)
   content = html`<div class="w-100 h-100">
     <div class="bg-black relative" id="presentation-content" style="
       width:${outerWidth}px;

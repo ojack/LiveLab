@@ -11,7 +11,7 @@ module.exports = class VideoObj extends Component {
   constructor(opts) {
 
     super(opts)
-    console.log('creating', opts)
+    //console.log('creating', opts)
     this.nick = opts
   }
 
@@ -23,15 +23,16 @@ module.exports = class VideoObj extends Component {
       this.element.oncanplay = () => {
         this.element.muted = true
         this.element.play()
+        if (nick !== null) {
+          //  console.log('setting values', this.element)
+          if (state) state.api._setVideo(nick, this.element)
+          this.element.setAttribute('livelab-nick', nick)
+          this.nick = nick
+          this.state = state
+        }
       }
 
-      if (nick !== null) {
-        //  console.log('setting values', this.element)
-        if (state) state.api._setVideo(nick, this.element)
-        this.element.setAttribute('livelab-nick', nick)
-        this.nick = nick
-        this.state = state
-      }
+     
     }
 
     // this.element.setAttribute('id', nick)

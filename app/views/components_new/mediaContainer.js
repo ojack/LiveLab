@@ -109,7 +109,7 @@ module.exports = ({stream, index, id}, state, emit) => {
        </svg>
      </container>`
  
-     console.log('rendering video', streamId)
+    // console.log('rendering video', streamId)
      return html`<div class='w-100 h-100 video-container relative' id="media-container-${streamId}" onclick=${(e) => {if(e.target.nodeName !== 'I') emit('layout:setFocusElement', id)}} style=${state.layout.settings.stretchToFit
        ? ''
        : 'border:1px solid #555;'}>
