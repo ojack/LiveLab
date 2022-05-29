@@ -25,6 +25,23 @@ module.exports = class SharedHydra extends Component {
             detectAudio: false, canvas: canvas
            })
 
+        // oject 
+        this.activeSources = {}
+
+        // attach a livelab source to a hydra 
+       // window.setSrc = (hydraScource, LiveLabVideoId)
+        this.hydra.s.forEach((source) => {
+          source.initLiveLab = (id = '') => {
+            console.log('%c initing live lab', 'background: #222; color: #bada55', id)
+            this.activeSources[id] = source
+            const vid = LiveLab.get(id)
+            if(vid !== null) {
+              source.init({ src: vid })
+            }
+          }
+        })
+
+
         osc(4).out()
         this.channel = state.multiPeer.addChannel('shared-hydra', {})
         this.channel.on('requestURL', (message, peer) => {
@@ -38,8 +55,18 @@ module.exports = class SharedHydra extends Component {
           console.log('received message', message, peer)
         })
         state.multiPeer.once('connect', () => {
-          console.log('CONNECTEDconnected')
+          // console.log('CONNECTEDconnected')
           this.channel.send('requestURL', '')
+        })
+
+        LiveLab.on('update', () => {
+          console.log('%c!!!!!streams updated',  'background: #22c; color: #bada55', LiveLab.videos)
+          Object.entries(this.activeSources).forEach(([liveLabId, hydraSource]) => {
+            const vid = LiveLab.get(liveLabId)
+            if(vid !== null) {
+              hydraSource.init({ src: vid })
+            }
+          })
         })
         this.inputValue = this.url
 
@@ -60,11 +87,18 @@ module.exports = class SharedHydra extends Component {
                    // }
 
                   } else if (event.data.cmd === "initialSync") {
+                    console.log('%c initial sync', 'background: #822; color: #bada55', event.data.args.editors)
+                    if(event.data.args.editors[0])
                     if(!hasSynced) {
+                      console.log('%c initial sync', 'background: #852; color: #bada55', event.data.args.editors)
+
                       const editorText = event.data.args.editors
-                      if(editorText[0]) repl.eval(editorText[0])
-                      if(editorText[1]) repl.eval(editorText[1])
-                      hasSynced = true
+                      // if either editor has text, perform sync
+                      if(editorText[0] || editorText[1]) {
+                        if(editorText[0]) repl.eval(editorText[0])
+                        if(editorText[1]) repl.eval(editorText[1])
+                        hasSynced = true
+                      }
                     ///  if(editorText[1]) agua.run(editorText[1])
                     }
                    }
