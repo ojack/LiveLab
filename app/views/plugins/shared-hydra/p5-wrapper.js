@@ -1,4 +1,4 @@
-const p5 = require('p5')
+// const p5 = require('p5')
 
 class P5 extends p5{
     constructor ({

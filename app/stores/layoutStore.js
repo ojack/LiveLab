@@ -28,6 +28,7 @@ module.exports = (state, emitter) => {
       numberOfSwitchers: 0, // number of switchers to display in ui
       columnLayout: false,
       focusLayout: true,
+      fullScreen: true, // full screen when in focus layout
       showCommunicationInfo: true
     },
     // object for storing elements that should appear in communication window
