@@ -1,4 +1,8 @@
 # Changelog
+## [1.4.10] - 2022-08-01
+### Fixed
+- updated socket.io version to get rid of CORS error
+
 ## [1.4.9] - 2022-02-03
 - added URL params for fps and audio mode. (audio mode 1 indicated no browser audio processing and is optimized for music)
 'https://localhost:8000/?w=640&h=480&audioMode=1&fps=15&room=hello`
