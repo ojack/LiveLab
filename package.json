@@ -5,7 +5,7 @@
   "main": "nw.js",
   "scripts": {
     "watch": "watchify -t [ envify --NODE_ENV development --version $npm_package_version] -d app/app.js -v -o public/bundle.js",
-    "build": "browserify -t [ envify --NODE_ENV development --version $npm_package_version] -d app/app.js -v -o public/bundle.js",
+    "build": "browserify -t [ envify --NODE_ENV production --version $npm_package_version] -d app/app.js -v -o public/bundle.js",
     "start": "npm run build & node server.js",
     "dev": "npm run watch & PORT=8000 node server.js",
     "local": "NODE_ENV=localrun node server.js",
